@@ -6,7 +6,7 @@ The VINDEX3 specification, as an exhibition — not "docs with nicer CSS." The c
 
 Same as [chrishayuk](../chrishayuk): Next.js 16 on Cloudflare Workers via `@opennextjs/cloudflare`, Tailwind v4, HOUSE for tokens/primitives.
 
-**HOUSE is a sibling repo** (`../house`, package `@chrishayuk/house`), not copied into this project — see `../house/README.md` for what it provides and `../chrishayuk/README.md` / `DESIGN.md` for the architecture reasoning and the Turbopack/symlink gotcha (`.npmrc`'s `install-links=true`, `transpilePackages` in `next.config.ts`) that both this project and chrishayuk need.
+**HOUSE is its own repo**, [github.com/chrishayuk/house](https://github.com/chrishayuk/house) (package `@chrishayuk/house`), not copied into this project — installed as `"@chrishayuk/house": "github:chrishayuk/house"`, plus `transpilePackages: ["@chrishayuk/house"]` in `next.config.ts` (it ships raw source, no build step of its own). See `../chrishayuk/DESIGN.md`'s Architecture section for the reasoning, and for the local-`file:`-dependency trick used when actively co-developing HOUSE itself rather than consuming a pushed version of it.
 
 ## Status
 
