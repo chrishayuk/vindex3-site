@@ -24,6 +24,20 @@ export default function Home() {
 				dek="A way of storing an AI model so the same copy can be run, questioned, and checked — nothing repackaged, nothing thrown away."
 			/>
 
+			<section className="hause-grid py-8">
+				<div className="col-span-12 md:col-start-2 md:col-span-9 flex flex-wrap gap-x-10 gap-y-3">
+					<Link href="/container" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
+						READ THE SPEC →
+					</Link>
+					<Link href="/ask" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
+						ASK VINDEX3 →
+					</Link>
+					<Link href="/explorer" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
+						ENTER A MODEL &gt;
+					</Link>
+				</div>
+			</section>
+
 			<Observation text="An AI model is billions of learned numbers, and today's formats keep those numbers perfectly — as storage. What they do not keep is everything else the release meant: which parts are which, what may consume them, which precisions are still the same model, what was ever proven about any of it. VINDEX3 keeps the numbers and the meaning — every part named, every representation catalogued, every claim checkable — for the life of the artifact." />
 
 			<Statement text="A modern model release is not a weights file. It is a system." />
