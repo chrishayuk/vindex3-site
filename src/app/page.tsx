@@ -1,100 +1,132 @@
 import { Hero } from "@chrishayuk/house/components/forms/Hero";
 import { Statement } from "@chrishayuk/house/components/forms/Statement";
 import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Decomposition } from "@chrishayuk/house/components/forms/Decomposition";
-import { Evidence } from "@chrishayuk/house/components/forms/Evidence";
-import { Timeline } from "@chrishayuk/house/components/forms/Timeline";
-import { Question } from "@chrishayuk/house/components/forms/Question";
+import { Transformation } from "@chrishayuk/house/components/forms/Transformation";
+import { Unfolding } from "@chrishayuk/house/components/forms/Unfolding";
+import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { ContainerReveal } from "@/components/ContainerReveal";
 
 /**
- * DRAFT — first real VINDEX3 exhibit, grounded in the actual spec
- * (crates/larql-vindex/docs/vindex3-format-spec.md in chris-source/larql),
- * not the brainstormed section names from early conversation. Every figure
- * below is either a direct/near-verbatim quote or a specific measured
- * result from that spec and its companion experiments doc — nothing here
- * is illustrative. See the Scope note and Sources at the bottom before
- * treating this as the whole of VINDEX3.
+ * The thesis exhibit, with an on-ramp: what VINDEX3 is and does comes
+ * before what it believes. Grounded in the actual specs in
+ * the specification documents — every quoted question and figure below
+ * is verbatim or near-verbatim from those documents, not illustrative.
+ * See the Scope note and Sources at the bottom.
  */
 export default function Home() {
 	return (
 		<main>
+			<ContainerReveal />
+
 			<Hero
 				kicker="VINDEX3 · SPEC 3.0-DRAFT-2"
 				title="THE MODEL IS THE DATABASE"
-				dek="A general-purpose serving container for sparse models — serving meaning both inference and the query surface, over the same bytes."
+				dek="A way of storing an AI model so the same copy can be run, questioned, and checked — nothing repackaged, nothing thrown away."
+			/>
+
+			<Observation text="An AI model is billions of learned numbers. Today they ship as a sealed box: you may run it, and nothing more. VINDEX3 keeps the same numbers as an open catalogue — every part named, findable, checkable — so one copy can be executed, searched, and proven faithful to the original." />
+
+			<Statement text="A modern model release is not a weights file. It is a system." />
+
+			<Observation
+				label="THE QUESTIONS"
+				text="A serving file needs to answer one question: how do I store and run these tensors? VINDEX3 is built to answer more. What are these model objects? What operations can consume them? Which representations are equivalent? Which parts should be resident? What future computation will need them?"
+			/>
+
+			<Transformation
+				kicker="ONE RELEASE — TWO INTERPRETATIONS"
+				objectLabel="the same checkpoint, byte-identically preserved either way"
+				blockLabels={["EMBEDDINGS", "ATTENTION", "EXPERTS", "ROUTER", "LM HEAD"]}
+				from={{
+					label: "A WEIGHTS FILE",
+					properties: [
+						"Loaded whole, or not at all",
+						"One precision, chosen once at conversion",
+						"Answers one request: run",
+					],
+				}}
+				to={{
+					label: "A DATABASE",
+					properties: [
+						"Component-addressed — load what you need",
+						"Multiple representations, selected per profile",
+						"Run it, query it, verify it — the same bytes",
+					],
+				}}
 			/>
 
 			<Statement text="VINDEX3 does not add a query index next to the weights. It keeps the weights queryable." />
 
+			<Observation
+				label="THE QUERY SURFACE"
+				text="Querying is not an add-on. It is specified alongside execution, as an equal. Every weight file declares, in its own header, whether its weights can be browsed. And no query index is ever stored beside the weights — the weights are the query index. Ask the model what it associates with a phrase. Filter what it knows like a table. Or run it. Same bytes, all three."
+			/>
+
+			<Observation
+				label="AN OPEN SPECIFICATION"
+				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
+			/>
+
+			<section className="house-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						WHAT YOU DO WITH IT — THE PIPELINE, DELIBERATELY COMPILER-SHAPED
+					</p>
+					<div className="flex flex-col">
+						{[
+							["inventory", "read what the source checkpoint declares"],
+							["plan", "judge whether the schema can describe it — typed findings, ambiguity refused"],
+							["encode", "materialise the system into a container"],
+							["inspect", "reconstruct the system from the container alone"],
+							["verify", "prove source and container agree, hash by hash"],
+							["execute", "run a forward pass from the encoded description — zero architecture branches"],
+							["serve", "inference and the query surface over the same bytes"],
+						].map(([verb, what]) => (
+							<div
+								key={verb}
+								className="grid grid-cols-[6.5rem_1fr] sm:grid-cols-[9rem_1fr] gap-4 sm:gap-8 items-baseline py-3 border-t"
+								style={{ borderColor: "var(--color-mist)" }}
+							>
+								<span className="voice-evidence text-sm" style={{ color: "var(--color-accent)" }}>
+									{verb}
+								</span>
+								<span className="voice-system text-sm sm:text-base opacity-80">{what}</span>
+							</div>
+						))}
+						<div className="border-t" style={{ borderColor: "var(--color-mist)" }} />
+					</div>
+				</div>
+			</section>
+
 			<Observation text="Extract a supported checkpoint once, into a stable, component-addressed layout. Then vary what is loaded, where it resides, what precision it uses, and whether a component is executed or queried — without ever rebuilding the index." />
 
-			<Decomposition
+			<Unfolding
 				kicker="model.vindex/ — ONE CONTAINER, FIVE DURABLE WEIGHT CLASSES"
 				source={{ label: "model.vindex/", detail: "A directory, not a single blob — component-addressed from the start." }}
 				parts={[
-					{ label: "CONTROL & ROUTER", detail: "Embeddings, norms, LM head, routers." },
-					{ label: "DENSE SPINE", detail: "The non-routed backbone layers." },
-					{ label: "SHARED FFN", detail: "Feed-forward blocks shared across experts." },
-					{ label: "ROUTED GATE-UP / DOWN BANKS", detail: "The expert weights — segmented, independently addressable." },
+					{ label: "1 — CONTROL & ROUTER", detail: "Embeddings, norms, LM head, routers." },
+					{ label: "2 — DENSE SPINE", detail: "The non-routed backbone layers." },
+					{ label: "3 — SHARED FFN", detail: "Feed-forward blocks shared across experts." },
+					{ label: "4 & 5 — ROUTED BANKS", detail: "The expert weights, gate-up and down — segmented, independently addressable." },
 				]}
 				result={{ label: "index.json", detail: "Sole root authority — version, identity, provenance, checksums, class map, segment lists." }}
 			/>
 
-			<Evidence
-				items={[
-					{
-						label: "Round-trip fidelity on a real Gemma 4 26B-A4B layer (gate c8)",
-						status: "SUPPORTED",
-						detail:
-							"Layer 0 of gemma4-26b-a4b.vindex — hidden 2816, 128 experts, top-8 routing, 704 semantic dims over 768 stored. Reopens, verifies clean, and comes back 256/256 regions byte-identical against the VINDEX2 source. 421 MB container.",
-					},
-					{
-						label: "Browsable surface vs. actual expert population (baseline W0)",
-						status: "OPEN",
-						detail:
-							"A fresh VINDEX2 extract of the same model exposes 2,112 walkable features per layer — the dense FFN width. The expert population would contribute 128 × 704 = 90,112. The expert weights are present and decode correctly (30 files, 12 GB); they are simply not part of the searchable surface yet.",
-					},
+			<Statement text="106 tokens per second, from one container, on one laptop — and the answer, provably unchanged." />
+
+			<Connection
+				text="The spec's load-bearing ideas each have their own exhibit."
+				links={[
+					{ href: "/why", label: "THE PHYSICS — START AT FIRST PRINCIPLES" },
+					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
+					{ href: "/bytes", label: "DOWN TO THE BYTE" },
+					{ href: "/graph", label: "COMPONENTS, OBJECTS, EDGES" },
+					{ href: "/execution", label: "FROM DESCRIPTION TO COMPUTATION" },
+					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
+					{ href: "/authority", label: "WHERE TRUTH COMES FROM" },
+					{ href: "/ladder", label: "THE RECORD — STATUS, PROOF, HISTORY" },
 				]}
 			/>
-
-			<Timeline
-				entries={[
-					{
-						date: "Before 3.0",
-						text: "VINDEX2 is the predecessor generation. VINDEX3 inherits its core premise — the weights stay queryable, not just loadable — and extends it with component addressing and graded representation authority.",
-					},
-					{
-						date: "2026-08-01",
-						text: "3.0-draft-2 published: three binary-layout corrections and two clarifications from the first LYRW v2 implementation. Five production models — gpt-oss-20b, Gemma 4 26B-A4B, and Granite 4.1 3B/8B/30B — already round-trip through it byte-identical, despite the ABI still being unfrozen.",
-					},
-					{
-						date: "2026-08-04",
-						text: "The c8 gate closes: a real Gemma 4 26B-A4B layer reopens and verifies clean, 256 of 256 regions byte-identical.",
-					},
-				]}
-			/>
-
-			<Question
-				status="OPEN"
-				text="If production models already round-trip through VINDEX3 byte-identical, why does the default extractor still write VINDEX2?"
-				detail="Both things are true at once, per the project's own generation-policy notes: the contract naming VINDEX3 as the candidate primary generation is adopted, but the default hasn't been flipped yet. The format works. It isn't yet what you get without asking for it."
-			/>
-
-			<Observation
-				label="SCOPE"
-				text="This exhibit describes the MoE-serving container format — banks, LYRW v2, segments, execution profiles — as specified in the crate-level spec. A second, broader specification exists, describing a different, later system-graph architecture (components, a compilation ladder, a model codenamed “Glimmer”) that isn't covered here yet. The two aren't simple duplicates of each other; this is one real slice of VINDEX3, not the whole of it."
-			/>
-
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
-				<div className="col-span-12">
-					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
-					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
-						<li>larql — crates/larql-vindex/docs/vindex3-format-spec.md (3.0-draft-2)</li>
-						<li>larql — docs/vindex3-experiments.md</li>
-						<li>larql — docs/vindex-generation-policy.md</li>
-					</ul>
-				</div>
-			</section>
 		</main>
 	);
 }
