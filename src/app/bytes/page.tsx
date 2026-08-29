@@ -5,6 +5,7 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { ByteMap } from "@chrishayuk/hause/components/forms/ByteMap";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { FileEncoder } from "@/components/FileEncoder";
+import { SegmentationFigure } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
 	title: "The Bytes",
@@ -161,6 +162,8 @@ export default function BytesPage() {
 				label="SEGMENTATION — WHY A LAYER IS SOMETIMES SEVERAL FILES"
 				text="The spec's own worked example: one routed layer of K3, at exact Q6_K, is 33,030,144 parameters per expert × 896 experts — about 22.61 GiB. That exceeds the 20 GiB shard cap. So the layer ships as two segment files of 448 experts each, about 11.3 GiB apiece. Inside a segment, experts are grouped into extents of 8, 16, or 32 — the unit of disk reads, prefetch, and grouped kernels. Two rules keep the scales honest: segment boundaries fall on group-extent boundaries, and group width divides segment width. Segment width serves file management. Group width serves the hardware."
 			/>
+
+			<SegmentationFigure />
 
 			<Observation
 				label="GREENFIELD, DELIBERATELY"

@@ -5,6 +5,7 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { GraphExplorer } from "@/components/GraphExplorer";
+import { EdgeResolution } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
 	title: "The System Graph",
@@ -80,6 +81,8 @@ export default function GraphPage() {
 				]}
 				caption="Graph schema 5. The graph is stored verbatim in the container — inspect prints it back from the bytes alone, with the source deleted."
 			/>
+
+			<EdgeResolution />
 
 			<Statement text="The edge is not the tensor." />
 

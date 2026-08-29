@@ -4,6 +4,7 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { ClosureFigure } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
 	title: "Execution",
@@ -183,6 +184,8 @@ LayerScalar`}
 				label="THE REFUSAL THAT TAUGHT THE FORMAT"
 				text="The gate earned its place in the vocabulary by refusal. The first real four-norm model shipped an attention-gate weight in every one of its 52 layers — and the closure gate refused all 52, naming what was missing: required primitive, attention output gate. Not a crash. A named absence. The gate’s semantics were then judged from the reference implementation, the primitive entered the IR, and the model closed at 52 layers, twelve of twelve operands each. The format learned something new the only honest way: by refusing to guess it."
 			/>
+
+			<ClosureFigure />
 
 			<Observation
 				label="THE BOUNDED PROGRAMME VOCABULARY"

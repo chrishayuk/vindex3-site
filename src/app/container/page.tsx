@@ -6,6 +6,7 @@ import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { ContainerExplorer } from "@/components/ContainerExplorer";
+import { ClassTraffic } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
 	title: "The Container",
@@ -153,6 +154,8 @@ export default function ContainerPage() {
 				label="WHY CLASSES AT ALL"
 				text="A part gets its own physical identity only when the runtime may independently omit it, quantise it, place it, prefetch it, execute it — or query it. That is the split rule. It is why the directory has exactly these parts: each one is something a profile can make a separate decision about."
 			/>
+
+			<ClassTraffic />
 
 			<Connection
 				text="Named parts are a promise. The next chapter is whether you can check it — down to the byte."
