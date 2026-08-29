@@ -21,9 +21,9 @@ const TRANSPORTS: {
 	{
 		kicker: "THE VINDEX CLI",
 		status: "V0 · IN THE REPO",
-		lines: ["$ vindex inspect model.vindex", "$ vindex precision model.vindex", "$ vindex verify model.vindex --json"],
+		lines: ["$ vindex inspect model.vindex", "$ vindex diff model.vindex BF16 NVFP4 mlp.down", "$ vindex verify model.vindex --json"],
 		caption:
-			"On your machine, against a local container: inspect, describe, representations, precision, verify — every command answering from the artifact alone, every command speaking --json. No inference runtime attached: an artifact should not require an engine to be understood.",
+			"On your machine, against a local container: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json. No inference runtime attached: an artifact should not require an engine to be understood.",
 	},
 	{
 		kicker: "THE QUERY PROTOCOL",
