@@ -28,6 +28,11 @@ export default function RepresentationPage() {
 
 			<Statement text="No runtime conversion, ever. The bytes executed are the bytes stored." />
 
+			<Observation
+				label="WHAT THIS FIXES"
+				text="Quantization used to be a fork: a second file with no lineage, whose claim to be the model was a filename. And the word exact was free — name a lossy copy the baseline, and nothing was left to contradict it. Here, every copy lives beside its original as a named variant, and what each one is worth — its fidelity — is recorded against the source at extraction: derived, never asserted. The loophole where lossy becomes exact by promotion is closed by construction."
+			/>
+
 			<Variants
 				kicker="REGION SET — layer.12.routed.gate_up"
 				objectLabel="The identity never changes. The physical form is chosen."

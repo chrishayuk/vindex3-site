@@ -26,6 +26,13 @@ export default function BytesPage() {
 				dek="Every weight file in a VINDEX3 container is a LYRW v2 binary — a format simple enough to read with a ruler. This page is that ruler."
 			/>
 
+			<Statement text="A blob you cannot check is a promise you cannot keep." />
+
+			<Observation
+				label="WHAT THIS FIXES"
+				text="Most weight files are a header you must trust, followed by bytes you cannot question. When a reader meets something it does not recognise, it guesses or it dies; when a writer changes a layout, every old reader finds out at parse time, in production. LYRW was shaped so neither ever happens: the file carries its whole description, unknown tags are preserved and reported rather than fatal, and refusal waits for the operation that actually needs the thing a reader cannot do."
+			/>
+
 			<Observation text="LYRW is the layer-weight format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table." />
 
 			<ByteMap

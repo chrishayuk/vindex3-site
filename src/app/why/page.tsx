@@ -131,7 +131,7 @@ export default function WhyPage() {
 			<Statement text="The file stopped being a snapshot of one decision. It became the space of all of them." />
 
 			<Connection
-				text="Now the spec itself will make sense — start with the container, then go as deep as you like."
+				text="Every lever is a choice about bytes on disk. But a file that can hold only one choice forgets the others — and a copy that changes loses its proof. What follows is the file that fixes that."
 				links={[
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
 					{ href: "/bytes", label: "DOWN TO THE BYTE" },

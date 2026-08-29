@@ -24,6 +24,13 @@ export default function ExecutionPage() {
 				dek="A component says what part of the system it is. Its execution surface says what the generic operations need to run it — every value fully resolved when the container was built."
 			/>
 
+			<Statement text="The most dangerous fact in a system is the one whose deletion changes nothing." />
+
+			<Observation
+				label="WHAT THIS FIXES"
+				text="That is what a hidden default is: a value the code supplies when nobody is looking — invisible precisely because removing it changes no output, until the day it changes everything. This chapter is a hunt for hidden defaults. Every operand must map to an operation. Every operation must carry judged semantics. And the proof is causal: mutate the stored fact and the computation must change. Where mutation changes nothing, a default was hiding."
+			/>
+
 			<Statement text="An executor reads; it never defaults." />
 
 			<Anatomy
@@ -171,6 +178,11 @@ LayerScalar`}
 					</div>
 				</div>
 			</section>
+
+			<Observation
+				label="THE REFUSAL THAT TAUGHT THE FORMAT"
+				text="The gate earned its place in the vocabulary by refusal. The first real four-norm model shipped an attention-gate weight in every one of its 52 layers — and the closure gate refused all 52, naming what was missing: required primitive, attention output gate. Not a crash. A named absence. The gate’s semantics were then judged from the reference implementation, the primitive entered the IR, and the model closed at 52 layers, twelve of twelve operands each. The format learned something new the only honest way: by refusing to guess it."
+			/>
 
 			<Observation
 				label="THE BOUNDED PROGRAMME VOCABULARY"

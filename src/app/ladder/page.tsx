@@ -188,6 +188,11 @@ export default function LadderPage() {
 			/>
 
 			<Observation
+				label="THE HONEST BAR"
+				text="The strongest line in the specification is a concession written in advance. The conformance models cannot prove the format generalises — the ABI was designed against them. Only a held-out architecture, onboarded after the freeze under a rule of zero format changes, tests generalisation rather than fit. And if that test fails, the portable-substrate claim is downgraded — in the success criteria themselves, where everyone can see it. The bar cannot drift, because it is written down before the results are."
+			/>
+
+			<Observation
 				label="AN OPEN SPECIFICATION"
 				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
 			/>

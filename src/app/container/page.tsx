@@ -26,6 +26,13 @@ export default function ContainerPage() {
 				dek="A VINDEX3 container is not a single blob. It is a directory whose every part is named, addressable, and explained — this page walks all of them."
 			/>
 
+			<Statement text="Today, changing your mind about a model means making another file." />
+
+			<Observation
+				label="WHAT THIS FIXES"
+				text="You download a checkpoint: a folder of shards whose meaning lives in filename conventions. You quantize it: now there are two files, and the lineage between them is a commit message somewhere. A colleague needs another precision: three. Delete the original to save space, and no one can ever again prove what the copies are. The release was a system — a model, its tower, its drafter, its precisions. The folder is a rumor about it."
+			/>
+
 			<Compilation
 				kicker="THE BRIDGE — FROM CHECKPOINT TO CONTAINER"
 				headline="Start from the files you already have. Compile down."
@@ -148,7 +155,7 @@ export default function ContainerPage() {
 			/>
 
 			<Connection
-				text="Each dense and routed entry above is a LYRW v2 binary file with a fully specified layout — readable with a ruler."
+				text="Named parts are a promise. The next chapter is whether you can check it — down to the byte."
 				links={[
 					{ href: "/bytes", label: "LYRW, TO THE BYTE" },
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },

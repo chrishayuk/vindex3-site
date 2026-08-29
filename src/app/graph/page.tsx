@@ -26,6 +26,13 @@ export default function GraphPage() {
 				dek="Everything VINDEX3 knows about a model, it knows as a graph — judged once when the container is built, stored verbatim inside it, and read by everything downstream."
 			/>
 
+			<Statement text="model.layers.3.self_attn.q_proj.weight is a name, not a meaning." />
+
+			<Observation
+				label="WHAT THIS FIXES"
+				text="Every runtime that infers meaning from tensor names carries the guess forever — one more family branch for every family, growing until nobody can delete anything. And names lie quietly: a zero that means no rotation will one day be read as rotation by zero, which is not nothing — it is nonsense wearing a number. The graph exists so that meaning is judged once, from evidence, at compile time. Every guess dies there, where it can still be argued with."
+			/>
+
 			<Observation text="The system graph is the container's understanding of the model: which sub-systems exist, what logical things they own, and how hidden states flow between them. It is built once, from source evidence, when the container is made. It is stored inside the container, verbatim. And from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint." />
 
 			<GraphExplorer />

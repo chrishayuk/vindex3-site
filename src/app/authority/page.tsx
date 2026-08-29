@@ -92,9 +92,17 @@ export default function AuthorityPage() {
 			/>
 
 
+			<Observation
+				label="AND YET — CONSISTENCY IS NOT SUFFICIENCY"
+				text="Four honest witnesses can still tell an incomplete story: all four authorities can faithfully agree on an under-specified system. That is why agreement is only half the proof. The other half is closure — every stored tensor accounted for by an operation, every operation by judged semantics — and it lives in the execution chapter, where the two halves finally lock."
+			/>
+
 			<Connection
-				text="The four authorities are compared rung by rung, on a ladder with a gate at every step."
-				links={[{ href: "/ladder", label: "THE RECORD" }]}
+				text="Agreement proves the story is consistent. Execution proves it is complete."
+				links={[
+					{ href: "/execution", label: "FROM DESCRIPTION TO COMPUTATION" },
+					{ href: "/ladder", label: "THE RECORD" },
+				]}
 			/>
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
