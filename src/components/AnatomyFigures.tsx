@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { tick } from "@chrishayuk/hause/sound";
+import { Gating } from "@chrishayuk/hause/components/forms/Gating";
 
 /**
  * ANATOMY — the four instruments.
@@ -175,138 +176,58 @@ export function AttentionFigure() {
 }
 
 /* ------------------------------------------------------------------
-   FEED-FORWARD — gate / up / down, with the widths doing the talking.
+   FEED-FORWARD — gate / up / down, spoken through HAUSE's Gating form
+   (which this figure was generalised into).
    ------------------------------------------------------------------ */
-const FFN_STAGES = [
-	{
-		id: "arrive",
-		chip: "THE STREAM",
-		title: "The stream arrives.",
-		text: "2,048 numbers — the token as the layers so far understand it.",
-		addr: null,
-	},
-	{
-		id: "up",
-		chip: "UP",
-		title: "Make the space bigger.",
-		text: "up_proj expands 2,048 numbers into 6,144 — a wider space with more room to transform information than the stream itself allows.",
-		addr: "layer.17.mlp.up_proj",
-	},
-	{
-		id: "gate",
-		chip: "GATE",
-		title: "Decide what gets through.",
-		text: "gate_proj builds a second wide vector whose job is judgement: it scores every one of those 6,144 channels for how much it should matter right now.",
-		addr: "layer.17.mlp.gate_proj",
-	},
-	{
-		id: "mul",
-		chip: "×",
-		title: "The two multiply.",
-		text: "Scored channels pass; the rest fade. That single multiplication is the whole trick the literature calls a gated unit — SwiGLU, spelled out.",
-		addr: null,
-	},
-	{
-		id: "down",
-		chip: "DOWN",
-		title: "Bring it back home.",
-		text: "down_proj compresses 6,144 back to 2,048, and the result is added to the stream for the next layer.",
-		addr: "layer.17.mlp.down_proj",
-	},
-] as const;
-
-const CHANNELS = 24;
-// A fixed judgement pattern so the gate reads the same on every visit.
-const GATE_KEEP = new Set([1, 2, 5, 8, 9, 13, 16, 17, 21, 22]);
-
-function WidthBar({ wide, gated, label }: { wide: boolean; gated: boolean; label: string }) {
-	return (
-		<div className="w-full flex flex-col items-center">
-			<div
-				aria-hidden="true"
-				className="flex overflow-hidden border"
-				style={{
-					width: wide ? "100%" : "33%",
-					height: 34,
-					borderColor: "var(--fg)",
-					transition: "width var(--motion-considered) var(--ease-hause)",
-				}}
-			>
-				{Array.from({ length: CHANNELS }, (_, i) => (
-					<div
-						key={i}
-						className="flex-1 border-r last:border-r-0"
-						style={{
-							borderColor: "var(--bg)",
-							backgroundImage: hatch(gated && !GATE_KEEP.has(i) ? "var(--color-mist)" : "var(--color-accent)", 4),
-							opacity: gated && !GATE_KEEP.has(i) ? 0.18 : 0.9,
-							transition: "opacity var(--motion-considered) var(--ease-hause)",
-						}}
-					/>
-				))}
-			</div>
-			<p className="voice-evidence text-[10px] opacity-50 mt-1">{label}</p>
-		</div>
-	);
-}
-
 export function FfnFigure() {
-	const [stage, setStage] = useState(0);
-	const s = FFN_STAGES[stage];
-	const wide = s.id === "up" || s.id === "gate" || s.id === "mul";
-	const gated = s.id === "gate" || s.id === "mul";
 	return (
-		<section className="hause-grid py-12 sm:py-16">
-			<div className="col-span-12 md:col-start-3 md:col-span-8 flex flex-col items-center">
-				<div className="flex flex-wrap gap-2 mb-8 justify-center">
-					{FFN_STAGES.map((st, i) => (
-						<button
-							key={st.id}
-							onClick={() => {
-								tick();
-								setStage(i);
-							}}
-							className="voice-evidence text-[11px] px-3 py-1.5 border"
-							style={{
-								borderColor: i === stage ? "var(--color-accent)" : "var(--color-mist)",
-								color: i === stage ? "var(--color-accent)" : undefined,
-								opacity: i === stage ? 1 : 0.6,
-							}}
-						>
-							{st.chip}
-						</button>
-					))}
-				</div>
-				<WidthBar
-					wide={wide}
-					gated={gated}
-					label={
-						s.id === "arrive"
-							? "2,048 values"
-							: s.id === "down"
-								? "2,048 values — back in the stream"
-								: s.id === "gate"
-									? "6,144 values · the gate judging each channel"
-									: s.id === "mul"
-										? "6,144 values · judged — most of them faded"
-										: "6,144 values"
-					}
-				/>
-				<div className="w-full border p-5 mt-8" style={{ borderColor: "var(--color-mist)" }}>
-					<p className="voice-editorial text-lg sm:text-xl mb-2">{s.title}</p>
-					<p className="voice-system text-sm opacity-80 leading-relaxed max-w-xl">{s.text}</p>
-					{s.addr && (
-						<p className="voice-evidence text-xs mt-4" style={{ color: "var(--color-accent)" }}>
-							{s.addr} — readable now
-						</p>
-					)}
-				</div>
-				<p className="voice-system text-sm opacity-70 leading-relaxed max-w-xl mt-6 text-center">
-					Expand, judge, compress, add back. Three tensors — gate, up, down — and that is the entire feed-forward
-					network. Everything a layer knows lives in how these grids of numbers steer the multiplication.
-				</p>
-			</div>
-		</section>
+		<Gating
+			channels={24}
+			keep={[1, 2, 5, 8, 9, 13, 16, 17, 21, 22]}
+			stages={[
+				{
+					chip: "THE STREAM",
+					title: "The stream arrives.",
+					text: "2,048 numbers — the token as the layers so far understand it.",
+					width: "narrow",
+					label: "2,048 values",
+				},
+				{
+					chip: "UP",
+					title: "Make the space bigger.",
+					text: "up_proj expands 2,048 numbers into 6,144 — a wider space with more room to transform information than the stream itself allows.",
+					payoff: "layer.17.mlp.up_proj — readable now",
+					width: "wide",
+					label: "6,144 values",
+				},
+				{
+					chip: "GATE",
+					title: "Decide what gets through.",
+					text: "gate_proj builds a second wide vector whose job is judgement: it scores every one of those 6,144 channels for how much it should matter right now.",
+					payoff: "layer.17.mlp.gate_proj — readable now",
+					width: "wide",
+					gated: true,
+					label: "6,144 values · the gate judging each channel",
+				},
+				{
+					chip: "×",
+					title: "The two multiply.",
+					text: "Scored channels pass; the rest fade. That single multiplication is the whole trick the literature calls a gated unit — SwiGLU, spelled out.",
+					width: "wide",
+					gated: true,
+					label: "6,144 values · judged — most of them faded",
+				},
+				{
+					chip: "DOWN",
+					title: "Bring it back home.",
+					text: "down_proj compresses 6,144 back to 2,048, and the result is added to the stream for the next layer.",
+					payoff: "layer.17.mlp.down_proj — readable now",
+					width: "narrow",
+					label: "2,048 values — back in the stream",
+				},
+			]}
+			fallback="Expand, judge, compress, add back. Three tensors — gate, up, down — and that is the entire feed-forward network. Everything a layer knows lives in how these grids of numbers steer the multiplication."
+		/>
 	);
 }
 
