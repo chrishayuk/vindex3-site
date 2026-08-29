@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { tick } from "@chrishayuk/hause/sound";
 
 /**
  * The playful instrument: a model.vindex/ you can rummage through.
@@ -65,7 +66,7 @@ export function ContainerExplorer() {
 	const row = (e: Entry, i: number) => (
 		<button
 			key={e.name}
-			onClick={() => open(e.view, e.name)}
+			onClick={() => { open(e.view, e.name); if (e.view) tick(); }}
 			disabled={!e.view}
 			className="graph-pulse grid grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-4 sm:gap-8 border px-4 sm:px-6 py-3 text-left disabled:cursor-default group"
 			style={{ borderColor: "var(--fg)", background: "var(--bg)", animationDelay: `${i * 60}ms` }}

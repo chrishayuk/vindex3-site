@@ -3,6 +3,7 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Transformation } from "@chrishayuk/hause/components/forms/Transformation";
 import { Unfolding } from "@chrishayuk/hause/components/forms/Unfolding";
+import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
 
@@ -59,44 +60,13 @@ export default function Home() {
 
 			<Observation
 				label="THE QUERY SURFACE"
-				text="Querying is not an add-on. It is specified alongside execution, as an equal. Every weight file declares, in its own header, whether its weights can be browsed. And no query index is ever stored beside the weights — the weights are the query index. Ask the model what it associates with a phrase. Filter what it knows like a table. Or run it. Same bytes, all three."
+				text="No query index is ever stored beside the weights — the weights are the query index. Ask the model what it associates with a phrase. Filter what it knows like a table. Or run it. Same bytes, all three."
 			/>
 
-			<Observation
-				label="AN OPEN SPECIFICATION"
-				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
+			<Procession
+				stages={["inventory", "plan", "encode", "inspect", "verify", "execute", "serve"]}
+				caption="one checkpoint — every stage, once"
 			/>
-
-			<section className="hause-grid py-16 sm:py-24">
-				<div className="col-span-12 md:col-start-2 md:col-span-9">
-					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
-						WHAT YOU DO WITH IT — THE PIPELINE, DELIBERATELY COMPILER-SHAPED
-					</p>
-					<div className="flex flex-col">
-						{[
-							["inventory", "read what the source checkpoint declares"],
-							["plan", "judge whether the schema can describe it — typed findings, ambiguity refused"],
-							["encode", "materialise the system into a container"],
-							["inspect", "reconstruct the system from the container alone"],
-							["verify", "prove source and container agree, hash by hash"],
-							["execute", "run a forward pass from the encoded description — zero architecture branches"],
-							["serve", "inference and the query surface over the same bytes"],
-						].map(([verb, what]) => (
-							<div
-								key={verb}
-								className="grid grid-cols-[6.5rem_1fr] sm:grid-cols-[9rem_1fr] gap-4 sm:gap-8 items-baseline py-3 border-t"
-								style={{ borderColor: "var(--color-mist)" }}
-							>
-								<span className="voice-evidence text-sm" style={{ color: "var(--color-accent)" }}>
-									{verb}
-								</span>
-								<span className="voice-system text-sm sm:text-base opacity-80">{what}</span>
-							</div>
-						))}
-						<div className="border-t" style={{ borderColor: "var(--color-mist)" }} />
-					</div>
-				</div>
-			</section>
 
 			<Observation text="Extract a supported checkpoint once, into a stable, component-addressed layout. Then vary what is loaded, where it resides, what precision it uses, and whether a component is executed or queried — without ever rebuilding the index." />
 

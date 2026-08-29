@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { tick } from "@chrishayuk/hause/sound";
 
 /**
  * The interactive SystemGraph: a worked three-component system —
@@ -150,7 +151,7 @@ export function GraphExplorer() {
 					<svg viewBox="0 0 720 400" className="w-full min-w-[560px]" role="img" aria-label="A worked system graph: a vision component feeding a target text model, and a drafter tapping the target's later layers">
 						{/* Component frames */}
 						{Object.entries(FRAMES).map(([id, f]) => (
-							<g key={id} onClick={() => setSel({ kind: "component", id })} className="cursor-pointer">
+							<g key={id} onClick={() => { setSel({ kind: "component", id }); tick(); }} className="cursor-pointer">
 								<rect
 									x={f.x} y={f.y} width={f.w} height={f.h}
 									fill="none"
@@ -188,12 +189,12 @@ export function GraphExplorer() {
 						})}
 
 						{/* The two HiddenStateEdges */}
-						<g onClick={() => setSel({ kind: "edge", id: "vision→target" })} className="cursor-pointer">
+						<g onClick={() => { setSel({ kind: "edge", id: "vision→target" }); tick(); }} className="cursor-pointer">
 							<line x1={200} y1={143} x2={290} y2={155} stroke="transparent" strokeWidth={16} />
 							<line x1={200} y1={143} x2={290} y2={155} stroke={edgeStroke("vision→target")} strokeWidth={1.5} />
 							<circle cx={290} cy={155} r={3} fill={edgeStroke("vision→target")} />
 						</g>
-						<g onClick={() => setSel({ kind: "edge", id: "target→draft" })} className="cursor-pointer">
+						<g onClick={() => { setSel({ kind: "edge", id: "target→draft" }); tick(); }} className="cursor-pointer">
 							<line x1={450} y1={160} x2={530} y2={163} stroke="transparent" strokeWidth={16} />
 							<line x1={450} y1={160} x2={530} y2={163} stroke={edgeStroke("target→draft")} strokeWidth={1.5} />
 							<circle cx={530} cy={163} r={3} fill={edgeStroke("target→draft")} />
@@ -206,7 +207,7 @@ export function GraphExplorer() {
 						{Object.entries(NODE_POS).map(([id, p], i) => {
 							const selected = isSel("object", id);
 							return (
-								<g key={id} onClick={() => setSel({ kind: "object", id })} className="cursor-pointer graph-pulse" style={{ animationDelay: `${i * 90}ms` }}>
+								<g key={id} onClick={() => { setSel({ kind: "object", id }); tick(); }} className="cursor-pointer graph-pulse" style={{ animationDelay: `${i * 90}ms` }}>
 									<rect
 										x={p.x} y={p.y} width={p.w} height={p.h}
 										fill="var(--bg)"

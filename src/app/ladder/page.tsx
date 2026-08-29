@@ -188,6 +188,11 @@ export default function LadderPage() {
 			/>
 
 			<Observation
+				label="AN OPEN SPECIFICATION"
+				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
+			/>
+
+			<Observation
 				label="SCOPE"
 				text="VINDEX3 is specified by two companion documents, and this site draws on both. The ABI spec governs the bytes on disk — behind the Container, Bytes, and Representation exhibits. The living spec governs the semantics — behind the Graph, Execution, Authority, and G-Ladder exhibits. Where the two describe different physical shapes, the exhibits say which is which."
 			/>

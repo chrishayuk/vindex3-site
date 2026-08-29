@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { tick, settle } from "@chrishayuk/hause/sound";
 
 /**
  * The interactive encoder: choose a recipe, and the actual LYRW v2
@@ -101,7 +102,7 @@ export function FileEncoder() {
 		}
 		setPhase(0);
 		PHASES.forEach((_, i) => {
-			timers.current.push(setTimeout(() => setPhase(i + 1), 300 + i * 450));
+			timers.current.push(setTimeout(() => { setPhase(i + 1); if (i + 1 === PHASES.length) settle(); }, 300 + i * 450));
 		});
 	};
 
@@ -116,7 +117,7 @@ export function FileEncoder() {
 	const chip = (active: boolean, onClick: () => void, label: string, key: string) => (
 		<button
 			key={key}
-			onClick={onClick}
+			onClick={() => { onClick(); tick(); }}
 			aria-pressed={active}
 			className="voice-evidence text-xs tracking-[0.06em] px-3 py-1.5 border"
 			style={{
@@ -154,7 +155,7 @@ export function FileEncoder() {
 				</div>
 
 				<button
-					onClick={encode}
+					onClick={() => { tick(); encode(); }}
 					className="voice-system text-sm tracking-[0.06em] border-b pb-0.5 mb-10 w-fit"
 					style={{ borderColor: "var(--color-accent)" }}
 				>
