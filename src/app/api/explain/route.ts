@@ -27,6 +27,16 @@ import { resolveForSynthesis, type ExplanationResponse } from "@/data/explain";
  * The backend is replaceable behind this contract: today a small
  * hosted model; later a LARQL-served model, at which point the site
  * explains itself through the stack it documents.
+ *
+ * THE WALLET GATE: every uncached request must carry a Turnstile token
+ * (widget vindex3-ask, managed mode), verified server-side via
+ * canonical siteverify BEFORE any model call. Rate limits and budgets
+ * are speed bumps — in-memory, per-machine, reset on restart; the
+ * Turnstile verification is the lock, because a token is single-use,
+ * short-lived, bound to the widget's domains, and issued only to a
+ * real browser session. No TURNSTILE_SECRET configured → the tier
+ * fails closed. Cached answers are served without a token: they cost
+ * nothing and contain only public graph facts.
  */
 
 const MODEL = process.env.OPENAI_MODEL ?? "gpt-5.6-luna";
@@ -138,7 +148,10 @@ export async function POST(req: NextRequest) {
 	if (rateLimited(ip)) return NextResponse.json({ error: "rate limited" }, { status: 429 });
 	if (overBudget()) return NextResponse.json({ error: "daily budget reached" }, { status: 503 });
 
-	const body = (await req.json().catch(() => null)) as { question?: string } | null;
+	const turnstileSecret = process.env.TURNSTILE_SECRET;
+	if (!turnstileSecret) return NextResponse.json({ error: "synthesis tier not configured" }, { status: 503 });
+
+	const body = (await req.json().catch(() => null)) as { question?: string; turnstile_token?: string } | null;
 	const question = body?.question?.trim();
 	if (!question || question.length > MAX_QUESTION_CHARS)
 		return NextResponse.json({ error: "a question up to 300 characters" }, { status: 400 });
@@ -146,6 +159,20 @@ export async function POST(req: NextRequest) {
 	const key = question.toLowerCase().replace(/\s+/g, " ");
 	const hit = cache.get(key);
 	if (hit) return NextResponse.json(hit);
+
+	// The wallet gate: a model call happens only behind a verified,
+	// single-use Turnstile token. Canonical siteverify — never from
+	// the browser.
+	const token = body?.turnstile_token;
+	if (!token || token.length > 4096) return NextResponse.json({ error: "turnstile token required" }, { status: 403 });
+	const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+		method: "POST",
+		headers: { "content-type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams({ secret: turnstileSecret, response: token, remoteip: ip }),
+		signal: AbortSignal.timeout(10_000),
+	}).catch(() => null);
+	const verdict = verify ? ((await verify.json().catch(() => null)) as { success?: boolean } | null) : null;
+	if (!verdict?.success) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
 	// Retrieval outside the adapter: the server resolves the facts.
 	const facts = resolveForSynthesis(question);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SNAPSHOT, CANON, ENTITIES, SUGGESTIONS } from "@/data/vindexGraph";
 import { resolveAndExplain, type ExplanationResponse } from "@/data/explain";
@@ -19,12 +19,84 @@ import { tick, refuse } from "@chrishayuk/hause/sound";
  * the Explorer's results link here — two entrances, one graph.
  */
 
+/* ── The wallet gate, client half. The synthesis tier costs money, so
+ * every uncached call carries a Turnstile token (widget vindex3-ask,
+ * managed — invisible for most humans), verified server-side before
+ * any model call. The widget loads lazily and appears only when the
+ * deterministic layers missed and synthesis is actually consulted. ── */
+
+const TURNSTILE_SITEKEY = "0x4AAAAAAEhLzCpPYuBrbjT4";
+
+type TurnstileApi = {
+	render: (el: HTMLElement, opts: { sitekey: string; action: string; callback: (t: string) => void; "error-callback"?: () => void }) => string;
+	reset: (id: string) => void;
+};
+
+declare global {
+	interface Window {
+		turnstile?: TurnstileApi;
+	}
+}
+
+function loadTurnstile(): Promise<TurnstileApi> {
+	return new Promise((resolve, reject) => {
+		if (window.turnstile) return resolve(window.turnstile);
+		const existing = document.querySelector<HTMLScriptElement>("script[data-turnstile]");
+		const script = existing ?? document.createElement("script");
+		if (!existing) {
+			script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+			script.async = true;
+			script.defer = true;
+			script.dataset.turnstile = "1";
+			document.head.appendChild(script);
+		}
+		const started = Date.now();
+		const poll = () => {
+			if (window.turnstile) return resolve(window.turnstile);
+			if (Date.now() - started > 15_000) return reject(new Error("turnstile did not load"));
+			setTimeout(poll, 150);
+		};
+		poll();
+	});
+}
+
 export function QueryVindex({ compact = false }: { compact?: boolean }) {
 	const [q, setQ] = useState("");
 	const [result, setResult] = useState<{ r: ExplanationResponse; q: string } | null>(null);
 	const [thinking, setThinking] = useState(false);
 
 	const [synthesising, setSynthesising] = useState(false);
+	const turnstileRef = useRef<HTMLDivElement>(null);
+	const widgetId = useRef<string | null>(null);
+	const tokenWaiter = useRef<((t: string) => void) | null>(null);
+
+	async function turnstileToken(): Promise<string | null> {
+		try {
+			const ts = await loadTurnstile();
+			const el = turnstileRef.current;
+			if (!el) return null;
+			const token = await new Promise<string | null>((resolve) => {
+				const timeout = setTimeout(() => resolve(null), 25_000);
+				tokenWaiter.current = (t) => {
+					clearTimeout(timeout);
+					resolve(t);
+				};
+				if (widgetId.current) {
+					ts.reset(widgetId.current);
+				} else {
+					widgetId.current = ts.render(el, {
+						sitekey: TURNSTILE_SITEKEY,
+						action: "turnstile-spin-v2",
+						callback: (t) => tokenWaiter.current?.(t),
+						"error-callback": () => tokenWaiter.current?.(""),
+					});
+				}
+			});
+			return token || null;
+		} catch {
+			return null;
+		}
+	}
 
 	function ask(question: string) {
 		const query = question.trim();
@@ -46,22 +118,28 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 			// or a failed call changes nothing.
 			if (r.answer_type === "refusal" || r.answer_type === "related") {
 				setSynthesising(true);
-				fetch("/api/explain", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify({ question: query }),
-					signal: AbortSignal.timeout(30000),
-				})
-					.then(async (res) => {
+				(async () => {
+					try {
+						const token = await turnstileToken();
+						if (!token) return; // the deterministic answer stands
+						const res = await fetch("/api/explain", {
+							method: "POST",
+							headers: { "content-type": "application/json" },
+							body: JSON.stringify({ question: query, turnstile_token: token }),
+							signal: AbortSignal.timeout(30000),
+						});
 						if (!res.ok) return;
 						const upgraded = (await res.json()) as ExplanationResponse;
 						if (upgraded.answer_type === "synthesis") {
 							tick();
 							setResult({ r: upgraded, q: query });
 						}
-					})
-					.catch(() => {})
-					.finally(() => setSynthesising(false));
+					} catch {
+						/* the deterministic answer stands */
+					} finally {
+						setSynthesising(false);
+					}
+				})();
 			}
 		}, 650);
 	}
@@ -119,6 +197,8 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 						</button>
 					))}
 				</div>
+
+				<div ref={turnstileRef} className={synthesising ? "mt-4" : "mt-0 hidden"} aria-label="Verification" />
 
 				<div className="mt-10 min-h-[4rem]" aria-live="polite">
 					{thinking && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse">resolving…</p>}
