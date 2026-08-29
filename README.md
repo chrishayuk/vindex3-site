@@ -10,7 +10,11 @@ Same as [chrishayuk](../chrishayuk): Next.js 16 on Cloudflare Workers via `@open
 
 ## Status
 
-Scaffold only. No real spec content yet — the homepage is a placeholder proving the HOUSE wiring works, not a real exhibit. The actual VINDEX3 spec (`crates/larql-vindex/docs/vindex3-format-spec.md` in `chris-source/larql`) needs a deliberate content pass before this becomes real: the spec's actual structure (§1–§16, directory layout, LYRW v2 format, five weight classes, execution profiles/fidelity) is substantially different from early brainstormed section names — ground any new content in the real spec, not assumed terminology.
+First real exhibit is live on the homepage — grounded in the actual spec (`crates/larql-vindex/docs/vindex3-format-spec.md` in `chris-source/larql`, version 3.0-draft-2), not the brainstormed section names from early conversation. Real content, not illustrative: the five durable weight classes, two actual measured results (the c8 round-trip gate, the W0 browsable-surface baseline), the real version history, and a real open tension pulled straight from the project's own generation-policy notes (production models already round-trip through VINDEX3, but the default extractor still writes VINDEX2).
+
+**Scope, stated on the page itself**: this covers the MoE-serving container format (banks, LYRW v2, segments, execution profiles) from the crate-level spec. A second, broader in-progress specification exists (a system-graph architecture, codenamed "Glimmer") that isn't covered here yet — the two aren't simple duplicates and shouldn't be presented as one coherent structure without saying so.
+
+Next: HOUSE gets a new primitive only when a specific piece of *this* content actually needs one — not before. HOUSE is discovered through making real exhibits, not designed as a taxonomy up front.
 
 ## Develop
 
