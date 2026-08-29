@@ -223,10 +223,87 @@ const ATTN: Record<string, { title: string; text: string; addr: string }> = Obje
 	})
 );
 
+/* The worked sentence: the token "it" resolving what it stands for.
+   Match strengths are illustrative; the mechanism is the point.
+   Tokens after the focus stay dark at every stage — attention only
+   looks backwards. */
+const SENTENCE: { t: string; match: number; after?: boolean }[] = [
+	{ t: "the", match: 0.12 },
+	{ t: "key", match: 0.95 },
+	{ t: "was", match: 0.08 },
+	{ t: "under", match: 0.15 },
+	{ t: "the", match: 0.12 },
+	{ t: "mat", match: 0.4 },
+	{ t: "it", match: 0 },
+	{ t: "opens", match: 0, after: true },
+	{ t: "the", match: 0, after: true },
+	{ t: "door", match: 0, after: true },
+];
+const FOCUS = 6; // "it"
+
+const STAGE_CAPTIONS: Record<string, string> = {
+	q: "“it” builds its question — which earlier thing do I stand for?",
+	k: "every earlier token offers a key — “key” matches the question hardest, “mat” a little; the future stays dark",
+	v: "the winning match returns its value — “it” now carries “the key” into the stream",
+	o: "the enriched token is written back, sized to fit — ready for the next layer",
+};
+
+function SentenceStrip({ sel, show }: { sel: string; show: boolean }) {
+	return (
+		<div className="w-full max-w-3xl">
+			<div className="flex flex-wrap gap-2 justify-center" aria-hidden="true">
+				{SENTENCE.map((tok, i) => {
+					const isFocus = i === FOCUS;
+					const matching = (sel === "k" || sel === "v") && !tok.after && !isFocus;
+					const winner = sel === "v" && tok.t === "key";
+					const lit = isFocus || winner;
+					const opacity = tok.after ? 0.2 : isFocus ? 1 : matching ? 0.35 + tok.match * 0.65 : sel === "q" ? 0.35 : 0.75;
+					return (
+						<div
+							key={i}
+							className={show ? "graph-pulse border px-3 py-2 text-center" : "border px-3 py-2 text-center"}
+							style={{
+								animationDelay: `${i * 70}ms`,
+								borderColor: lit ? "var(--color-accent)" : "var(--color-mist)",
+								background: "var(--bg)",
+								opacity,
+								transition: "opacity var(--motion-considered) var(--ease-hause), border-color var(--motion-immediate) var(--ease-hause)",
+							}}
+						>
+							<span className="voice-evidence text-sm block">{tok.t}</span>
+							<span
+								className="block mt-1.5"
+								style={{
+									height: 4,
+									backgroundImage: hatch("var(--color-accent)", 3),
+									opacity: matching || winner ? tok.match : isFocus && sel === "v" ? 0.95 : 0,
+									transition: "opacity var(--motion-considered) var(--ease-hause)",
+								}}
+							/>
+							<span
+								className="voice-evidence text-[10px] block mt-1"
+								style={{
+									color: "var(--color-accent)",
+									opacity: isFocus && sel === "v" ? 1 : isFocus && sel === "o" ? 0.7 : 0,
+									transition: "opacity var(--motion-considered) var(--ease-hause)",
+									minHeight: 14,
+								}}
+							>
+								{sel === "o" ? "→ the stream" : "← “the key”"}
+							</span>
+						</div>
+					);
+				})}
+			</div>
+			<p key={sel} className="graph-pulse voice-evidence text-[11px] opacity-60 text-center mt-4">{STAGE_CAPTIONS[sel]}</p>
+		</div>
+	);
+}
+
 export function AttentionFigure() {
 	const { ref, inView } = useInView();
 	const [sel, setSel] = useState<string>("q");
-	const hold = useAutoCycle(ATTN_ORDER.length, inView, 3200, (i) => setSel(ATTN_ORDER[i]));
+	const hold = useAutoCycle(ATTN_ORDER.length, inView, 3600, (i) => setSel(ATTN_ORDER[i]));
 	const pick = (k: string) => {
 		hold();
 		tick();
@@ -235,25 +312,20 @@ export function AttentionFigure() {
 	return (
 		<section className="hause-grid py-12 sm:py-16">
 			<div ref={ref} className="col-span-12 md:col-start-3 md:col-span-8 flex flex-col items-center">
-				<Arrive index={0} show={inView}>
-					<Box label="hidden state" sub="one token · 2,048 numbers" />
-				</Arrive>
-				<Arrive index={1} show={inView}>
-					<Arrow />
-					<div className="flex gap-3 sm:gap-6 justify-center">
-						{["q", "k", "v"].map((k) => (
-							<Box key={k} label={k.toUpperCase()} sub={`${k}_proj`} onClick={() => pick(k)} active={sel === k} small />
-						))}
-					</div>
-				</Arrive>
-				<Arrive index={2} show={inView}>
-					<Arrow />
-					<Box label="attention" sub="queries meet keys · values flow back" />
-				</Arrive>
-				<Arrive index={3} show={inView}>
-					<Arrow />
-					<Box label="O" sub="o_proj" onClick={() => pick("o")} active={sel === "o"} small />
-				</Arrive>
+				<p className="voice-evidence text-[11px] tracking-[0.12em] uppercase opacity-50 mb-5">
+					one sentence · the stream holds a hidden state per token
+				</p>
+				<SentenceStrip sel={sel} show={inView} />
+				<Arrow />
+				<div className="flex gap-3 sm:gap-6 justify-center">
+					{["q", "k", "v"].map((k) => (
+						<Box key={k} label={k.toUpperCase()} sub={`${k}_proj`} onClick={() => pick(k)} active={sel === k} small />
+					))}
+				</div>
+				<Arrow />
+				<Box label="attention" sub="queries meet keys · values flow back" onClick={() => pick("v")} active={sel === "v"} />
+				<Arrow />
+				<Box label="O" sub="o_proj" onClick={() => pick("o")} active={sel === "o"} small />
 				<div key={sel} className="graph-pulse w-full max-w-3xl border p-6 mt-8" style={{ borderColor: "var(--color-mist)", background: "var(--bg)" }}>
 					<p className="voice-editorial text-xl sm:text-2xl mb-2">{ATTN[sel].title}</p>
 					<p className="voice-system text-sm opacity-80 leading-relaxed max-w-xl">{ATTN[sel].text}</p>
