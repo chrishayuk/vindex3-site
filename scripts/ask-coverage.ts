@@ -55,6 +55,27 @@ const cases: Case[] = [
 	{ q: "has G4 passed?", expect: "status_report", mustMention: "G4" },
 	{ q: "is expert-region browse parity finished?", expect: ["status_report", "canonical"] },
 
+	// ── The richer graph: the reviewer's question list, answerable ──
+	{ q: "does quantisation change the answers a model gives?", expect: "canonical", mustMention: "changed numbers" },
+	{ q: "will a quantised model lose quality?", expect: "canonical", mustMention: "changed numbers" },
+	{ q: "what does analysis-only mean?", expect: "canonical", mustMention: "analysis-only" },
+	{ q: "which parts are always resident?", expect: "canonical", mustMention: "resident" },
+	{ q: "how would an independent implementation read a container?", expect: "canonical", mustMention: "independent" },
+	{ q: "what does source-equivalent mean?", expect: "canonical", mustMention: "graded" },
+	{ q: "what is a programme in the manifest?", expect: "canonical", mustMention: "meaning" },
+	{ q: "what happens if the write crashes midway?", expect: "canonical", mustMention: "crash" },
+	{ q: "can I run it on a CPU?", expect: "canonical", mustMention: "engine" },
+	{ q: "what is a profile?", expect: "definition", mustMention: "PROFILE" },
+	{ q: "what is fidelity?", expect: "definition", mustMention: "FIDELITY" },
+	{ q: "what is a logical object?", expect: "definition", mustMention: "LOGICAL OBJECT" },
+	{ q: "what is an execution surface?", expect: "definition", mustMention: "EXECUTION SURFACE" },
+	{ q: "what is the deletion invariant?", expect: ["definition", "canonical"] },
+	{ q: "what is NoPE?", expect: "definition", mustMention: "not zero rotation" },
+	{ q: "what is the byte floor?", expect: "definition", mustMention: "BYTE FLOOR" },
+	{ q: "what is LYRW?", expect: ["definition", "canonical"], mustMention: "lyrw" },
+	{ q: "how does WALK work?", expect: ["definition", "canonical"] },
+	{ q: "what is index.json?", expect: ["definition", "canonical"] },
+
 	// ── The honesty rule: no supported subgraph → refusal, never a guess ──
 	{ q: "what is the capital of France?", expect: ["refusal", "related"] },
 	{ q: "who maintains the kubernetes scheduler?", expect: ["refusal", "related"] },

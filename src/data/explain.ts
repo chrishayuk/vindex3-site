@@ -73,7 +73,16 @@ export type ExplanationResponse = {
 	related?: { label: string; ask: string }[];
 	/** Synthesis only: the model's own stated limits. */
 	caveats?: string;
+	/** The HAUSE treatment the resolved subgraph declares for itself —
+	 * rendered as the real instrument, not a picture of one. */
+	visual?: "ffn_gate_up_down" | "attention_qkv" | "moe_router";
 	snapshot: string;
+};
+
+const GROUP_VISUALS: Record<string, ExplanationResponse["visual"]> = {
+	"feed-forward": "ffn_gate_up_down",
+	attention: "attention_qkv",
+	moe: "moe_router",
 };
 
 /* ── The bounded fact bundle a synthesis backend receives ──
@@ -239,6 +248,7 @@ export function resolveAndExplain(question: string): ExplanationResponse {
 		const showMe = inGroup.find((m) => m.explorer)?.explorer;
 		return {
 			answer_type: "component_flow",
+			visual: GROUP_VISUALS[group],
 			title: GROUP_TITLES[group],
 			interpreted: inGroup.map((m) => m.id).join(" · "),
 			summary: inGroup.map((m) => m.role).join(" "),
@@ -258,6 +268,7 @@ export function resolveAndExplain(question: string): ExplanationResponse {
 		const m = matched[0];
 		return {
 			answer_type: "definition",
+			visual: GROUP_VISUALS[m.group],
 			title: m.display,
 			interpreted: m.five,
 			summary: `${m.role} ${m.detail}`,

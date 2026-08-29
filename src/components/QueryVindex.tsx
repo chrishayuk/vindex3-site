@@ -5,6 +5,15 @@ import Link from "next/link";
 import { SNAPSHOT, CANON, ENTITIES, SUGGESTIONS } from "@/data/vindexGraph";
 import { resolveAndExplain, type ExplanationResponse } from "@/data/explain";
 import { tick, refuse } from "@chrishayuk/hause/sound";
+import { FfnFigure, AttentionFigure, MoeFigure } from "@/components/AnatomyFigures";
+
+/** The graph names its own HAUSE treatment; Ask renders the real
+ * instrument — the same figures the Anatomy chapter performs. */
+const VISUALS = {
+	ffn_gate_up_down: FfnFigure,
+	attention_qkv: AttentionFigure,
+	moe_router: MoeFigure,
+} as const;
 
 /**
  * ASK VINDEX3 — the natural-language projection of the graph.
@@ -222,6 +231,16 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 							{r.title && <p className="voice-editorial text-xl sm:text-2xl mt-5">{r.title}</p>}
 							<p className="voice-system text-base sm:text-lg opacity-90 leading-relaxed max-w-2xl mt-4">{r.summary}</p>
 							{r.caveats && <p className="voice-evidence text-[11px] opacity-45 max-w-2xl mt-3">{r.caveats}</p>}
+
+							{r.visual &&
+								(() => {
+									const Visual = VISUALS[r.visual];
+									return (
+										<div className="mt-2 -mx-4 sm:mx-0">
+											<Visual />
+										</div>
+									);
+								})()}
 
 							{r.rows && (
 								<div className="flex flex-col mt-6 max-w-2xl">
