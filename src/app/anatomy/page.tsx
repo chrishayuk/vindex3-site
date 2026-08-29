@@ -102,7 +102,7 @@ export default function AnatomyPage() {
 				caption="A weights file stops at 'this is a down projection.' A container continues: its identity, its representations, its byte range, its provenance, the authority selecting it. That descent is the whole format."
 			/>
 
-			<Statement text="One vocabulary, linked authorities: every definition on this page renders from the VINDEX knowledge graph — the same records Ask resolves and the Explorer's DESCRIBE joins to. The words cannot drift apart, because there is one set of them." />
+			<Statement text="Every definition on this page comes from the VINDEX knowledge graph — the same entries Ask answers from, the same entries the Explorer's DESCRIBE reaches. Three surfaces, one vocabulary." />
 
 			<Connection
 				text="You now hold the vocabulary the rest of the exhibition assumes. Next: the file that keeps every one of these parts named, present, and checkable — or open a real one and walk it yourself."
