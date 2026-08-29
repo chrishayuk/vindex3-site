@@ -3,16 +3,34 @@ import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Transformation } from "@chrishayuk/hause/components/forms/Transformation";
-import { Film } from "@chrishayuk/hause/components/forms/Film";
+import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
 
 /**
- * The overture: thesis → demonstration → evidence → choose a path.
- * Deliberately not encyclopedic — the chapters carry the spec; this
- * page earns the title. Every number states its model, hardware and
- * date, and answers to the Record.
+ * The overture: one story, told in beats, each handing to the next —
+ * the WHAT (the thesis, performed), the proof you can touch (WALK),
+ * the lifecycle (compiled, proven, source released), the evidence,
+ * and then THE STORY IN ORDER: the journey through the chapters,
+ * numbered, each named by the question it answers. Deliberately not
+ * encyclopedic — the chapters carry the spec. Every number states its
+ * model, hardware and date, and answers to the Record. No films: the
+ * set pieces are performances built from the forms, so they play at
+ * every width.
  */
+
+const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
+	{ n: "01", href: "/why", title: "THE PHYSICS", hook: "Why is a file format, of all things, where the battle is fought?" },
+	{ n: "02", href: "/anatomy", title: "THE ANATOMY", hook: "What is actually inside a model — what do gate, query, expert mean?" },
+	{ n: "03", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
+	{ n: "04", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
+	{ n: "05", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
+	{ n: "06", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, with zero architecture branches?" },
+	{ n: "07", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
+	{ n: "08", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
+	{ n: "09", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
+];
+
 export default function Home() {
 	return (
 		<main>
@@ -26,8 +44,8 @@ export default function Home() {
 
 			<section className="hause-grid py-8">
 				<div className="col-span-12 md:col-start-2 md:col-span-9 flex flex-wrap gap-x-10 gap-y-3">
-					<Link href="/container" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
-						READ THE SPEC →
+					<Link href="/why" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
+						READ THE STORY →
 					</Link>
 					<Link href="/ask" className="voice-evidence text-sm tracking-[0.08em] border-b pb-1" style={{ borderColor: "var(--color-accent)" }}>
 						ASK VINDEX3 →
@@ -37,6 +55,8 @@ export default function Home() {
 					</Link>
 				</div>
 			</section>
+
+			{/* ── BEAT ONE — the WHAT ── */}
 
 			<Observation text="An AI model is billions of learned numbers, and today's formats keep those numbers perfectly — as storage. What they do not keep is everything else the release meant: which parts are which, what may consume them, which precisions are still the same model, what was ever proven about any of it. VINDEX3 keeps the numbers and the meaning — every part named, every representation catalogued, every claim checkable — for the life of the artifact." />
 
@@ -63,6 +83,10 @@ export default function Home() {
 					],
 				}}
 			/>
+
+			{/* ── BEAT TWO — the proof you can touch ── */}
+
+			<Statement text="If that claim is true, you should be able to ask the file itself." />
 
 			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
@@ -103,7 +127,10 @@ export default function Home() {
 					</div>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
 						No forward pass, and no separate index — the answer is read from the stored gate rows themselves,
-						layer by layer. WALK and DESCRIBE are the browse surface the ABI itself specifies.
+						layer by layer. WALK and DESCRIBE are the browse surface the ABI itself specifies. Try it, live, in{" "}
+						<Link href="/explorer" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+							the Explorer →
+						</Link>
 					</p>
 					<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-3">
 						A worked shape, not a recorded run. The browse surface ships today as an analysis-only profile;
@@ -112,12 +139,42 @@ export default function Home() {
 				</div>
 			</section>
 
-			<Film
-				title="Extract once"
-				description="A checkpoint compiles down into a container, is proven byte-faithful — and the checkpoint ghosts away, no longer needed. Thirty seconds, from the format's own performance."
-				src="/films/extract-once.mp4"
-				poster="/films/extract-once-poster.jpg"
+			{/* ── BEAT THREE — the lifecycle, performed ── */}
+
+			<Statement text="Where does such a file come from? It is compiled — once." />
+
+			<Compilation
+				kicker="EXTRACT ONCE — THE WHOLE BRIDGE, PERFORMED"
+				headline="A checkpoint compiles down. Then it is no longer needed."
+				sourceLabel="a checkpoint — what you download today"
+				sources={[
+					"config.json",
+					"model-00001-of-00004.safetensors",
+					"model-00002-of-00004.safetensors",
+					"model-00003-of-00004.safetensors",
+					"model-00004-of-00004.safetensors",
+					"tokenizer.json",
+				]}
+				stages={[
+					{ name: "inventory", gloss: "read what the source declares" },
+					{ name: "plan", gloss: "judge it — ambiguity refused" },
+					{ name: "graph", gloss: "components · objects · edges" },
+					{ name: "encode", gloss: "segments first, index.json last" },
+					{ name: "verify", gloss: "Declared ≡ Resolved ≡ Graph ≡ Encoded" },
+				]}
+				resultLabel="model.vindex/ — written, then proven"
+				results={[
+					{ name: "control/ · dense/ · shared/" },
+					{ name: "routed/" },
+					{ name: "query/ · profiles/" },
+					{ name: "index.json", emphasis: true, note: "the root, written last" },
+				]}
+				verifiedLabel="verified — byte-faithful to its source"
+				discardNote="the checkpoint may now be deleted — execution must not change"
+				fallback="A checkpoint — config.json and safetensors shards — is inventoried, judged, formed into a graph, encoded in write order with index.json last, and verified against its source. Then the checkpoint may be deleted: execution must not change. That is the whole bridge, and it is crossed once."
 			/>
+
+			{/* ── BEAT FOUR — the evidence ── */}
 
 			<Statement text="106 tokens per second, from one container, on one laptop — and the answer, provably unchanged." />
 
@@ -132,18 +189,38 @@ export default function Home() {
 				</div>
 			</section>
 
+			{/* ── BEAT FIVE — the story, in order ── */}
+
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">THE STORY, IN ORDER</p>
+					<p className="voice-editorial text-2xl sm:text-3xl mb-10 max-w-2xl">
+						Nine chapters. Each opens with what breaks without it, and hands its question to the next.
+					</p>
+					<div className="flex flex-col">
+						{JOURNEY.map((c, i) => (
+							<Link
+								key={c.href}
+								href={c.href}
+								className="graph-pulse group grid grid-cols-[2.5rem_minmax(0,14rem)_1fr] sm:grid-cols-[3rem_minmax(0,16rem)_1fr] gap-3 sm:gap-6 items-baseline py-4 border-t"
+								style={{ borderColor: "var(--color-mist)", animationDelay: `${i * 90}ms` }}
+							>
+								<span className="voice-evidence text-xs opacity-40">{c.n}</span>
+								<span className="voice-evidence text-xs sm:text-sm tracking-[0.08em] group-hover:opacity-100" style={{ color: "var(--color-accent)" }}>
+									{c.title} →
+								</span>
+								<span className="voice-system text-sm opacity-70 group-hover:opacity-95 transition-opacity">{c.hook}</span>
+							</Link>
+						))}
+					</div>
+				</div>
+			</section>
+
 			<Connection
-				text="Now choose a path — the physics from first principles, or straight into the container."
+				text="Or skip the reading and put your hands on it — the two surfaces answer from the same knowledge the chapters teach."
 				links={[
-					{ href: "/why", label: "THE PHYSICS — START AT FIRST PRINCIPLES" },
-					{ href: "/anatomy", label: "THE ANATOMY — WHAT A MODEL CONTAINS" },
-					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
-					{ href: "/bytes", label: "DOWN TO THE BYTE" },
-					{ href: "/graph", label: "COMPONENTS, OBJECTS, EDGES" },
-					{ href: "/execution", label: "FROM DESCRIPTION TO COMPUTATION" },
-					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
-					{ href: "/authority", label: "WHERE TRUTH COMES FROM" },
-					{ href: "/ladder", label: "THE RECORD — STATUS, PROOF, HISTORY" },
+					{ href: "/ask", label: "ASK VINDEX3 — ANY ANSWERABLE QUESTION" },
+					{ href: "/explorer", label: "THE EXPLORER — ENTER A MODEL" },
 				]}
 			/>
 		</main>
