@@ -14,7 +14,7 @@ export default function AskPage() {
 			<Hero
 				kicker="ASK VINDEX3 · THE GRAPH IS THE AUTHORITY · READ-ONLY"
 				title="ASK"
-				dek="Any answerable question about the public VINDEX3 universe — resolved against the graph, never guessed. Every answer shows its interpretation, the path it traversed, and the Record line it answers to; when the graph does not establish something, Ask says exactly that."
+				dek="Any answerable question about the public VINDEX3 universe — resolved against the knowledge graph, never guessed. Ask does not return chat: it returns typed VINDEX explanations — a definition, a component flow, a status report, the specification's own words — each rendered by HAUSE, each showing its interpretation, its path, and the Record line it answers to. When the graph does not establish something, Ask says exactly that."
 			/>
 
 			<QueryVindex />

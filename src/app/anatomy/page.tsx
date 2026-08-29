@@ -27,7 +27,7 @@ export default function AnatomyPage() {
 			<Hero
 				kicker="THE ANATOMY · BETWEEN THE PHYSICS AND THE CONTAINER"
 				title="WHAT A MODEL ACTUALLY CONTAINS"
-				dek="The addresses in this exhibition — q_proj, gate_proj, router, expert — name real machinery. This chapter is that machinery, opened. No mathematics required; ten minutes, and the rest of the site reads in plain sight."
+				dek="The addresses in this exhibition — q_proj, gate_proj, router, expert — name real machinery. This chapter is that machinery, opened, in one worked shape: hidden 2,048 · intermediate 6,144 · 24 layers · 32 experts, top-4. No mathematics required; ten minutes, and the rest of the site reads in plain sight."
 			/>
 
 			<Statement text="layer.17.mlp.down_proj reads like a filename — until you know the machine it names." />
@@ -53,7 +53,7 @@ export default function AnatomyPage() {
 
 			<FfnFigure />
 
-			<Statement text="An expert is not exotic machinery. It is the same gate, up, and down — kept thirty-two times, chosen four at a time." />
+			<Statement text="In the gated-MLP form shown here, an expert is not exotic machinery. It is the same gate, up, and down — kept thirty-two times, chosen four at a time." />
 
 			<Observation
 				label="MIXTURE OF EXPERTS"
@@ -102,7 +102,7 @@ export default function AnatomyPage() {
 				caption="A weights file stops at 'this is a down projection.' A container continues: its identity, its representations, its byte range, its provenance, the authority selecting it. That descent is the whole format."
 			/>
 
-			<Statement text="Every definition on this page renders from the graph — the same records Ask answers with and the Explorer's DESCRIBE returns. Three surfaces, one authority; they cannot drift apart." />
+			<Statement text="One vocabulary, linked authorities: every definition on this page renders from the VINDEX knowledge graph — the same records Ask resolves and the Explorer's DESCRIBE joins to. The words cannot drift apart, because there is one set of them." />
 
 			<Connection
 				text="You now hold the vocabulary the rest of the exhibition assumes. Next: the file that keeps every one of these parts named, present, and checkable — or open a real one and walk it yourself."

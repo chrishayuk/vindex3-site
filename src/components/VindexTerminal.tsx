@@ -72,7 +72,9 @@ type Cmd =
 	| { kind: "show-representations"; address?: string }
 	| { kind: "show-provenance"; address?: string }
 	| { kind: "describe"; address: string }
-	| { kind: "walk"; address: string }
+	| { kind: "tree"; address: string }
+	| { kind: "walk-weights"; prompt: string; top: number }
+	| { kind: "walk-misused"; address: string }
 	| { kind: "find"; term: string }
 	| { kind: "explain-plan"; layer?: number }
 	| { kind: "show-authority"; address?: string }
@@ -102,8 +104,12 @@ function parse(raw: string): Cmd {
 	if (m) return { kind: "show-provenance", address: m[1] };
 	m = s.match(/^DESCRIBE\s+(\S+)$/i);
 	if (m) return { kind: "describe", address: m[1] };
+	m = s.match(/^TREE\s+(\S+)$/i);
+	if (m) return { kind: "tree", address: m[1] };
+	m = s.match(/^WALK\s+"([^"]+)"(?:\s+TOP\s+(\d+))?$/i);
+	if (m) return { kind: "walk-weights", prompt: m[1], top: m[2] ? Number(m[2]) : 3 };
 	m = s.match(/^WALK\s+(\S+)$/i);
-	if (m) return { kind: "walk", address: m[1] };
+	if (m) return { kind: "walk-misused", address: m[1] };
 	m = s.match(/^FIND\s+(.+)$/i);
 	if (m) return { kind: "find", term: m[1] };
 	m = s.match(/^SHOW\s+AUTHORITY(?:\s+(\S+))?$/i);
@@ -123,7 +129,8 @@ const HELP: Line[] = [
 	{ text: "  OPEN <model>                        enter one" },
 	{ text: "  SHOW COMPONENTS [layer.N]           the named parts" },
 	{ text: "  DESCRIBE <address>                  one object, in full" },
-	{ text: "  WALK <address>                      traverse its graph" },
+	{ text: "  TREE <address>                      the structure, as a tree" },
+	{ text: '  WALK "prompt" [TOP n]               walk the weights themselves' },
 	{ text: "  SHOW REPRESENTATIONS [<address>]    the physical variants" },
 	{ text: "  SHOW PROVENANCE [<address>]         hashes and lineage" },
 	{ text: "  SHOW AUTHORITY [<address>]          the derived fidelity" },
@@ -198,7 +205,30 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 				};
 			return { lines: [{ text: `${a}: not found in vindex3-demo — try FIND, or SHOW COMPONENTS`, tone: "err" }] };
 		}
-		case "walk": {
+		case "walk-weights": {
+			if (!model) return { lines: need() };
+			const rows = [
+				{ l: 24, f: "24:1882", sc: "0.83" },
+				{ l: 27, f: "27:0413", sc: "0.79" },
+				{ l: 31, f: "31:2050", sc: "0.71" },
+			].slice(0, Math.max(1, Math.min(cmd.top, 3)));
+			return {
+				lines: [
+					{ text: "LAYER    FEATURE      SCORE", tone: "dim" },
+					...rows.map((r) => ({ text: `layer ${r.l}   feature ${r.f}   ${r.sc}`, tone: "accent" as const })),
+					{ text: "read from the stored gate rows in place — no forward pass, no side index", tone: "dim" },
+					{ text: "a worked shape, not a recorded run — expert-region browse parity is an open row on the Record", tone: "dim" },
+				],
+			};
+		}
+		case "walk-misused":
+			return {
+				lines: [
+					{ text: 'WALK walks the weights — WALK "the capital of France" TOP 3', tone: "err" },
+					{ text: `for structure, use TREE ${cmd.address}`, tone: "dim" },
+				],
+			};
+		case "tree": {
 			if (!model) return { lines: need() };
 			const lm = cmd.address.match(/^layer\.(\d+)/i);
 			const l = lm ? Number(lm[1]) : 12;
@@ -360,7 +390,7 @@ function describeEntity(address: string, ent: Entity): Line[] {
 	];
 }
 
-const SEED = ["OPEN vindex3-demo", "WALK layer.12", "DESCRIBE layer.12.attention", "DESCRIBE layer.12.ffn.gate", "SHOW REPRESENTATIONS", "SHOW AUTHORITY layer.12"];
+const SEED = ["TREE layer.12", 'WALK "the capital of France" TOP 3', "DESCRIBE layer.12.attention", "DESCRIBE layer.12.ffn.gate", "SHOW REPRESENTATIONS", "SHOW AUTHORITY layer.12"];
 
 const LIVE_SEED = [
 	"SHOW COMPONENTS;",
@@ -401,7 +431,7 @@ type Transport = "snapshot" | "live";
 
 const SNAPSHOT_VERBS = [
 	"SHOW MODELS", "SHOW COMPONENTS", "SHOW REPRESENTATIONS", "SHOW PROVENANCE", "SHOW AUTHORITY",
-	"OPEN vindex3-demo", "DESCRIBE ", "WALK ", "FIND ", "EXPLAIN EXECUTION", "READ ", "INFER ",
+	"OPEN vindex3-demo", "DESCRIBE ", "TREE ", 'WALK "', "FIND ", "EXPLAIN EXECUTION", "READ ", "INFER ",
 	"HELP", "CLEAR", "SNAPSHOT",
 ];
 const LIVE_VERBS = [
@@ -417,7 +447,7 @@ const CHILDREN: Record<string, string[]> = {
 };
 
 function completeLine(input: string, live: boolean): string[] {
-	const m = input.match(/^((?:DESCRIBE|WALK)\s+)(\S*)$/i);
+	const m = input.match(/^((?:DESCRIBE|TREE)\s+)(\S*)$/i);
 	if (m) {
 		const [, head, addr] = m;
 		const am = addr.match(/^(layer\.\d+)\.(.*)$/i);
@@ -441,7 +471,7 @@ function snapshotBanner(): Line[] {
 	return [
 		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
 		{ text: "Profile: PUBLIC_EXPLORER (read-only) · the live endpoint connects quietly in the background", tone: "dim" },
-		{ text: "Type now — HELP for the grammar, Tab completes, or start with WALK layer.12;", tone: "dim" },
+		{ text: "Type now — HELP for the grammar, Tab completes, or start with TREE layer.12;", tone: "dim" },
 	];
 }
 
@@ -482,6 +512,12 @@ export function VindexTerminal() {
 		const up = trimmed.toUpperCase();
 		if (up === "CLEAR") return { lines: [], clear: true };
 		if (up === "HELP" || up === "?") return { lines: LIVE_HELP };
+		if (/^TREE\b/i.test(trimmed))
+			return {
+				lines: [
+					{ text: "TREE is the snapshot's structural view — the live surface answers with DESCRIBE and SHOW COMPONENTS", tone: "dim" },
+				],
+			};
 		if (FORBIDDEN.test(trimmed))
 			return {
 				refused: true,

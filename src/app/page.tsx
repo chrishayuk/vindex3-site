@@ -49,16 +49,16 @@ export default function Home() {
 				from={{
 					label: "A WEIGHTS FILE",
 					properties: [
-						"Loaded whole, or not at all",
+						"Addresses stored tensors — knows where they are",
 						"One precision, chosen once at conversion",
-						"Answers one request: run",
+						"Meaning lives in filename conventions",
 					],
 				}}
 				to={{
 					label: "A DATABASE",
 					properties: [
-						"Component-addressed — load what you need",
-						"Multiple representations, selected per profile",
+						"Addresses model semantics — knows what they mean",
+						"Representations present, selected, authoritative",
 						"Run it, query it, verify it — the same bytes",
 					],
 				}}

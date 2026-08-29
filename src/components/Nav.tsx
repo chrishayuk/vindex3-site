@@ -17,11 +17,11 @@ export function Nav() {
 				<Link href="/anatomy" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity hidden sm:inline">
 					Anatomy
 				</Link>
+				<Link href="/ask" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity">
+					Ask
+				</Link>
 				<Link href="/explorer" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity">
 					Explorer
-				</Link>
-				<Link href="/ask" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity hidden md:inline">
-					Ask
 				</Link>
 				<Link href="/container" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity hidden md:inline">
 					Container

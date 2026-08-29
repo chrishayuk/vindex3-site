@@ -75,6 +75,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 	const [thinking, setThinking] = useState(false);
 
 	const [synthesising, setSynthesising] = useState(false);
+	const [view, setView] = useState<"designed" | "raw">("designed");
 	const turnstileRef = useRef<HTMLDivElement>(null);
 	const widgetId = useRef<string | null>(null);
 	const tokenWaiter = useRef<((t: string) => void) | null>(null);
@@ -113,6 +114,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 		setQ(query);
 		setThinking(true);
 		setSynthesising(false);
+		setView("designed");
 		setResult(null);
 		// The considered pause — an instant snap reads as broken, not fast.
 		setTimeout(() => {
@@ -229,7 +231,38 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 				<div className="mt-10 min-h-[4rem]" aria-live="polite">
 					{thinking && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse">resolving…</p>}
 
-					{r && r.answer_type !== "unsupported" && r.answer_type !== "refusal" && r.answer_type !== "related" && (
+					{r && (
+						<div className="flex gap-2 mb-6">
+							{(["designed", "raw"] as const).map((v) => (
+								<button
+									key={v}
+									onClick={() => setView(v)}
+									className="voice-evidence text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 border"
+									style={{
+										borderColor: view === v ? "var(--color-accent)" : "var(--color-mist)",
+										color: view === v ? "var(--color-accent)" : undefined,
+										opacity: view === v ? 1 : 0.5,
+									}}
+								>
+									{v}
+								</button>
+							))}
+							<span className="voice-evidence text-[10px] opacity-35 self-center">
+								— the answer is a typed object; RAW is the proof
+							</span>
+						</div>
+					)}
+
+					{r && view === "raw" && (
+						<pre
+							className="voice-evidence text-[11px] leading-relaxed border p-4 overflow-x-auto max-w-3xl"
+							style={{ borderColor: "var(--color-mist)" }}
+						>
+							{JSON.stringify(r, null, 2)}
+						</pre>
+					)}
+
+					{r && view === "designed" && r.answer_type !== "unsupported" && r.answer_type !== "refusal" && r.answer_type !== "related" && (
 						<div key={result!.q + r.answer_type}>
 							{r.answer_type === "synthesis" && (
 								<p className="voice-evidence text-[11px] opacity-50">
@@ -370,7 +403,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 						</div>
 					)}
 
-					{r?.answer_type === "related" && (
+					{view === "designed" && r?.answer_type === "related" && (
 						<div>
 							<p className="voice-evidence text-[11px] opacity-50">NO SUPPORTED SUBGRAPH — CLOSEST CANONICAL QUESTIONS</p>
 							{synthesising && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse mt-2">the synthesis tier is composing from the resolved facts…</p>}
@@ -384,7 +417,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 						</div>
 					)}
 
-					{r?.answer_type === "refusal" && (
+					{view === "designed" && r?.answer_type === "refusal" && (
 						<div className="border-l-2 pl-5 py-1 max-w-xl" style={{ borderColor: "var(--color-status-open)" }}>
 							<p className="voice-system text-base opacity-90">{r.summary}</p>
 							{synthesising && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse mt-2">the synthesis tier is composing from the resolved facts…</p>}
@@ -404,7 +437,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 						</div>
 					)}
 
-					{r?.answer_type === "unsupported" && (
+					{view === "designed" && r?.answer_type === "unsupported" && (
 						<div className="border-l-2 pl-5 py-1 max-w-xl" style={{ borderColor: "var(--color-status-refuted)" }}>
 							<p className="voice-evidence text-xs tracking-[0.12em] uppercase" style={{ color: "var(--color-status-refuted)" }}>
 								UNSUPPORTED QUERY
@@ -416,11 +449,12 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 
 				{/* Always-present text fallback. */}
 				<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-10">
-					A deterministic resolver over graph snapshot {SNAPSHOT.id} ({SNAPSHOT.date}): question → five-word
-					canonical form → entity and status resolution → typed explanation. {CANON.length} canonical answers as the
-					cache, {ENTITIES.length} graph entities behind them, the Record&apos;s gates as status nodes — and when no
-					supported subgraph exists, Ask says so rather than guessing. No model call; the graph is the authority, and
-					a synthesis tier can only ever narrate it.
+					A deterministic resolver over the VINDEX knowledge graph, snapshot {SNAPSHOT.id} ({SNAPSHOT.date}):
+					question → five-word canonical form → entity and status resolution → typed explanation, rendered by HAUSE.
+					The {CANON.length} canonical answers are a warm cache and a conformance suite, not the knowledge — behind
+					them sit {ENTITIES.length} graph entities, the Record&apos;s gates as status nodes, and the specification
+					itself as a retrievable corpus. When no supported subgraph exists, Ask says so rather than guessing; the
+					graph is the authority, and the synthesis tier can only ever narrate it.
 				</p>
 			</div>
 		</section>

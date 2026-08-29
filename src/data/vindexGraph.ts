@@ -1,5 +1,14 @@
 /**
- * The public graph projection — VINDEX3's documentation as a database.
+ * THE VINDEX KNOWLEDGE GRAPH — what VINDEX3 *means*.
+ *
+ * Deliberately distinct from a container's SystemGraph, which records
+ * what one particular model *is* (components, logical objects,
+ * hidden-state edges) and lives inside the artifact. This graph holds
+ * concepts, claims, evidence, gates, and explanations — the universe
+ * Ask resolves against. The two are joined by stable semantic
+ * identities (an operand role like FfnGate appears in a container's
+ * facts and resolves here to its meaning), never by merging them:
+ * one vocabulary, linked authorities.
  *
  * This file IS the query universe: a versioned, immutable snapshot
  * compiled into the site at build time. The query engine can only
@@ -567,7 +576,7 @@ export const ENTITIES: Entity[] = [
 		names: ["layer", "layers", "block", "transformer block"],
 		display: "LAYER",
 		five: "attention then feed-forward, repeated",
-		role: "One pass of the machine: look backwards along the sentence, then transform what was found — repeated dozens of times per token.",
+		role: "One pass of the machine — in a conventional decoder layer: look backwards along the sentence, then transform what was found, repeated dozens of times per token.",
 		detail: "A layer does exactly two things. Attention reads every earlier token; the feed-forward network transforms what attention gathered. Each result is added to a running stream rather than replacing it, which is why a layer's contribution can be measured, attributed, or skipped.",
 		group: "layer",
 		relations: [
@@ -577,7 +586,7 @@ export const ENTITIES: Entity[] = [
 			{ rel: "kept_in_range_by", to: "norm" },
 		],
 		href: "/anatomy",
-		explorer: "WALK layer.12",
+		explorer: "TREE layer.12",
 	},
 	{
 		id: "residual",
@@ -784,7 +793,7 @@ export const ENTITIES: Entity[] = [
 		names: ["expert", "experts"],
 		display: "EXPERT",
 		five: "another gate-up-down, kept many times",
-		role: "Nothing exotic: one more feed-forward triple — gate, up, down — kept dozens of times so a router can choose per token.",
+		role: "In the gated-MLP form, nothing exotic: one more feed-forward triple — gate, up, down — kept dozens of times so a router can choose per token. Other expert programmes exist; the manifest names which one a bank runs.",
 		detail: "A mixture-of-experts layer grows many ordinary feed-forward networks instead of one enormous one. Most experts stay dark on any given token, which is why residency policy exists at all.",
 		group: "moe",
 		relations: [
@@ -792,7 +801,7 @@ export const ENTITIES: Entity[] = [
 			{ rel: "selected_by", to: "router" },
 		],
 		href: "/anatomy",
-		explorer: "WALK layer.12",
+		explorer: "TREE layer.12",
 	},
 	{
 		id: "moe",
@@ -807,7 +816,7 @@ export const ENTITIES: Entity[] = [
 			{ rel: "contains", to: "expert" },
 		],
 		href: "/anatomy",
-		explorer: "WALK layer.12",
+		explorer: "TREE layer.12",
 	},
 
 	// ── The format vocabulary — grounded in the chapter exhibits ──
@@ -1050,7 +1059,7 @@ export const ENTITIES: Entity[] = [
 		group: "format",
 		relations: [{ rel: "reads", to: "system-graph-e" }],
 		href: "/explorer",
-		explorer: "WALK layer.12",
+		explorer: 'WALK "the capital of France" TOP 3',
 	},
 	{
 		id: "nope-e",

@@ -132,11 +132,17 @@ SegmentHeader {
 				text="Materialisation is proven, not assumed: after encode, inspect must reconstruct the entire system — components, objects, edges, policies — solely from the container. If a fact survives only in the source checkpoint, the encoding failed, whatever the bytes say."
 			/>
 
+			<Observation
+				label="TWO GRAPHS, ONE VOCABULARY"
+				text="This page describes the container's SystemGraph — what one particular model is, persisted inside its artifact. The site also keeps a second, deliberately separate graph: the VINDEX knowledge graph, which holds what the format's concepts mean — definitions, claims, evidence, gate statuses — and is what Ask resolves against. The two never merge; they join through stable semantic identities, so a container can say FfnGate and the knowledge graph can say what a gate is. One vocabulary, linked authorities."
+			/>
+
 			<Connection
 				text="A graph says what the system is. What the generic operations need to run it is the execution surface."
 				links={[
 					{ href: "/execution", label: "FROM DESCRIPTION TO COMPUTATION" },
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
+					{ href: "/ask", label: "ASK — THE KNOWLEDGE GRAPH, QUERIED" },
 				]}
 			/>
 

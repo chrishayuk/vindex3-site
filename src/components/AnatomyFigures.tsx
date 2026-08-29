@@ -191,9 +191,11 @@ export function StackFigure() {
 					<Box label="next word" sub="one pass through everything, for every single token" />
 				</Arrive>
 				<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-8 text-center">
-					A layer does exactly two things: attention looks backwards along the sentence, and the feed-forward
-					network transforms what it found. Each result is <em>added</em> to a running stream rather than replacing
-					it — which is why a layer can be measured, attributed, or skipped without the story falling apart.
+					A conventional decoder layer is built around two main transformations: attention looks backwards along
+					the sentence, and the feed-forward network transforms what it found. (Other attention families —
+					linear, KDA, MLA — slot into the same seat; the Execution chapter carries them.) Each result is{" "}
+					<em>added</em> to a running stream rather than replacing it — which is why a layer can be measured,
+					attributed, or skipped without the story falling apart.
 				</p>
 			</div>
 		</section>
@@ -461,8 +463,9 @@ export function MoeFigure() {
 					))}
 				</div>
 				<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-8 text-center">
-					Each small square is an expert, and an expert is nothing exotic: another gate–up–down triple, the three
-					bars of its glyph. A mixture-of-experts layer keeps thirty-two of them and lets a router pick four per
+					Each small square is an expert — and in the gated-MLP form shown here, an expert is nothing exotic:
+					another gate–up–down triple, the three bars of its glyph. (Other expert programmes exist; the manifest
+					names which one a bank runs.) A mixture-of-experts layer keeps thirty-two of them and lets a router pick four per
 					token. Which is why the Physics chapter could say the routing is the model&apos;s and the residency is
 					yours — now you know what those resident bytes <em>are</em>.
 				</p>

@@ -14,14 +14,14 @@ const TRANSPORTS: {
 	{
 		kicker: "VINDEX3.ORG",
 		status: "LIVE",
-		lines: ["vindex> OPEN vindex3-demo", "vindex> WALK layer.12", "vindex> DESCRIBE layer.12.attention"],
+		lines: ['vindex> WALK "the capital of France" TOP 3', "vindex> TREE layer.12", "vindex> DESCRIBE layer.12.attention"],
 		caption:
 			"The terminal above — a browser speaking the query surface against the hardened public endpoint: a real container, the profile enforced in the server. When the endpoint sleeps, an immutable snapshot answers instead.",
 	},
 	{
 		kicker: "THE VINDEX CLI",
 		status: "IN BUILD",
-		lines: ["$ vindex open granite.vindex", "vindex> WALK layer.12", "vindex> DESCRIBE layer.12.attention"],
+		lines: ["$ vindex open granite.vindex", "vindex> TREE layer.12", "vindex> DESCRIBE layer.12.attention"],
 		caption:
 			"The same commands, on your machine, against a local container. A deliberately small tool — open, inspect, validate, query — with no inference runtime attached. An artifact should not require an engine to be understood.",
 	},
