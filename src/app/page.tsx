@@ -26,7 +26,7 @@ const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
 	{ n: "04", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
 	{ n: "05", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
 	{ n: "06", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
-	{ n: "07", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, with zero architecture branches?" },
+	{ n: "07", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, aiming at zero architecture branches?" },
 	{ n: "08", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
 	{ n: "09", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
 	{ n: "10", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },

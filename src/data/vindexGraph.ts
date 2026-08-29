@@ -431,7 +431,7 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		summary: "a four-bit model is never four bits",
 		entities: ["4-bit", "nvfp4", "scales", "scale", "4.5"],
 		intent: "why",
-		patterns: ["four bit", "four bits", "4 bits", "4-bit", "bits does a model need", "how many bits"],
+		patterns: ["four bit", "four bits", "4 bits", "4-bit", "4.5", "bits does a model need", "how many bits"],
 		answer:
 			"Because the scales are never free. In NVFP4, sixteen weights share one eight-bit scale and each picks a four-bit slot on it — 72 bits per sixteen weights, 4.5 effective. Mix in the components a precision map protects at BF16 and the recorded granite artifact lands at 5.65 effective bits per weight. 'This is a 4-bit model' is an incomplete sentence; the complete one is a precision map.",
 		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
@@ -552,6 +552,87 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		path: [e("vindex3", "executes_on"), e("ev-parity", "witnesses")],
 		record: { status: "SUPPORTED", note: "GPU and CPU identical greedy output — accounted on the Record" },
 		explore: ["engines", "ev-parity", "physics"],
+	},
+	// ── The quantisation vocabulary people arrive with, classified ──
+	{
+		id: "q-what-is-nf4",
+		summary: "nf4 is a numeric format",
+		entities: ["nf4", "normalfloat"],
+		intent: "what",
+		patterns: ["nf4", "normalfloat", "normal float"],
+		answer:
+			"NF4 is an alphabet, not a scheme: sixteen four-bit code levels placed where normally-distributed weights actually fall, instead of evenly. In the five-layer taxonomy — numeric format, scheme, method, container, execution — it sits in the first layer, beside BF16, FP8 and NVFP4. VINDEX3 treats any such alphabet as a representation encoding: chosen per component, recorded in the directory, never inferred from a filename.",
+		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
+		explore: ["representation", "quantisation"],
+	},
+	{
+		id: "q-what-is-q4k",
+		summary: "q4_k is a block scheme",
+		entities: ["q4_k", "q4k", "k-quant"],
+		intent: "what",
+		patterns: ["q4_k", "q4k", "k-quant", "kquant", "k quant"],
+		answer:
+			"Q4_K is a scheme — how weights share their metadata, not which alphabet they are written in: 256-weight superblocks of 32-weight blocks, each block carrying a scale and a minimum. Count those and its nominal four-bit codes land near 4.5 bits per weight — the same arithmetic lesson NVFP4 teaches by a different route, because scales are never free. In the five-layer taxonomy it sits in the second layer, above the numeric format and below the method that picks the codes.",
+		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
+		explore: ["representation", "quantisation"],
+	},
+	{
+		id: "q-what-is-gptq-awq",
+		summary: "gptq and awq are methods",
+		entities: ["gptq", "awq"],
+		intent: "what",
+		patterns: ["gptq", "awq"],
+		answer:
+			"GPTQ and AWQ are methods — ways of choosing the codes, not ways of storing them. Both use calibration data to decide which representable value each weight should snap to; they can feed the same scheme and the same numeric format and produce different bytes. That is exactly why the container records the outcome and its provenance: two artifacts can share every storage layer and differ only in how the codes were chosen.",
+		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
+		explore: ["representation", "provenance"],
+	},
+	{
+		id: "q-what-is-a-scale",
+		summary: "a scale prices the codes",
+		entities: ["scale", "scales", "zero point"],
+		intent: "what",
+		patterns: ["what is a scale", "what's a scale", "the scales", "group scale", "zero point", "zero-point", "zero points"],
+		answer:
+			"A scale converts small codes back into real magnitudes: a group of weights shares one, and each weight's code multiplies it. A zero point shifts the grid so it need not be centred on zero. They are the metadata a scheme spends its bytes on — and they are never free: NVFP4's one eight-bit scale per sixteen weights is precisely the half bit that turns 'four-bit' into 4.5 bits per weight.",
+		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
+		record: { status: "SUPPORTED", note: "derived — 72 bits per 16 weights: 64 code bits + 8 scale bits" },
+		explore: ["quantisation", "representation"],
+	},
+	{
+		id: "q-what-is-p99",
+		summary: "p99 is the tail",
+		entities: ["p99", "tail", "percentile"],
+		intent: "what",
+		patterns: ["p99", "percentile", "the tail", "worst positions"],
+		answer:
+			"The 99th percentile of per-position divergence — the worst one percent of places a representation damaged, which a mean happily hides. Recorded: under uniform NVFP4, granite's mean KL is 0.2778 bits but its p99 is 4.6224 — the damage lives in the tail, and the tail is where a model says something wrong with confidence. That is why the Record reports both, and why representation decisions answer to p99, not to the average.",
+		path: [e("quantisation", "held_to"), e("vindex3", "answers_to")],
+		record: { status: "SUPPORTED", note: "recorded — granite-4.1-3b uniform NVFP4: mean 0.2778 · p99 4.6224" },
+		explore: ["record", "quantisation"],
+	},
+	{
+		id: "q-down-proj-protection",
+		summary: "the obvious protection made it worse",
+		entities: ["down_proj", "protection", "protect"],
+		intent: "why",
+		patterns: ["protecting down", "down-proj protection", "down proj protection", "protection fail", "why did protecting", "protect the obvious"],
+		answer:
+			"Recorded, and worth sitting with: keeping every down_proj at BF16 — the intuitive protection — cost over a gigabyte and moved granite's tail from 4.6224 to 4.8010. Worse. Keeping the last five FFN layers instead cost 431 MiB and moved it to 1.2826 — three and a half times better. Intuition is not evidence; the precision map is compiled from measurements, which is the whole reason it is an artifact rather than a preset.",
+		path: [e("representation", "compiled_by"), e("vindex3", "answers_to")],
+		record: { status: "SUPPORTED", note: "recorded — granite-4.1-3b: all-down_proj 4.8010 · late-5 FFN 1.2826" },
+		explore: ["precision-map", "record"],
+	},
+	{
+		id: "q-install-vindex",
+		summary: "install the vindex cli",
+		entities: ["install", "vindex-cli", "binary", "download"],
+		intent: "how",
+		patterns: ["install", "get started", "getting started", "how do i start", "download the cli", "try it locally"],
+		answer:
+			"A prebuilt binary ships with each release, and any platform with stable Rust builds from source: cargo install --git github.com/chrishayuk/larql vindex-cli. Seven verbs — inspect, describe, representations, diff, represent, precision, verify — each answering from the artifact alone, each speaking --json. The get-started page walks all of them against a real container, with the recorded outputs.",
+		path: [e("vindex3", "queried_via")],
+		explore: ["record"],
 	},
 ];
 CANON.push(...CANON_EXTENSION);

@@ -71,7 +71,7 @@ export default function LadderPage() {
 					{
 						id: "G5",
 						question: "Execute from the encoded description.",
-						gate: "forward pass with zero architecture branches",
+						gate: "forward pass aimed at zero architecture branches — proven when the held-out architecture test lands",
 						status: "BUILDING",
 						detail: "Half sealed already: the execution surface and operand closure are implemented, and the reference executor matches its source exactly on the first stage. The gate itself is five proofs. Text generation driven by the graph's own semantics. Position handling read only from the per-layer attention policy. Perception wired through the component, never the model family. Drafter capture discovered only from the hidden-state edge. Lookup only by logical object id.",
 					},

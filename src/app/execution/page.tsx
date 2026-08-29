@@ -8,7 +8,7 @@ import { ClosureFigure } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
 	title: "Execution",
-	description: "The execution surface, operand closure, and the compiler boundary — how an encoded description becomes computation with zero architecture branches.",
+	description: "The execution surface, operand closure, and the compiler boundary — how an encoded description becomes computation aimed at zero architecture branches — the design goal the held-out architecture test will prove.",
 };
 
 /**

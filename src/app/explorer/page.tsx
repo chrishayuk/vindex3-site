@@ -62,6 +62,22 @@ function Transports() {
 					<p className="voice-system text-sm opacity-70 leading-relaxed">{t.caption}</p>
 				</div>
 			))}
+			<div className="col-span-12 mt-2 flex flex-wrap gap-x-6 gap-y-2">
+				<a
+					href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md"
+					className="voice-evidence text-[11px] tracking-[0.1em] uppercase border-b pb-0.5 opacity-70 hover:opacity-100"
+					style={{ borderColor: "var(--color-accent)" }}
+				>
+					THE SPEC · vindex3-format.md →
+				</a>
+				<a
+					href="https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli"
+					className="voice-evidence text-[11px] tracking-[0.1em] uppercase border-b pb-0.5 opacity-70 hover:opacity-100"
+					style={{ borderColor: "var(--color-accent)" }}
+				>
+					THE CLI · crates/vindex-cli →
+				</a>
+			</div>
 		</section>
 	);
 }

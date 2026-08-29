@@ -56,6 +56,17 @@ const cases: Case[] = [
 	{ q: "has G4 passed?", expect: "status_report", mustMention: "G4" },
 	{ q: "is expert-region browse parity finished?", expect: ["status_report", "canonical"] },
 
+	// ── The arriving vocabulary: ecosystem words, classified ──
+	{ q: "what is NF4?", expect: "canonical", mustMention: "numeric format" },
+	{ q: "what is Q4_K?", expect: "canonical", mustMention: "block scheme" },
+	{ q: "what's the difference between GPTQ and AWQ?", expect: "canonical", mustMention: "methods" },
+	{ q: "what is a scale?", expect: "canonical", mustMention: "scale" },
+	{ q: "what is a zero point?", expect: "canonical", mustMention: "scale" },
+	{ q: "what does p99 mean?", expect: "canonical", mustMention: "tail" },
+	{ q: "why is NVFP4 4.5 bits per weight?", expect: "canonical", mustMention: "four bits" },
+	{ q: "why did protecting down_proj make things worse?", expect: "canonical", mustMention: "worse" },
+	{ q: "how do I install the vindex cli?", expect: "canonical", mustMention: "install" },
+
 	// ── The richer graph: the reviewer's question list, answerable ──
 	{ q: "does quantisation change the answers a model gives?", expect: "canonical", mustMention: "changed numbers" },
 	{ q: "will a quantised model lose quality?", expect: "canonical", mustMention: "changed numbers" },

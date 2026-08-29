@@ -7,6 +7,7 @@ const LINKS: NavLink[] = [
 	{ href: "/anatomy", label: "Anatomy", hide: "sm", group: "THE JOURNEY" },
 	{ href: "/quantization", label: "Quantization", hide: "lg", group: "THE JOURNEY" },
 	{ href: "/ask", label: "Ask", group: "ASK & EXPLORE" },
+	{ href: "/get-started", label: "Get started", hide: "md", group: "ASK & EXPLORE" },
 	{ href: "/explorer", label: "Explorer", group: "ASK & EXPLORE" },
 	{ href: "/container", label: "Container", hide: "md", group: "THE SPEC" },
 	{ href: "/bytes", label: "Bytes", hide: "md", group: "THE SPEC" },

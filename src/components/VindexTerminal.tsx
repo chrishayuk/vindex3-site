@@ -412,6 +412,9 @@ function WalkPanel({ prompt, rows }: { prompt: string; rows: { l: number; f: str
 			<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-accent)" }}>
 				WALK &quot;{prompt}&quot; — read from the stored gate rows, in place
 			</p>
+			<p className="voice-evidence text-[10px] opacity-45 m-0">
+				a worked shape, not a recorded run — expert-region browse parity is an open row on the Record
+			</p>
 			{rows.map((r) => (
 				<div key={r.f} className="grid grid-cols-[4.5rem_minmax(0,8rem)_2.5rem_1fr] gap-3 items-center">
 					<span className="voice-evidence text-[11px] opacity-60">layer {r.l}</span>

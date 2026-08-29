@@ -53,11 +53,11 @@ export default function QuantizationPage() {
 
 			<RepresentationSwitcher />
 
-			<Statement text="A four-bit model is never four bits." />
+			<Statement text="“Four bits” is the width of the code, not the cost of the weight." />
 
 			<BitsArithmetic />
 
-			<Statement text="This is not compression. Information has been deliberately discarded." />
+			<Statement text="This is lossy compression — unlike ZIP, there is no way back to the original values." />
 
 			<CollapseFigure />
 
@@ -65,10 +65,10 @@ export default function QuantizationPage() {
 				kicker="ONE WORD, FIVE LAYERS — WHAT “QUANTIZATION FORMAT” CONFLATES"
 				source={{ label: "“a 4-bit model”", detail: "One phrase, carrying five different decisions that the ecosystem routinely blurs together." }}
 				parts={[
-					{ label: "NUMERIC FORMAT", detail: "The alphabet a weight is written in — BF16, FP8, NVFP4, INT8." },
-					{ label: "SCHEME", detail: "How weights share metadata — group size, scales, zero points, block layout." },
-					{ label: "METHOD", detail: "How the codes are chosen — calibration and optimisation strategies (GPTQ- or AWQ-style)." },
-					{ label: "CONTAINER", detail: "Where representations live and what is recorded about them — this site's subject." },
+					{ label: "NUMERIC FORMAT", detail: "The alphabet a weight is written in — BF16, FP8, NVFP4, INT8. NF4 lives here too: a 4-bit code table, not a scheme." },
+					{ label: "SCHEME", detail: "How weights share metadata — group size, scales, zero points, per-channel vs per-group, block layout. Q4_K lives here: blocks and superblocks, not a numeric format." },
+					{ label: "METHOD", detail: "How the codes are chosen — calibration and optimisation strategies. GPTQ and AWQ live here: ways of picking codes, not ways of storing them." },
+					{ label: "CONTAINER", detail: "Where representations live and what is recorded about them. GGUF and safetensors live here — and so does this site's subject, which adds the representation authority the others leave implicit." },
 					{ label: "EXECUTION", detail: "The kernels that decode and run the chosen bytes on real hardware." },
 				]}
 				result={{

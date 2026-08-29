@@ -458,7 +458,9 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 					The {CANON.length} canonical answers are a warm cache and a conformance suite, not the knowledge — behind
 					them sit {ENTITIES.length} graph entities, the Record&apos;s gates as status nodes, and the specification
 					itself as a retrievable corpus. When no supported subgraph exists, Ask says so rather than guessing; the
-					graph is the authority, and the synthesis tier can only ever narrate it.
+					graph is the authority, and the synthesis tier can only ever narrate it. The contract, in one line:
+					every answer names its source — a graph path, a spec passage, or a Record row — and when the current
+					VINDEX3 graph does not establish an answer, Ask refuses.
 				</p>
 			</div>
 		</section>
