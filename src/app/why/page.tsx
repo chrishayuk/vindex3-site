@@ -131,8 +131,9 @@ export default function WhyPage() {
 			<Statement text="The file stopped being a snapshot of one decision. It became the space of all of them." />
 
 			<Connection
-				text="Every lever is a choice about bytes on disk. But a file that can hold only one choice forgets the others — and a copy that changes loses its proof. What follows is the file that fixes that."
+				text="Every lever is a choice about bytes on disk. But before the file that keeps those choices open, meet the machinery the bytes actually are — what a gate, a query, an expert really do. Then the container."
 				links={[
+					{ href: "/anatomy", label: "THE ANATOMY — WHAT A MODEL CONTAINS" },
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
 					{ href: "/bytes", label: "DOWN TO THE BYTE" },
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },

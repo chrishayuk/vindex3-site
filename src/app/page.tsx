@@ -136,6 +136,7 @@ export default function Home() {
 				text="Now choose a path — the physics from first principles, or straight into the container."
 				links={[
 					{ href: "/why", label: "THE PHYSICS — START AT FIRST PRINCIPLES" },
+					{ href: "/anatomy", label: "THE ANATOMY — WHAT A MODEL CONTAINS" },
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
 					{ href: "/bytes", label: "DOWN TO THE BYTE" },
 					{ href: "/graph", label: "COMPONENTS, OBJECTS, EDGES" },

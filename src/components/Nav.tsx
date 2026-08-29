@@ -14,6 +14,9 @@ export function Nav() {
 				<Link href="/why" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity">
 					Why
 				</Link>
+				<Link href="/anatomy" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity hidden sm:inline">
+					Anatomy
+				</Link>
 				<Link href="/explorer" className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-70 hover:opacity-100 transition-opacity">
 					Explorer
 				</Link>
