@@ -8,6 +8,18 @@ import {
 	type TerminalResult,
 } from "@chrishayuk/hause/components/forms/Terminal";
 import { ENTITIES, entity, type Entity } from "@/data/vindexGraph";
+import {
+	componentsPanel,
+	representationsPanel,
+	provenancePanel,
+	authorityPanel,
+	statsPanel,
+	treePanel,
+	type ComponentsData,
+	type RepresentationsData,
+	type ProvenanceData,
+	type AuthorityData,
+} from "@/components/TerminalPanels";
 
 /**
  * ENTER A MODEL — the Explorer's terminal.
@@ -237,18 +249,16 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 			const lm = cmd.address.match(/^layer\.(\d+)/i);
 			const l = lm ? Number(lm[1]) : 12;
 			return {
-				lines: [
-					{ text: `layer.${l}` },
-					{ text: ` ├─ attention          q · k · v · output` },
-					{ text: ` │    the layer looking backwards along the sentence`, tone: "dim" },
-					{ text: ` ├─ norm ×2            keep the numbers in range`, tone: "dim" },
-					{ text: ` ├─ router             32 candidates · 4 chosen per token` },
-					{ text: ` └─ experts ×32        gate · up · down, each` },
-					{ text: `      gate_up          gate and up stored together — consumed together${l === 12 ? " · 2 representations" : ""}`, tone: l === 12 ? "accent" : undefined },
-					{ text: `      down             stored apart — consumed apart`, tone: "dim" },
-					{ text: `every edge is data in the container — nothing here was inferred from a name`, tone: "dim" },
-					{ text: `DESCRIBE any part — layer.${l}.ffn.gate · layer.${l}.attention.q · layer.${l}.routed.gate_up`, tone: "dim" },
-				],
+				lines: [],
+				panel: treePanel(l, l === 12, "compiled snapshot · the worked example", {
+					address: `layer.${l}`,
+					children: {
+						attention: ["q", "k", "v", "output"],
+						norms: 2,
+						router: { candidates: 32, chosen: 4 },
+						experts: { count: 32, each: ["gate", "up", "down"], gate_up_representations: l === 12 ? 2 : 1 },
+					},
+				}),
 			};
 		}
 		case "show-representations":
@@ -430,6 +440,11 @@ function semanticPanel(a: string): { lines: Line[]; panel: TerminalPanel } | nul
 				physical: physical ?? null,
 				authority: "the VINDEX knowledge graph — one vocabulary, linked authorities",
 			},
+			graph: sem.relations.map((r) => ({
+				from: sem.display,
+				rel: r.rel.replace(/_/g, " "),
+				to: entity(r.to)?.display ?? r.to,
+			})),
 		},
 	};
 }
@@ -595,12 +610,39 @@ export function VindexTerminal() {
 			const semantic = semanticPanel(dm[1]);
 			if (semantic) return semantic;
 		}
-		if (/^TREE\b/i.test(trimmed))
-			return {
-				lines: [
-					{ text: "TREE is the snapshot's structural view — the live surface answers with DESCRIBE and SHOW COMPONENTS", tone: "dim" },
-				],
-			};
+		// The typed protocol endpoints: structured facts from the REAL
+		// container, rendered as designed panels — RAW is the server's
+		// own JSON. A failed fetch falls through to /v1/query lines.
+		const LIVE_TAG = "live · " + LIVE_ENDPOINT.replace("https://", "");
+		const typed = async <T,>(path: string, build: (data: T) => TerminalResult): Promise<TerminalResult | null> => {
+			try {
+				const r = await fetch(`${LIVE_ENDPOINT}${path}`, { signal: AbortSignal.timeout(15000) });
+				if (!r.ok) return null;
+				return build((await r.json()) as T);
+			} catch {
+				return null;
+			}
+		};
+		if (/^(SHOW\s+COMPONENTS|TREE\b)/i.test(trimmed)) {
+			const result = await typed<ComponentsData>("/v1/components", (d) => ({ lines: [], panel: componentsPanel(d, LIVE_TAG) }));
+			if (result) return result;
+		}
+		if (/^SHOW\s+REPRESENTATIONS/i.test(trimmed)) {
+			const result = await typed<RepresentationsData>("/v1/representations", (d) => ({ lines: [], panel: representationsPanel(d, LIVE_TAG) }));
+			if (result) return result;
+		}
+		if (/^SHOW\s+PROVENANCE/i.test(trimmed)) {
+			const result = await typed<ProvenanceData>("/v1/provenance", (d) => ({ lines: [], panel: provenancePanel(d, LIVE_TAG) }));
+			if (result) return result;
+		}
+		if (/^SHOW\s+AUTHORITY/i.test(trimmed)) {
+			const result = await typed<AuthorityData>("/v1/authority", (d) => ({ lines: [], panel: authorityPanel(d, LIVE_TAG) }));
+			if (result) return result;
+		}
+		if (/^STATS\b/i.test(trimmed)) {
+			const result = await typed<Record<string, unknown>>("/v1/stats", (d) => ({ lines: [], panel: statsPanel(d, LIVE_TAG) }));
+			if (result) return result;
+		}
 		if (FORBIDDEN.test(trimmed))
 			return {
 				refused: true,

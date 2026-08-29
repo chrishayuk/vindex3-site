@@ -1,0 +1,263 @@
+"use client";
+
+import type { TerminalPanel } from "@chrishayuk/hause/components/forms/Terminal";
+
+/**
+ * THE DESIGNED RESULTS — builders from typed data to TerminalPanel.
+ *
+ * Each builder takes the structured object (fetched from the live
+ * protocol endpoints, or shaped from the snapshot's worked example)
+ * and returns the three views at once: DESIGNED (the HAUSE
+ * rendering), RAW (the object itself — the proof), and GRAPH where
+ * the result has knowledge-graph grounding. The builders never fetch;
+ * transports supply the data, so both render identically.
+ */
+
+type GraphRow = { from: string; rel: string; to: string };
+
+function Kicker({ children }: { children: React.ReactNode }) {
+	return <p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 m-0 mb-2">{children}</p>;
+}
+
+function Row({ cols, accent, dim }: { cols: (string | number)[]; accent?: boolean; dim?: boolean }) {
+	return (
+		<div
+			className="grid gap-3 py-1.5 border-t"
+			style={{
+				gridTemplateColumns: `minmax(0,1.4fr) repeat(${cols.length - 1}, minmax(0,1fr))`,
+				borderColor: "var(--color-mist)",
+				opacity: dim ? 0.55 : 1,
+			}}
+		>
+			{cols.map((c, i) => (
+				<span
+					key={i}
+					className="voice-evidence text-[11px] break-words"
+					style={{ color: i === 0 && accent ? "var(--color-accent)" : "var(--fg)" }}
+				>
+					{c}
+				</span>
+			))}
+		</div>
+	);
+}
+
+/* ── SHOW COMPONENTS ── */
+
+export type ComponentsData = {
+	components: {
+		id: string;
+		role: string;
+		num_layers: number;
+		hidden_size: number;
+		full_layers?: number | null;
+		sliding_layers?: number | null;
+		recurrent_layers?: number | null;
+		window?: number | null;
+	}[];
+	objects: number;
+	edges: number;
+	coherent: boolean;
+};
+
+export function componentsPanel(data: ComponentsData, provenance: string): TerminalPanel {
+	return {
+		designed: (
+			<div>
+				<Kicker>THE SYSTEM GRAPH&apos;S CENSUS · {provenance}</Kicker>
+				<Row cols={["component", "role", "layers", "hidden", "attention"]} dim />
+				{data.components.map((c) => {
+					const census = [
+						c.full_layers ? `${c.full_layers} full` : null,
+						c.sliding_layers ? `${c.sliding_layers} sliding${c.window ? ` (w${c.window})` : ""}` : null,
+						c.recurrent_layers ? `${c.recurrent_layers} recurrent` : null,
+					]
+						.filter(Boolean)
+						.join(" · ");
+					return <Row key={c.id} cols={[c.id, c.role, c.num_layers, c.hidden_size, census || "—"]} accent />;
+				})}
+				<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+					{data.objects} object(s) · {data.edges} hidden-state edge(s) ·{" "}
+					{data.coherent ? "coherent — every fact above is graph data" : "coherence defects present"}
+				</p>
+			</div>
+		),
+		raw: data,
+		graph: [
+			{ from: "the container", rel: "carries", to: "the system graph" },
+			{ from: "the system graph", rel: "contains", to: "components · objects · edges" },
+			{ from: "meaning", rel: "judged once, stored verbatim in", to: "the container" },
+		],
+	};
+}
+
+/* ── SHOW REPRESENTATIONS ── */
+
+export type RepresentationsData = {
+	entries: { id: string; object: string; encoding: string; tensor_count: number; payload_bytes: number; compiled_from?: string | null }[];
+};
+
+export function representationsPanel(data: RepresentationsData, provenance: string): TerminalPanel {
+	return {
+		designed: (
+			<div>
+				<Kicker>THE PHYSICAL DIRECTORY · {provenance}</Kicker>
+				<Row cols={["representation", "encoding", "tensors", "bytes"]} dim />
+				{data.entries.slice(0, 12).map((e) => (
+					<Row
+						key={e.id}
+						cols={[e.id + (e.compiled_from ? " (compiled)" : ""), e.encoding, e.tensor_count, e.payload_bytes.toLocaleString()]}
+						accent
+					/>
+				))}
+				<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+					presence is physical — a variant listed here exists as bytes; selecting an absent one fails closed
+				</p>
+			</div>
+		),
+		raw: data,
+		graph: [
+			{ from: "a region set", rel: "carries", to: "physically present variants" },
+			{ from: "a profile", rel: "selects — never converts", to: "a present variant" },
+			{ from: "fidelity", rel: "recorded against", to: "the source, at extraction" },
+		],
+	};
+}
+
+/* ── SHOW PROVENANCE ── */
+
+export type ProvenanceData = {
+	authority: string;
+	derived_from_model?: string | null;
+	entries: { id: string; object: string; segment?: string; payload_sha256: string; segment_sha256: string; compiled_from?: string | null }[];
+};
+
+export function provenancePanel(data: ProvenanceData, provenance: string): TerminalPanel {
+	return {
+		designed: (
+			<div>
+				<Kicker>HASHES AND LINEAGE — DIGESTS WHOLE · {provenance}</Kicker>
+				{data.entries.slice(0, 6).map((e) => (
+					<div key={e.id} className="border-t py-2" style={{ borderColor: "var(--color-mist)" }}>
+						<p className="voice-evidence text-[11px] m-0" style={{ color: "var(--color-accent)" }}>{e.id}</p>
+						<p className="voice-evidence text-[10px] opacity-70 m-0 mt-1 break-all">payload {e.payload_sha256}</p>
+						<p className="voice-evidence text-[10px] opacity-70 m-0 break-all">segment {e.segment_sha256}</p>
+						<p className="voice-evidence text-[10px] opacity-45 m-0">
+							{e.compiled_from ? `compiled from ${e.compiled_from}` : "from the source checkpoint — no earlier container-side authority"}
+						</p>
+					</div>
+				))}
+				<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+					recorded at encode · re-hashed at verify — drift and corruption fail differently, by name
+				</p>
+			</div>
+		),
+		raw: data,
+		graph: [
+			{ from: "every representation", rel: "records", to: "payload + segment SHA-256" },
+			{ from: "verification", rel: "re-hashes", to: "both ends, forever" },
+			{ from: "the container", rel: "is", to: "a chain of custody, not a warehouse" },
+		],
+	};
+}
+
+/* ── SHOW AUTHORITY ── */
+
+export type AuthorityData = { authority: string; derived_from_model?: string | null; profiles: string[] };
+
+export function authorityPanel(data: AuthorityData, provenance: string): TerminalPanel {
+	return {
+		designed: (
+			<div>
+				<Kicker>THE CONTAINER&apos;S OWN DECLARATION · {provenance}</Kicker>
+				<p className="voice-editorial text-lg m-0" style={{ color: "var(--color-accent)" }}>
+					{data.authority === "canonical" ? "CANONICAL" : "DERIVED"}
+				</p>
+				<p className="voice-system text-sm opacity-80 m-0 mt-1 max-w-xl">
+					{data.authority === "canonical"
+						? "Source bytes present; derived representations can be recompiled."
+						: "Executable; not re-compilable — and it says so, which is the difference between missing something and never promising it."}
+				</p>
+				{data.derived_from_model && (
+					<p className="voice-evidence text-[11px] opacity-60 m-0 mt-2">derives from {data.derived_from_model}</p>
+				)}
+				{data.profiles.length > 0 && (
+					<p className="voice-evidence text-[11px] opacity-60 m-0 mt-2">profiles: {data.profiles.join(" · ")}</p>
+				)}
+			</div>
+		),
+		raw: data,
+		graph: [
+			{ from: "authority", rel: "derived by a fold, never", to: "asserted" },
+			{ from: "a profile", rel: "cannot claim above", to: "its derived fidelity" },
+		],
+	};
+}
+
+/* ── STATS ── */
+
+export function statsPanel(json: Record<string, unknown>, provenance: string): TerminalPanel {
+	const pick = (k: string) => (json[k] === undefined || json[k] === null ? "—" : String(json[k]));
+	return {
+		designed: (
+			<div>
+				<Kicker>THE BINDING, AS IT DECLARES ITSELF · {provenance}</Kicker>
+				<Row cols={["model", pick("model")]} accent />
+				<Row cols={["generation", pick("generation")]} />
+				<Row cols={["component", pick("component")]} />
+				<Row cols={["layers", pick("layers")]} />
+				<Row cols={["hidden size", pick("hidden_size")]} />
+				<Row cols={["vocab", pick("vocab_size")]} />
+				<Row cols={["output head", json["has_output_head"] ? "present" : "absent"]} />
+			</div>
+		),
+		raw: json,
+	};
+}
+
+/* ── TREE ── */
+
+export function treePanel(layer: number, special: boolean, provenance: string, raw: unknown): TerminalPanel {
+	const rows: { depth: number; label: string; note: string; accent?: boolean; dim?: boolean }[] = [
+		{ depth: 0, label: `layer.${layer}`, note: "", accent: true },
+		{ depth: 1, label: "attention", note: "q · k · v · output — the layer looking backwards" },
+		{ depth: 1, label: "norm ×2", note: "keep the numbers in range", dim: true },
+		{ depth: 1, label: "router", note: "32 candidates · 4 chosen per token" },
+		{ depth: 1, label: "experts ×32", note: "gate · up · down, each" },
+		{ depth: 2, label: "gate_up", note: `consumed together, stored together${special ? " · 2 representations" : ""}`, accent: special },
+		{ depth: 2, label: "down", note: "consumed apart, stored apart", dim: true },
+	];
+	return {
+		designed: (
+			<div>
+				<Kicker>THE STRUCTURE, AS A TREE · {provenance}</Kicker>
+				{rows.map((r, i) => (
+					<p
+						key={i}
+						className="voice-evidence text-[12px] m-0 py-0.5"
+						style={{
+							paddingLeft: r.depth * 18,
+							color: r.accent ? "var(--color-accent)" : "var(--fg)",
+							opacity: r.dim ? 0.55 : 1,
+						}}
+					>
+						{r.depth > 0 ? "├─ " : ""}
+						{r.label}
+						{r.note && <span className="opacity-50">&nbsp;&nbsp;{r.note}</span>}
+					</p>
+				))}
+				<p className="voice-evidence text-[10px] opacity-45 mt-2 mb-0">
+					every edge is data in the container — DESCRIBE any part: layer.{layer}.ffn.gate · layer.{layer}.attention.q
+				</p>
+			</div>
+		),
+		raw,
+		graph: [
+			{ from: "a layer", rel: "contains", to: "attention · feed-forward · norms" },
+			{ from: "an expert", rel: "is", to: "another gate–up–down triple" },
+			{ from: "the residual stream", rel: "receives, never surrenders to", to: "each result" },
+		],
+	};
+}
+
+export type { GraphRow };
