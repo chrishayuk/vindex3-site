@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { tick } from "@chrishayuk/hause/sound";
+import { DOWN_PROJ_8 as WEIGHTS8, DOWN_PROJ_COLLAPSED as COLLAPSED } from "@/data/recordedRuns";
 
 /**
  * QUANTIZATION — the instruments.
@@ -49,17 +50,6 @@ function useInView(threshold = 0.35) {
 /* ------------------------------------------------------------------
    THE TENSOR — what a model actually is, at one address.
    ------------------------------------------------------------------ */
-const WEIGHTS8: { original: number; nvfp4: number }[] = [
-	{ original: -0.01239, nvfp4: -0.012634 },
-	{ original: -0.00296, nvfp4: -0.002106 },
-	{ original: -0.016479, nvfp4: -0.016846 },
-	{ original: -0.010132, nvfp4: -0.008423 },
-	{ original: 0.022461, nvfp4: 0.025269 },
-	{ original: -0.001228, nvfp4: -0.002106 },
-	{ original: -0.002914, nvfp4: -0.002106 },
-	{ original: -0.00589, nvfp4: -0.006317 },
-];
-const COLLAPSED = new Set([1, 5, 6]); // three inputs, one output: -0.002106
 
 const f6 = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(6);
 

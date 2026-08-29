@@ -7,7 +7,7 @@ import { VindexTerminal } from "@/components/VindexTerminal";
 
 const TRANSPORTS: {
 	kicker: string;
-	status: "LIVE" | "IN BUILD" | "DRAFT";
+	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0 · IN THE REPO";
 	lines: string[];
 	caption: string;
 }[] = [
@@ -20,10 +20,10 @@ const TRANSPORTS: {
 	},
 	{
 		kicker: "THE VINDEX CLI",
-		status: "IN BUILD",
-		lines: ["$ vindex open granite.vindex", "vindex> TREE layer.12", "vindex> DESCRIBE layer.12.attention"],
+		status: "V0 · IN THE REPO",
+		lines: ["$ vindex inspect model.vindex", "$ vindex precision model.vindex", "$ vindex verify model.vindex --json"],
 		caption:
-			"The same commands, on your machine, against a local container. A deliberately small tool — open, inspect, validate, query — with no inference runtime attached. An artifact should not require an engine to be understood.",
+			"On your machine, against a local container: inspect, describe, representations, precision, verify — every command answering from the artifact alone, every command speaking --json. No inference runtime attached: an artifact should not require an engine to be understood.",
 	},
 	{
 		kicker: "THE QUERY PROTOCOL",

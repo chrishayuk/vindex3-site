@@ -12,6 +12,7 @@ import {
 	componentsPanel,
 	precisionPanel,
 	explainRepresentationPanel,
+	diffPanel,
 	representationsPanel,
 	provenancePanel,
 	authorityPanel,
@@ -94,6 +95,7 @@ type Cmd =
 	| { kind: "explain-plan"; layer?: number }
 	| { kind: "show-precision" }
 	| { kind: "explain-representation"; address: string }
+	| { kind: "diff"; address: string }
 	| { kind: "show-authority"; address?: string }
 	| { kind: "read"; address: string }
 	| { kind: "infer"; prompt: string }
@@ -132,6 +134,8 @@ function parse(raw: string): Cmd {
 	if (/^SHOW\s+PRECISION$/i.test(s)) return { kind: "show-precision" };
 	m = s.match(/^EXPLAIN\s+REPRESENTATION\s+(\S+)$/i);
 	if (m) return { kind: "explain-representation", address: m[1] };
+	m = s.match(/^DIFF\s+(?:BF16\s+NVFP4\s+)?(\S+)$/i);
+	if (m) return { kind: "diff", address: m[1] };
 	m = s.match(/^SHOW\s+AUTHORITY(?:\s+(\S+))?$/i);
 	if (m) return { kind: "show-authority", address: m[1] };
 	m = s.match(/^EXPLAIN\s+(?:EXECUTION|PLAN)(?:\s+layer\.(\d+))?$/i);
@@ -157,6 +161,7 @@ const HELP: Line[] = [
 	{ text: "  EXPLAIN EXECUTION [layer.N]         the generic op program" },
 	{ text: "  SHOW PRECISION                      the compiled precision map" },
 	{ text: "  EXPLAIN REPRESENTATION <addr>       the policy, resolving" },
+	{ text: "  DIFF BF16 NVFP4 <addr>              original vs reconstructed (recorded)" },
 	{ text: "  FIND <term>                         search the catalogue" },
 	{ text: "  READ <addr>[a..b]                   raw bytes (live endpoint)" },
 	{ text: "  INFER <prompt>                      execute (live endpoint)" },
@@ -307,6 +312,8 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 			return { lines: [], panel: precisionPanel() };
 		case "explain-representation":
 			return { lines: [], panel: explainRepresentationPanel(cmd.address) };
+		case "diff":
+			return { lines: [], panel: diffPanel(cmd.address) };
 		case "explain-plan": {
 			if (!model) return { lines: need() };
 			const l = cmd.layer ?? 12;
@@ -626,6 +633,8 @@ export function VindexTerminal() {
 		if (/^SHOW\s+PRECISION$/i.test(trimmed)) return { lines: [], panel: precisionPanel() };
 		const em = trimmed.match(/^EXPLAIN\s+REPRESENTATION\s+(\S+)$/i);
 		if (em) return { lines: [], panel: explainRepresentationPanel(em[1]) };
+		const dfm = trimmed.match(/^DIFF\s+(?:BF16\s+NVFP4\s+)?(\S+)$/i);
+		if (dfm) return { lines: [], panel: diffPanel(dfm[1]) };
 		// The typed protocol endpoints: structured facts from the REAL
 		// container, rendered as designed panels — RAW is the server's
 		// own JSON. A failed fetch falls through to /v1/query lines.

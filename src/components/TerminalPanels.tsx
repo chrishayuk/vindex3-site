@@ -1,6 +1,7 @@
 "use client";
 
 import type { TerminalPanel } from "@chrishayuk/hause/components/forms/Terminal";
+import { DOWN_PROJ_8, DOWN_PROJ_COLLAPSED, DOWN_PROJ_STATS, RECORDED_TAG } from "@/data/recordedRuns";
 
 /**
  * THE DESIGNED RESULTS — builders from typed data to TerminalPanel.
@@ -350,6 +351,65 @@ export function explainRepresentationPanel(address: string): TerminalPanel {
 			{ from: address, rel: "governed by", to: "the precision map" },
 			{ from: "the map", rel: "resolves by", to: "first matching rule" },
 			{ from: "the selection", rel: "is a physical fact in", to: "the file" },
+		],
+	};
+}
+
+/* ── DIFF — original against reconstructed, from the recorded run ── */
+
+const f6 = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(6);
+
+export function diffPanel(address: string): TerminalPanel {
+	const known = /layer\.0\.(mlp|ffn)\.down/i.test(address) || /down_proj/i.test(address);
+	if (!known) {
+		return {
+			designed: (
+				<div>
+					<Kicker>DIFF · {RECORDED_TAG}</Kicker>
+					<p className="voice-system text-sm opacity-80 m-0 max-w-xl">
+						The recorded diff covers {DOWN_PROJ_STATS.tensor} — the tensor the quantization chapter opens. Per-value
+						diffs of arbitrary addresses arrive with the vindex CLI&apos;s decoder work; this page refuses to invent
+						values no run produced.
+					</p>
+				</div>
+			),
+			raw: { address, recorded: DOWN_PROJ_STATS.tensor },
+		};
+	}
+	return {
+		designed: (
+			<div>
+				<Kicker>BF16 → NVFP4 · {DOWN_PROJ_STATS.tensor} · {RECORDED_TAG}</Kicker>
+				<Row cols={["original", "reconstructed", "error"]} dim />
+				{DOWN_PROJ_8.map((w, i) => (
+					<div
+						key={i}
+						className="grid gap-3 py-1 border-t"
+						style={{
+							gridTemplateColumns: "repeat(3, minmax(0,1fr))",
+							borderColor: "var(--color-mist)",
+							color: DOWN_PROJ_COLLAPSED.has(i) ? "var(--color-accent)" : "var(--fg)",
+						}}
+					>
+						<span className="voice-evidence text-[11px]">{f6(w.original)}</span>
+						<span className="voice-evidence text-[11px]">{f6(w.nvfp4)}</span>
+						<span className="voice-evidence text-[11px] opacity-60">{f6(w.nvfp4 - w.original)}</span>
+					</div>
+				))}
+				<p className="voice-evidence text-[11px] mt-3 mb-0" style={{ color: "var(--color-accent)" }}>
+					three inputs, one output — the lit rows all reconstruct as −0.002106
+				</p>
+				<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+					over all {DOWN_PROJ_STATS.weights.toLocaleString()} weights: rms {DOWN_PROJ_STATS.rms_error} · max{" "}
+					{DOWN_PROJ_STATS.max_error} · {DOWN_PROJ_STATS.ratio}
+				</p>
+			</div>
+		),
+		raw: { address: DOWN_PROJ_STATS.tensor, rows: DOWN_PROJ_8, stats: DOWN_PROJ_STATS },
+		graph: [
+			{ from: "the identity", rel: "is unchanged across", to: "BF16 · NVFP4" },
+			{ from: "the information loss", rel: "is", to: "deliberate and permanent — not compression" },
+			{ from: "fidelity", rel: "recorded against", to: "the source, at extraction" },
 		],
 	};
 }

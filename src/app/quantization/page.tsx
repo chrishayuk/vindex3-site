@@ -117,7 +117,7 @@ export default function QuantizationPage() {
 						TRY IT — THE SAME FACTS, IN THE EXPLORER
 					</p>
 					<div className="flex flex-wrap gap-2">
-						{["SHOW PRECISION", "EXPLAIN REPRESENTATION layer.37.mlp.down", "DESCRIBE layer.12.ffn.down", "SHOW REPRESENTATIONS"].map((cmd) => (
+						{["SHOW PRECISION", "EXPLAIN REPRESENTATION layer.37.mlp.down", "DIFF BF16 NVFP4 layer.0.mlp.down", "SHOW REPRESENTATIONS"].map((cmd) => (
 							<Link
 								key={cmd}
 								href={`/explorer?run=${encodeURIComponent(cmd)}`}
