@@ -6,6 +6,7 @@ import { SNAPSHOT, CANON, ENTITIES, SUGGESTIONS } from "@/data/vindexGraph";
 import { resolveAndExplain, type ExplanationResponse } from "@/data/explain";
 import { tick, refuse } from "@chrishayuk/hause/sound";
 import { FfnFigure, AttentionFigure, MoeFigure } from "@/components/AnatomyFigures";
+import { Excerpt } from "@chrishayuk/hause/components/forms/Excerpt";
 
 /** The graph names its own HAUSE treatment; Ask renders the real
  * instrument — the same figures the Anatomy chapter performs. */
@@ -339,11 +340,14 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 							{r.passages && r.passages.length > 0 && (
 								<div className="flex flex-col gap-4 mt-6 max-w-2xl">
 									{r.passages.map((pg, i) => (
-										<div key={i} className="graph-pulse border-l-2 pl-5 py-1" style={{ borderColor: "var(--color-accent)", animationDelay: `${i * 160}ms` }}>
-											<p className="voice-evidence text-[11px] tracking-[0.08em] uppercase opacity-60 mb-2">
-												{pg.source} — §{pg.heading}
-											</p>
-											<p className="voice-system text-sm opacity-85 leading-relaxed whitespace-pre-wrap">{pg.text}</p>
+										<div key={i} className="graph-pulse" style={{ animationDelay: `${i * 160}ms` }}>
+											<Excerpt
+												source={pg.source}
+												heading={pg.heading}
+												text={pg.text}
+												trimmed={pg.trimmed}
+												href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md"
+											/>
 										</div>
 									))}
 								</div>

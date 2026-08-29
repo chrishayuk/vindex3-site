@@ -158,11 +158,20 @@ export async function POST(req: NextRequest) {
 	// specification's own passages — the whole universe any backend sees.
 	const facts = resolveForSynthesis(question);
 	const hits = searchCorpus(question, 4);
-	facts.passages = hits.map((h) => ({
-		source: `${h.passage.source} · ${h.passage.doc}`,
-		heading: h.passage.heading,
-		text: h.passage.text.slice(0, 900),
-	}));
+	const wordTrim = (t: string, max: number) => {
+		if (t.length <= max) return { text: t, trimmed: false };
+		const cut = t.lastIndexOf(" ", max);
+		return { text: t.slice(0, cut > max * 0.6 ? cut : max).trimEnd(), trimmed: true };
+	};
+	facts.passages = hits.map((h) => {
+		const w = wordTrim(h.passage.text, 900);
+		return {
+			source: `${h.passage.source} · ${h.passage.doc}`,
+			heading: h.passage.heading,
+			text: w.text,
+			trimmed: w.trimmed,
+		};
+	});
 
 	const token = body?.turnstile_token;
 	const apiKey = process.env.OPENAI_API_KEY;
@@ -176,11 +185,10 @@ export async function POST(req: NextRequest) {
 				answer_type: "spec_excerpts",
 				summary:
 					"The graph holds no typed answer for that yet — but the specification speaks to it. Its own words, retrieved verbatim:",
-				passages: hits.slice(0, 3).map((h) => ({
-					source: h.passage.source,
-					heading: h.passage.heading,
-					text: h.passage.text.slice(0, 700),
-				})),
+				passages: hits.slice(0, 3).map((h) => {
+					const w = wordTrim(h.passage.text, 700);
+					return { source: h.passage.source, heading: h.passage.heading, text: w.text, trimmed: w.trimmed };
+				}),
 				actions: [{ label: "THE RECORD →", href: "/ladder" }],
 				snapshot: `${facts.snapshot} · corpus ${CORPUS_META.generated} (${CORPUS_META.passages} passages)`,
 			};
@@ -236,7 +244,10 @@ export async function POST(req: NextRequest) {
 				summary: cap(raw.summary, 1200),
 				evidence,
 				caveats: cap(raw.caveats, 300) || undefined,
-				passages: facts.passages?.slice(0, 2).map((pg) => ({ ...pg, text: pg.text.slice(0, 500) })),
+				passages: facts.passages?.slice(0, 2).map((pg) => {
+					const w = wordTrim(pg.text, 500);
+					return { ...pg, text: w.text, trimmed: pg.trimmed || w.trimmed };
+				}),
 				actions: [{ label: "THE RECORD →", href: "/ladder" }],
 				snapshot: facts.snapshot,
 			};

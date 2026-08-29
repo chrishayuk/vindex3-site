@@ -78,7 +78,7 @@ export type ExplanationResponse = {
 	 * rendered as the real instrument, not a picture of one. */
 	visual?: "ffn_gate_up_down" | "attention_qkv" | "moe_router";
 	/** spec_excerpts / synthesis: the specification's own words. */
-	passages?: { source: string; heading: string; text: string }[];
+	passages?: { source: string; heading: string; text: string; trimmed?: boolean }[];
 	snapshot: string;
 };
 
@@ -99,7 +99,7 @@ export type SynthesisFacts = {
 	canonical: { summary: string; answer: string }[];
 	gates: GateNode[];
 	/** Attached server-side by corpus retrieval — the spec's own words. */
-	passages?: { source: string; heading: string; text: string }[];
+	passages?: { source: string; heading: string; text: string; trimmed?: boolean }[];
 };
 
 export function resolveForSynthesis(question: string): SynthesisFacts {
