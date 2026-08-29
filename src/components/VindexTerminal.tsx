@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { tick, refuse } from "@chrishayuk/hause/sound";
+import { useEffect, useState } from "react";
+import {
+	Terminal,
+	type TerminalLine,
+	type TerminalResult,
+} from "@chrishayuk/hause/components/forms/Terminal";
 
 /**
- * ENTER A MODEL — the terminal.
+ * ENTER A MODEL — the Explorer's terminal.
  *
- * psql for a model: a terminal-shaped, read-only VINDEX3 query
- * surface with two transports and one gate.
+ * The chrome is HAUSE's Terminal form; this file is only the meaning:
+ * two executors and one gate.
  *
  * LIVE: statements go to the hardened public VINDEX query endpoint
  * (larql-server --public-explorer on fly.io) and execute for real —
@@ -17,15 +21,15 @@ import { tick, refuse } from "@chrishayuk/hause/sound";
  * vindex3-demo: a miniature two-layer system with synthetic weights —
  * the format, graph, provenance, authority, and execution are real.
  *
- * SNAPSHOT (fallback when the endpoint is unreachable): the browser
- * parses each line into a tiny allowlisted AST over an immutable demo
- * snapshot compiled into the site (the Bytes encoder's worked
- * example), and the banner says so.
+ * SNAPSHOT (fallback when the endpoint is unreachable): each line is
+ * parsed into a tiny allowlisted AST over an immutable demo snapshot
+ * compiled into the site (the Bytes encoder's worked example), and the
+ * banner says so.
  */
 
 const LIVE_ENDPOINT = "https://vindex3-explorer.fly.dev";
 
-type Line = { text: string; tone?: "accent" | "dim" | "err" | "ok" };
+type Line = TerminalLine;
 
 const SNAPSHOT_ID = "vindex3-demo · compiled snapshot · 3.0-draft-2 / 2026-08-29";
 
@@ -56,7 +60,7 @@ const DEMO = {
 	],
 };
 
-// ---------- the allowlisted AST ----------
+// ---------- the allowlisted AST (snapshot transport) ----------
 type Cmd =
 	| { kind: "help" }
 	| { kind: "clear" }
@@ -330,10 +334,10 @@ function liveBanner(): Line[] {
 	];
 }
 
-function snapshotBanner(reason: string): Line[] {
+function snapshotBanner(): Line[] {
 	return [
 		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
-		{ text: `Profile: PUBLIC_EXPLORER (read-only) · ${reason}`, tone: "dim" },
+		{ text: "Profile: PUBLIC_EXPLORER (read-only) · live endpoint unreachable — walking the compiled snapshot", tone: "dim" },
 		{ text: "Type HELP, or start with SHOW MODELS;", tone: "dim" },
 	];
 }
@@ -341,14 +345,8 @@ function snapshotBanner(reason: string): Line[] {
 type Transport = "connecting" | "live" | "snapshot";
 
 export function VindexTerminal() {
-	const [lines, setLines] = useState<Line[]>([
-		{ text: "Waking the live endpoint — the public VINDEX query surface…", tone: "dim" },
-	]);
 	const [transport, setTransport] = useState<Transport>("connecting");
-	const [busy, setBusy] = useState(false);
-	const [input, setInput] = useState("");
 	const [model, setModel] = useState<string | null>(null);
-	const endRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -360,11 +358,8 @@ export function VindexTerminal() {
 				if (cancelled) return;
 				if (!r.ok) throw new Error(String(r.status));
 				setTransport("live");
-				setLines(liveBanner());
 			} catch {
-				if (cancelled) return;
-				setTransport("snapshot");
-				setLines(snapshotBanner("live endpoint unreachable — walking the compiled snapshot"));
+				if (!cancelled) setTransport("snapshot");
 			}
 		})();
 		return () => {
@@ -372,45 +367,16 @@ export function VindexTerminal() {
 		};
 	}, []);
 
-	function scroll() {
-		requestAnimationFrame(() => endRef.current?.scrollIntoView({ block: "nearest" }));
-	}
-
-	function resetTerminal() {
-		tick();
-		setModel(null);
-		setLines(transport === "live" ? liveBanner() : snapshotBanner("live endpoint unreachable — walking the compiled snapshot"));
-		setInput("");
-		scroll();
-	}
-
-	async function runLive(raw: string) {
+	async function runLive(raw: string): Promise<TerminalResult> {
 		const trimmed = raw.trim().replace(/;+$/, "");
 		const up = trimmed.toUpperCase();
-		if (up === "CLEAR") return resetTerminal();
-		if (up === "HELP" || up === "?") {
-			tick();
-			setLines((prev) => [...prev, { text: `vindex> ${raw}`, tone: "accent" }, ...LIVE_HELP]);
-			setInput("");
-			scroll();
-			return;
-		}
-		if (FORBIDDEN.test(trimmed)) {
-			refuse();
-			setLines((prev) => [
-				...prev,
-				{ text: `vindex> ${raw}`, tone: "accent" },
-				{ text: `${trimmed.split(/\s+/)[0].toUpperCase()}: no such operation in this universe`, tone: "err" },
-			]);
-			setInput("");
-			scroll();
-			return;
-		}
-		tick();
-		setBusy(true);
-		setLines((prev) => [...prev, { text: `vindex> ${raw}`, tone: "accent" }]);
-		setInput("");
-		scroll();
+		if (up === "CLEAR") return { lines: [], clear: true };
+		if (up === "HELP" || up === "?") return { lines: LIVE_HELP };
+		if (FORBIDDEN.test(trimmed))
+			return {
+				refused: true,
+				lines: [{ text: `${trimmed.split(/\s+/)[0].toUpperCase()}: no such operation in this universe`, tone: "err" }],
+			};
 		try {
 			const r = await fetch(`${LIVE_ENDPOINT}/v1/query`, {
 				method: "POST",
@@ -420,130 +386,47 @@ export function VindexTerminal() {
 			});
 			const body = (await r.json().catch(() => null)) as { lines?: string[]; error?: string } | null;
 			const outLines = body?.lines;
-			if (r.ok && outLines) {
-				setLines((prev) => [...prev, ...outLines.map((text) => ({ text }))]);
-			} else {
-				refuse();
-				const msg = body?.error ?? `the endpoint answered ${r.status}`;
-				setLines((prev) => [...prev, { text: msg, tone: "err" }]);
-				if (r.status === 403)
-					setLines((prev) => [...prev, { text: "refused in the server, after parsing, before execution — nothing began", tone: "dim" }]);
-			}
+			if (r.ok && outLines) return { lines: outLines.map((text) => ({ text })) };
+			const lines: Line[] = [{ text: body?.error ?? `the endpoint answered ${r.status}`, tone: "err" }];
+			if (r.status === 403) lines.push({ text: "refused in the server, after parsing, before execution — nothing began", tone: "dim" });
+			return { refused: true, lines };
 		} catch {
-			refuse();
-			setLines((prev) => [...prev, { text: "the live endpoint did not answer — try again, or reload for the snapshot", tone: "err" }]);
-		} finally {
-			setBusy(false);
-			scroll();
+			return {
+				refused: true,
+				lines: [{ text: "the live endpoint did not answer — try again, or reload for the snapshot", tone: "err" }],
+			};
 		}
 	}
 
-	function run(raw: string) {
-		if (transport === "live") {
-			void runLive(raw);
-			return;
-		}
+	function runSnapshot(raw: string): TerminalResult {
 		const cmd = parse(raw);
-		if (cmd.kind === "forbidden" || (cmd.kind === "unknown" && cmd.input)) refuse();
-		else tick();
-		const prompt = model ? `vindex/${model.split("-")[0]}>` : "vindex>";
 		const out = execute(cmd, model);
-		setLines((prev) => (out.clear ? [] : [...prev, { text: `${prompt} ${raw}`, tone: "accent" }, ...out.lines]));
 		if (out.model !== undefined) setModel(out.model);
-		setInput("");
-		scroll();
+		return {
+			lines: out.lines,
+			clear: out.clear,
+			refused: cmd.kind === "forbidden" || (cmd.kind === "unknown" && cmd.input !== ""),
+		};
 	}
+
+	const banner =
+		transport === "connecting"
+			? [{ text: "Waking the live endpoint — the public VINDEX query surface…", tone: "dim" as const }]
+			: transport === "live"
+				? liveBanner()
+				: snapshotBanner();
 
 	return (
-		<section className="hause-grid py-16 sm:py-24">
-			<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
-				<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">
-					THE EXPLORER — ENTER A MODEL
-				</p>
-				<p className="voice-editorial text-2xl sm:text-3xl mb-8 max-w-2xl">psql, for a model.</p>
-
-				<div
-					className="border p-4 sm:p-6 overflow-y-auto"
-					style={{ borderColor: "var(--fg)", background: "var(--color-ink)", height: 420 }}
-					onClick={() => (document.getElementById("vt-input") as HTMLInputElement | null)?.focus()}
-				>
-					<div className="flex flex-col gap-1">
-						{lines.map((l, i) => (
-							<p
-								key={i}
-								className="voice-evidence text-[12px] sm:text-[13px] leading-relaxed whitespace-pre-wrap"
-								style={{
-									color:
-										l.tone === "accent"
-											? "var(--color-accent)"
-											: l.tone === "err"
-												? "var(--color-status-refuted)"
-												: l.tone === "ok"
-													? "var(--color-status-supported)"
-													: "var(--color-white)",
-									opacity: l.tone === "dim" ? 0.55 : 1,
-								}}
-							>
-								{l.text}
-							</p>
-						))}
-					</div>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							if (input.trim() && !busy) run(input);
-						}}
-						className="flex gap-2 mt-2"
-					>
-						<span className="voice-evidence text-[13px]" style={{ color: "var(--color-accent)" }}>
-							{model ? `vindex/${model.split("-")[0]}>` : "vindex>"}
-						</span>
-						<input
-							id="vt-input"
-							value={input}
-							onChange={(e) => setInput(e.target.value)}
-							aria-label="Terminal input"
-							autoComplete="off"
-							spellCheck={false}
-							className="voice-evidence text-[13px] flex-1 bg-transparent outline-none"
-							style={{ color: "var(--color-white)", caretColor: "var(--color-accent)" }}
-						/>
-					</form>
-					<div ref={endRef} />
-				</div>
-
-				<div className="flex flex-wrap gap-2 mt-4">
-					{(transport === "live" ? LIVE_SEED : SEED).map((s) => (
-						<button
-							key={s}
-							onClick={() => run(s)}
-							disabled={busy}
-							className="voice-evidence text-[11px] px-3 py-1.5 border opacity-70 hover:opacity-100 disabled:opacity-30"
-							style={{ borderColor: "var(--color-mist)" }}
-						>
-							{s}
-						</button>
-					))}
-					<button
-						onClick={resetTerminal}
-						className="voice-evidence text-[11px] px-3 py-1.5 border opacity-70 hover:opacity-100 ml-auto"
-						style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
-						aria-label="Clear the terminal"
-					>
-						CLEAR
-					</button>
-				</div>
-
-				<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-					When live, every statement is sent to the hardened public VINDEX query endpoint and executes for real —
-					the capability profile is enforced in the server after parsing, before execution, so a mutation verb
-					parses and then refuses with the profile&apos;s own words. When the endpoint is unreachable, the terminal
-					falls back to an immutable snapshot compiled into this site, and the banner says which universe you are in.
-				</p>
-				<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-3">
-					The model is the database — as an interaction, not a metaphor. Read-only · rate-limited · nothing to drop.
-				</p>
-			</div>
-		</section>
+		<Terminal
+			kicker="THE EXPLORER — ENTER A MODEL"
+			headline="psql, for a model."
+			banner={banner}
+			prompt={transport !== "live" && model ? `vindex/${model.split("-")[0]}>` : "vindex>"}
+			seeds={transport === "live" ? LIVE_SEED : SEED}
+			execute={(line) => (transport === "live" ? runLive(line) : runSnapshot(line))}
+			sessionKey={transport}
+			fallback="When live, every statement is sent to the hardened public VINDEX query endpoint and executes for real — the capability profile is enforced in the server after parsing, before execution, so a mutation verb parses and then refuses with the profile's own words. When the endpoint is unreachable, the terminal falls back to an immutable snapshot compiled into this site, and the banner says which universe you are in."
+			footnote="The model is the database — as an interaction, not a metaphor. Read-only · rate-limited · nothing to drop."
+		/>
 	);
 }
