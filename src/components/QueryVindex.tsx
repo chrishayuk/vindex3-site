@@ -129,8 +129,25 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 				setSynthesising(true);
 				(async () => {
 					try {
+						// Step one, free: the spec may answer in its own words.
+						const first = await fetch("/api/explain", {
+							method: "POST",
+							headers: { "content-type": "application/json" },
+							body: JSON.stringify({ question: query }),
+							signal: AbortSignal.timeout(15000),
+						});
+						if (first.ok) {
+							const upgraded = (await first.json()) as ExplanationResponse;
+							if (upgraded.answer_type === "spec_excerpts" || upgraded.answer_type === "synthesis") {
+								tick();
+								setResult({ r: upgraded, q: query });
+							}
+							return;
+						}
+						if (first.status !== 428) return; // the deterministic answer stands
+						// Step two, gated: synthesis costs, so verify first.
 						const token = await turnstileToken();
-						if (!token) return; // the deterministic answer stands
+						if (!token) return;
 						const res = await fetch("/api/explain", {
 							method: "POST",
 							headers: { "content-type": "application/json" },
@@ -221,6 +238,12 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 									&nbsp;&nbsp;·&nbsp;&nbsp;snapshot {r.snapshot}
 								</p>
 							)}
+							{r.answer_type === "spec_excerpts" && (
+								<p className="voice-evidence text-[11px] opacity-50">
+									<span style={{ color: "var(--color-accent)" }}>THE SPECIFICATION&apos;S OWN WORDS</span>
+									&nbsp;&nbsp;retrieved verbatim — no model call&nbsp;&nbsp;·&nbsp;&nbsp;{r.snapshot}
+								</p>
+							)}
 							{r.interpreted && (
 								<p className="voice-evidence text-[11px] opacity-50">
 									INTERPRETED AS&nbsp;&nbsp;<span style={{ color: "var(--color-accent)" }}>{r.interpreted}</span>
@@ -275,6 +298,19 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 											<span className="voice-system text-sm opacity-80">{g.label}
 												<span className="voice-evidence text-[11px] opacity-50">&nbsp;&nbsp;{g.note}</span>
 											</span>
+										</div>
+									))}
+								</div>
+							)}
+
+							{r.passages && r.passages.length > 0 && (
+								<div className="flex flex-col gap-4 mt-6 max-w-2xl">
+									{r.passages.map((pg, i) => (
+										<div key={i} className="graph-pulse border-l-2 pl-5 py-1" style={{ borderColor: "var(--color-accent)", animationDelay: `${i * 160}ms` }}>
+											<p className="voice-evidence text-[11px] tracking-[0.08em] uppercase opacity-60 mb-2">
+												{pg.source} — §{pg.heading}
+											</p>
+											<p className="voice-system text-sm opacity-85 leading-relaxed whitespace-pre-wrap">{pg.text}</p>
 										</div>
 									))}
 								</div>

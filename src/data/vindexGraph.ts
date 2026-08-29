@@ -418,6 +418,18 @@ export const CANON: CanonEntry[] = [
 
 export const CANON_EXTENSION: CanonEntry[] = [
 	{
+		id: "q-what-is-vindex3",
+		summary: "the model is the database",
+		entities: ["vindex3", "vindex", "database"],
+		intent: "what",
+		patterns: ["what is vindex", "what's vindex", "whats vindex", "tell me about vindex", "explain vindex", "what is this"],
+		answer:
+			"VINDEX3 is a way of storing an AI model so the same copy can be run, questioned, and checked — nothing repackaged, nothing thrown away. An open container specification, defined by two public documents: a directory whose every part is named, addressable, and provable, where the weights themselves stay queryable. Five production models already round-trip through it byte-identically, and containers serve real inference — 106 tokens per second on one laptop, with the answer provably unchanged.",
+		path: [e("vindex3", "compiled_into"), e("vindex3", "preserves"), e("vindex3", "queried_via"), e("vindex3", "verified_by")],
+		record: { status: "SUPPORTED", note: "five models round-trip byte-identically · the Record keeps the ledger" },
+		explore: ["container", "browse-surface", "record"],
+	},
+	{
 		id: "q-quantisation-answers",
 		summary: "changed numbers can change answers",
 		entities: ["answers", "answer", "accuracy", "greedy", "identical", "degrade", "quality"],

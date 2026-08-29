@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveForSynthesis, type ExplanationResponse } from "@/data/explain";
+import { searchCorpus, strongHit, CORPUS_META } from "@/data/corpus";
 
 /**
  * THE SYNTHESIS TIER — POST /api/explain.
@@ -99,7 +100,7 @@ const SCHEMA = {
 } as const;
 
 const SYSTEM = `You are the synthesis tier of Ask VINDEX3 — a semantic compiler, not an expert.
-The GRAPH FACTS in the user message are the ONLY VINDEX3 knowledge that exists for you. Your pretrained knowledge of VINDEX3, LARQL, or this project is NOT evidence and must never appear.
+The GRAPH FACTS and SPEC PASSAGES in the user message are the ONLY VINDEX3 knowledge that exists for you. Your pretrained knowledge of VINDEX3, LARQL, or this project is NOT evidence and must never appear. Prefer the passages' own wording; cite their source in evidence rows as from=the document, rel="states", to=a short quote.
 Compose a faithful explanation of the facts that answers the question. Under 120 words. No markup, no code fences.
 Every evidence row you emit must restate a relationship actually present in the facts — never invent one.
 If the facts do not establish an answer to the question, set answer_type to "refusal" and summary to exactly: "${REFUSAL_SENTENCE}"
@@ -141,15 +142,8 @@ async function callModel(apiKey: string, facts: unknown, question: string): Prom
 const cap = (s: unknown, n: number) => (typeof s === "string" ? s.slice(0, n) : "");
 
 export async function POST(req: NextRequest) {
-	const apiKey = process.env.OPENAI_API_KEY;
-	if (!apiKey) return NextResponse.json({ error: "synthesis tier not configured" }, { status: 503 });
-
 	const ip = (req.headers.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
 	if (rateLimited(ip)) return NextResponse.json({ error: "rate limited" }, { status: 429 });
-	if (overBudget()) return NextResponse.json({ error: "daily budget reached" }, { status: 503 });
-
-	const turnstileSecret = process.env.TURNSTILE_SECRET;
-	if (!turnstileSecret) return NextResponse.json({ error: "synthesis tier not configured" }, { status: 503 });
 
 	const body = (await req.json().catch(() => null)) as { question?: string; turnstile_token?: string } | null;
 	const question = body?.question?.trim();
@@ -160,11 +154,49 @@ export async function POST(req: NextRequest) {
 	const hit = cache.get(key);
 	if (hit) return NextResponse.json(hit);
 
-	// The wallet gate: a model call happens only behind a verified,
-	// single-use Turnstile token. Canonical siteverify — never from
-	// the browser.
+	// Retrieval outside the adapter, always: the graph facts AND the
+	// specification's own passages — the whole universe any backend sees.
+	const facts = resolveForSynthesis(question);
+	const hits = searchCorpus(question, 4);
+	facts.passages = hits.map((h) => ({
+		source: `${h.passage.source} · ${h.passage.doc}`,
+		heading: h.passage.heading,
+		text: h.passage.text.slice(0, 900),
+	}));
+
 	const token = body?.turnstile_token;
-	if (!token || token.length > 4096) return NextResponse.json({ error: "turnstile token required" }, { status: 403 });
+	const apiKey = process.env.OPENAI_API_KEY;
+	const turnstileSecret = process.env.TURNSTILE_SECRET;
+
+	if (!token) {
+		// The free tier: when retrieval is decisive, the spec answers in
+		// its own words — verbatim, attributed, no model, no challenge.
+		if (strongHit(question, hits)) {
+			const response: ExplanationResponse = {
+				answer_type: "spec_excerpts",
+				summary:
+					"The graph holds no typed answer for that yet — but the specification speaks to it. Its own words, retrieved verbatim:",
+				passages: hits.slice(0, 3).map((h) => ({
+					source: h.passage.source,
+					heading: h.passage.heading,
+					text: h.passage.text.slice(0, 700),
+				})),
+				actions: [{ label: "THE RECORD →", href: "/ladder" }],
+				snapshot: `${facts.snapshot} · corpus ${CORPUS_META.generated} (${CORPUS_META.passages} passages)`,
+			};
+			cache.set(key, response);
+			return NextResponse.json(response);
+		}
+		// Retrieval was not decisive. Synthesis exists — but it costs,
+		// so it sits behind the wallet gate: ask the client to verify.
+		if (apiKey && turnstileSecret) return NextResponse.json({ error: "verification required" }, { status: 428 });
+		return NextResponse.json({ error: "no supported subgraph" }, { status: 404 });
+	}
+
+	// ── The wallet gate: a model call only behind a verified token ──
+	if (!apiKey || !turnstileSecret)
+		return NextResponse.json({ error: "synthesis tier not configured" }, { status: 503 });
+	if (token.length > 4096) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 	const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
 		method: "POST",
 		headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -174,12 +206,9 @@ export async function POST(req: NextRequest) {
 	const verdict = verify ? ((await verify.json().catch(() => null)) as { success?: boolean } | null) : null;
 	if (!verdict?.success) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-	// Retrieval outside the adapter: the server resolves the facts.
-	const facts = resolveForSynthesis(question);
-	if (facts.entities.length === 0 && facts.canonical.length === 0 && facts.gates.length === 0) {
-		// Nothing to narrate — the deterministic refusal already said so.
+	if (overBudget()) return NextResponse.json({ error: "daily budget reached" }, { status: 503 });
+	if (facts.entities.length === 0 && facts.canonical.length === 0 && facts.gates.length === 0 && hits.length === 0)
 		return NextResponse.json({ error: "no supported subgraph" }, { status: 404 });
-	}
 
 	spentToday += 1;
 	const raw = await callModel(apiKey, facts, question);
@@ -190,7 +219,7 @@ export async function POST(req: NextRequest) {
 	const evidence = Array.isArray(raw.evidence)
 		? (raw.evidence as { from?: unknown; rel?: unknown; to?: unknown }[])
 				.slice(0, 6)
-				.map((e) => ({ from: cap(e.from, 80), rel: cap(e.rel, 60), to: cap(e.to, 80) }))
+				.map((e) => ({ from: cap(e.from, 80), rel: cap(e.rel, 60), to: cap(e.to, 120) }))
 				.filter((e) => e.from && e.rel && e.to)
 		: [];
 	const response: ExplanationResponse = refused
@@ -207,6 +236,7 @@ export async function POST(req: NextRequest) {
 				summary: cap(raw.summary, 1200),
 				evidence,
 				caveats: cap(raw.caveats, 300) || undefined,
+				passages: facts.passages?.slice(0, 2).map((pg) => ({ ...pg, text: pg.text.slice(0, 500) })),
 				actions: [{ label: "THE RECORD →", href: "/ladder" }],
 				snapshot: facts.snapshot,
 			};

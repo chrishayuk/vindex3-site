@@ -13,6 +13,7 @@
 
 import { CANON, SNAPSHOT } from "../src/data/vindexGraph";
 import { resolveAndExplain, resolveForSynthesis, type AnswerType } from "../src/data/explain";
+import { searchCorpus, strongHit, CORPUS_META } from "../src/data/corpus";
 
 type Case = {
 	q: string;
@@ -117,7 +118,31 @@ if (empty.entities.length !== 0) {
 	console.error("FAIL  unrelated questions must resolve no entities");
 }
 
-const total = cases.length + 3;
+// ── The corpus: the spec answers in its own words when asked in them ──
+const corpusChecks: { q: string; docHint: string }[] = [
+	{ q: "what is a region set?", docHint: "format-spec" },
+	{ q: "what is the deletion invariant?", docHint: "format" },
+	{ q: "what is the held-out architecture test?", docHint: "experiments" },
+	{ q: "which generation does the extractor write by default?", docHint: "generation-policy" },
+];
+for (const c of corpusChecks) {
+	const hits = searchCorpus(c.q, 4);
+	if (hits.length === 0 || !hits.some((h) => h.passage.doc.includes(c.docHint))) {
+		failed += 1;
+		console.error(`FAIL  corpus: ${c.q} — expected a hit in *${c.docHint}*, got ${hits.map((h) => h.passage.id).join(", ") || "none"}`);
+	}
+}
+const offTopic = searchCorpus("best tomatoes for a north-facing garden", 4);
+if (strongHit("best tomatoes for a north-facing garden", offTopic)) {
+	failed += 1;
+	console.error("FAIL  corpus: an off-topic question must not be a strong hit");
+}
+if (CORPUS_META.passages < 100) {
+	failed += 1;
+	console.error(`FAIL  corpus: only ${CORPUS_META.passages} passages — ingestion looks truncated`);
+}
+
+const total = cases.length + 3 + corpusChecks.length + 2;
 if (failed > 0) {
 	console.error(`\n${failed} of ${total} ask coverage cases FAILED · snapshot ${SNAPSHOT.id}`);
 	process.exit(1);

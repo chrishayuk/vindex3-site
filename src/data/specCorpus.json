@@ -1,0 +1,942 @@
+{
+ "generated": "2026-08-29",
+ "documents": [
+  "vindex3-format.md",
+  "vindex3-format-spec.md",
+  "vindex3-experiments.md",
+  "vindex-generation-policy.md"
+ ],
+ "passages": [
+  {
+   "id": "vindex3-format.md#1",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "VINDEX3 — Model-System Container Format",
+   "text": "Status: **living spec**. §1–§7 describe what is implemented and gated as of\n2026-08-11 (branch `feat/vindex3-glimmer-g0-g2`); §8 pins the design for\nthe rung currently being built (G5). The experimental programme,\ngates and run order live in `docs/vindex3-experiments.md`; the LYRW v2\nrouted-layer physical layout lives in `docs/lyrw-v2.md` and is incorporated\nhere by reference as one segment family.\n\n> Older `spec §N` citations in `format/vindex3/{index,lyrw2,…}` code\n> comments refer to the pre-G2 draft of this spec; where they conflict,\n> this document is authoritative and those comments should migrate.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#2",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "1. What VINDEX3 is",
+   "text": "A modern model release is not a weights file. It is a **system**: a target\nmodel, a perception tower physically embedded in the same checkpoint, a\nspeculative drafter shipped as a sibling artifact consuming the target's\nhidden states through a declared tap interface, several quantization\nprofiles of the same logical operands. GGUF answers *\"how do I store and\nrun these tensors?\"* VINDEX3 answers:\n\n> What are these model objects, what operations can consume them, which\n> representations are equivalent, which parts should be resident, and what\n> future computation will need them?\n\nThe pipeline is deliberately compiler-shaped:\n\n```text\nHF artifacts\n    ↓\ninventory            (G0 — source semantics, two authorities)\n    ↓\nrepresentability     (G1/G2 — type checking; fail-closed)\n    ↓\nsystem graph         (G2 — semantic IR)\n    ↓\nphysical encoding    (G3 — materialisation)\n    ↓\nverification         (G4 — Declared ≡ Resolved ≡ Graph ≡ Encoded)\n    ↓\nexecution            (G5 — from the encoded description alone)\n```"
+  },
+  {
+   "id": "vindex3-format.md#3",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "1.1 Principles",
+   "text": "1. **Single semantic authority.** The system graph is built once\n   (`graph::build_from_inventories`) and every downstream consumer — the\n   planner, the encoder, eventually the executor — consumes *it*, never a\n   private re-interpretation of the checkpoint. \"Representable\" has\n   exactly one definition: *the graph builder placed it.* There is no\n   capability registry to drift out of sync.\n2. **Fail-closed.** A config key nobody has judged, a tensor group no\n   placement rule owns, an interface whose producer cannot be resolved\n   unambiguously — each blocks the plan. Unjudged is not admissible;\n   ambiguity is refused, never guessed.\n3. **No silent conversion.** Regions are placed as their producer wrote\n   them; generation boundaries error precisely rather than convert; a\n   defaulted value never impersonates a declared one.\n4. **No model-family branches.** Roles, placements and policies derive\n   from evidence (declared interfaces, shape arithmetic, component\n   topologies), not from `model_type` matching. Glimmer went from 51\n   blocking findings to zero without a single Muse-specific branch; that\n   property is the point and every future architecture must preserve it."
+  },
+  {
+   "id": "vindex3-format.md#4",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "1.2 Identity distinctions (load-bearing)",
+   "text": "```text\nartifact       ≠ component\ntensor name    ≠ logical object\ninterface      ≠ implementing tensor\nNoPE           ≠ rope(theta = 0)\nlogical object ≠ physical representation\nrepresentable  ≠ \"parser consumed the key\"\n```\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#5",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "2. The G-ladder",
+   "text": "| Rung | Question | Gate |\n|---|---|---|\n| G0 | What does the source declare? | `larql inspect-hf` emits the inventory |\n| G1 | Can the schema describe it? | `larql vindex3 plan` — typed findings, non-zero exit on blockers |\n| G2 | Generalise the schema until reality fits | plan over the artifact set: `blocking = 0, mismatched = 0, unknown = 0` |\n| G3 | Materialise the graph | `encode` then `inspect` reconstructs the system **solely from the container** |\n| G4 | Prove source ≡ encoded | four-authority comparison + payload-hash equality |\n| G5 | Execute from the encoded description | forward pass with zero architecture branches |\n| G6 | Drafter parity | speculative execution discovered from the `HiddenStateEdge` |\n| G7 | Performance baseline | reference numbers on the target hardware class |\n| G8 | Alternate physical/execution plans | LARQL-specific layouts/prediction over the same logical system |\n\nG8 must not contaminate G0–G5: optimisation is an *alternate plan over the\nsame graph*, never a schema change.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#6",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "3. G0 — the architecture inventory",
+   "text": "`larql inspect-hf <dir>` → `ArchitectureInventory`\n(`larql-models/src/inventory/`), schema version `INVENTORY_SCHEMA = 2`.\n\nTwo authorities, side by side; disagreement is the instrument:\n\n- **`config_keys`** — every leaf of `config.json`, flattened to a dot\n  path, classified `consumed` / `metadata` / `unconsumed`.\n- **`resolved`** — what this build's detection would actually run: the\n  full per-layer table (span, window, position policy, head geometry).\n\nClassification honesty rules:\n\n- Name-registry credit applies only inside containers the parser itself\n  recurses into (`text_config`, `rope_scaling`, …). A leaf under any other\n  container is never credited by name — `vision_config.hidden_size` shares\n  a name with a consumed key but the text parser does not read it.\n- Nested components (`vision_config`, any `*_config` sibling) are read by\n  a generic component-topology reader whose **recorded reads are the\n  consumed-credit**: a key is consumed iff a read actually stored it. The\n  reader and the classification cannot diverge because there is only one\n  artifact.\n- A parser-sync test scans `detect/parser.rs` for key accesses and fails\n  when the registry does not know one. The registry cannot rot silently.\n\nThe inventory also carries: identity, detection outcome (including the\ngeneric-fallback flag — a model serving through the generic path with\nunconsumed keys is the loudest red flag the report can raise), nested\ncomponent topologies, declared interfaces, and a tensor inventory read\nfrom safetensors *headers only* (no payload I/O)."
+  },
+  {
+   "id": "vindex3-format.md#7",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "3.1 Position policy",
+   "text": "`PositionPolicy = Rope { theta } | None`. Absence of positional rotation\nis an intentional per-layer execution property, not a parameter value.\nThe HF `layer_rope_theta` spelling uses `0.0` as a NoPE sentinel; that\nsentinel is interpreted at **exactly one boundary**\n(`PositionPolicy::from_declared_theta`) and nowhere else. No zero theta\nmay circulate internally — `1/0^(i/d)` is degenerate, and a resolver\nstoring `0.0` where it means \"none\" has re-invented the magic value the\ntype exists to remove.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#8",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "4. G1/G2 — the representability plan",
+   "text": "`larql vindex3 plan <artifact>…` → `SystemPlan`\n(`larql-vindex/src/format/vindex3/plan/`), schema `PLAN_SCHEMA = 2`.\nArtifacts are checkpoint dirs and/or saved inventory JSONs, treated as one\nmodel system. Exit is non-zero when the plan is inadmissible.\n\nFindings are typed twice:\n\n- **category** — `representable` / `mismatched` / `unrepresented` /\n  `interface`;\n- **semantic class** — `execution_semantic` / `tensor_semantic` /\n  `interface_semantic` / `metadata_only` / `ignored_safe` / `unknown`.\n\nRules:\n\n- `consumed` is never trusted. Comparators re-read declared values from\n  the config facts and diff them against resolution (scalar topology,\n  uniform rope θ in parser-precedence order, per-layer\n  `layer_rope_theta` against per-layer policies, `layer_types`\n  interleave). Equal → representable; different → `mismatched`, blocking.\n- Unconsumed keys are graded by a semantic registry of *known HF field\n  names*. A name the registry has never seen grades `unknown` — and\n  blocks. Keep this painful; a \"probably harmless\" bucket is exactly how\n  silent semantic loss returns.\n- `ignored_safe` ships empty. Every future entry needs a per-entry\n  justification comment.\n- Tensor/topology/interface representability comes from the graph builder\n  (§5): placed objects are representable with their graph ids as proof;\n  `unplaced` groups and `unresolved_interfaces` are blocking findings.\n- The plan embeds the built graph — the proof object G3 consumes.\n- Verdict: `admissible ⇔ blocking == 0`."
+  },
+  {
+   "id": "vindex3-format.md#9",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "4. G1/G2 — the representability plan (2)",
+   "text": "Standing tripwire: a clean dense model (Llama-shaped fixture) plans\n**admissible**. Its job is to stay that way; a regression that starts\nblocking clean dense models fails there first.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#10",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "5. G2 — the system graph",
+   "text": "`larql-vindex/src/format/vindex3/graph/`, schema `GRAPH_SCHEMA = 1`.\n\n```text\nSystemGraph\n├── components: [Component]        id, role, source_artifact,\n│                                  num_layers, hidden_size,\n│                                  attention: [AttentionLayerPolicy]?\n├── objects:    [LogicalObject]    id, component, kind,\n│                                  source_bindings: [SourceBinding],\n│                                  representations: [Representation]\n└── edges:      [HiddenStateEdge]  producer_component, producer_layers,\n                                   consumer_component, consumer_object,\n                                   block_size?\n```"
+  },
+  {
+   "id": "vindex3-format.md#11",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "5.1 Components",
+   "text": "Roles are **evidence-derived**: an artifact declaring `target_layer_ids`\nis a `drafter`; a nested `*_config` component is `perception`; otherwise\n`primary_text`. Ids are conceptual (`target`, `vision`, `draft`), with\nnumeric suffixes on collision — never directory names. The source\nartifact is recorded for traceability, not identity.\n\n`AttentionLayerPolicy { span: sliding|full, window, position }` per layer\nis architectural liveness information: a KV planner reading it knows that\npositions beyond `window` on a sliding layer are *architecturally* dead\nbefore any semantic analysis runs. A component without per-layer\nresolution (perception towers today) carries no table — absent is honest,\nfabricated is not."
+  },
+  {
+   "id": "vindex3-format.md#12",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "5.2 Logical objects",
+   "text": "Kinds (architectural vocabulary, not familial): `embedding`,\n`decoder_stack`, `final_norm`, `output_head`, `perception_tower`,\n`perception_adapter`, `feature_projector`.\n\nIdentity is conceptual — `{component}.{kind}` — and **physical names may\nbind objects but never define identity**. That is what later allows\n\n```text\ntarget.decoder_stack\n    ├── canonical BF16\n    ├── K-quant\n    ├── Metal-native packed\n    └── future derived representations\n```\n\nwithout unwinding a single id. `SourceBinding { artifact, tensor_prefix,\ntensors, bytes }` carries the physical trace; `Representation\n{ encoding, fidelity: canonical|approximate }` carries materialisations\n(encodings are *observed* from shard headers, never invented)."
+  },
+  {
+   "id": "vindex3-format.md#13",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "5.3 Placement rules (the builder)",
+   "text": "- Groups are classified by a name-fragment vocabulary (first match wins,\n  specific before generic — a vision tower has `layers` segments too) and\n  merged into `(component, kind)` objects with multi-binding.\n- **The projector claim runs before name classification.** The consumer\n  side of a declared interface is identified by shape evidence — a 2-D\n  tensor of `len(taps)·hidden × hidden` (either orientation) — and claims\n  every group sharing its first path segment by *structural adjacency*.\n  Without this ordering, the projector's own norm\n  (`encoder.output_norm_enc`) name-classifies into `final_norm`.\n- The edge's producer must be **exactly one** other component deep enough\n  to own every declared tap. Zero candidates or two candidates → the\n  interface is unresolved, and blocks. Never guessed.\n- Everything unplaced returns as data (`unplaced`,\n  `unresolved_interfaces`); the planner converts it to blocking findings."
+  },
+  {
+   "id": "vindex3-format.md#14",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "5.4 The edge is not the tensor",
+   "text": "A `HiddenStateEdge` describes **logical flow** of residual states across a\ncomponent boundary. The fusion projector implementing its consumer side is\na tensor object referenced by id. Both are representable; they are\ndistinct facts and are never merged.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#15",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "6. G3 — physical encoding (pinned design)",
+   "text": "> Deliberately boring, deterministic, source-independent. No layout\n> optimisation: one logical object → one canonical representation → one\n> or more simple contiguous segments. Optimised layouts arrive at G8 as\n> *additional* representations over the same logical objects.\n\n```bash\nlarql vindex3 encode <artifact>… --output <container>/\n```\n\nThe encoder consumes **the built graph** (via the plan pipeline), never a\nprivate re-interpretation of the checkpoint, and refuses to encode an\ninadmissible plan. Two semantic authorities immediately after eliminating\nthem would be a regression."
+  },
+  {
+   "id": "vindex3-format.md#16",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "6.1 Container layout",
+   "text": "```text\n<container>/\n├── index.json            sole root authority: format version,\n│                         system_graph ref, object/representation\n│                         directory (representation → segment files)\n├── system_graph.json     the SystemGraph, verbatim\n└── segments/\n    ├── target.decoder_stack.bin\n    ├── target.embedding.bin\n    ├── target.output_head.bin\n    ├── vision.perception_tower.bin\n    ├── vision.perception_adapter.bin\n    ├── draft.decoder_stack.bin\n    ├── draft.feature_projector.bin\n    └── …\n```\n\n- The graph references logical object ids and representation ids; the\n  index's directory maps representation → segment bytes. Graph edges\n  never reference safetensors names: **the HF checkpoint disappears as an\n  authority once encoded.**\n- Within a segment, tensors are addressed by a per-representation tensor\n  table (name relative to the binding prefix, dtype, shape, offset,\n  length), payloads concatenated in table order. Relative names are\n  structural (`0.self_attn.q_proj.weight`), not artifact-global.\n- Every canonical representation records a **source payload hash**\n  (SHA-256, computed while copying) and the encoded segment records its\n  own hash. These are G4's byte-equivalence inputs.\n- `Vindex3Index.system_graph` is optional in the schema: absence means\n  \"no graph recorded\", never \"single-component assumed\"."
+  },
+  {
+   "id": "vindex3-format.md#17",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "6.2 The G3 gate",
+   "text": "After encoding, the validation path gets **no access to the source**:\n\n```bash\nlarql vindex3 inspect <container>/\n```\n\nmust reconstruct — solely from the container, with no transformers\nconfig, no HF filenames, no safetensors headers, no architecture\nregistry —\n\n```text\ncomponents: target (52 layers, 6656, 39 sliding / 13 full-NoPE)\n            vision (50 layers, 1536)\n            draft  (5 layers, taps [1,13,25,37,49], block 16)\nedge:       target.hidden[1,13,25,37,49] → draft.feature_projector\nobjects:    …with sizes, encodings and hashes\n```\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#18",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "7. G4 — verification",
+   "text": "```bash\nlarql vindex3 verify <artifact>… --container <container>/\n```\n\nImplemented in `format/vindex3/verify_system/`. Four explicit authorities,\ncompared structurally and semantically:\n\n| Authority | Source |\n|---|---|\n| **Declared** | what HF said (`config.json`, shard headers) |\n| **Resolved** | what LARQL interpreted (detection + policies) |\n| **Graph** | the logical system constructed at G2 |\n| **Encoded** | what the container actually contains |\n\nInvariant: `Declared ≡ Resolved ≡ Graph ≡ Encoded` for everything\nexecution-semantic. Example instance:\n\n```text\nDeclared  layer_rope_theta[3] = 0\nResolved  PositionPolicy::None\nGraph     target.attention[3].position = none\nEncoded   target.attention[3].position = none        PASS\n```\n\nTwo equivalence claims are kept **separate**, because each can fail while\nthe other holds:"
+  },
+  {
+   "id": "vindex3-format.md#19",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "7. G4 — verification (2)",
+   "text": "- **semantic equivalence** — the four-authority structural comparison,\n  checked as three pairwise links (Declared ≡ Resolved via the plan's value\n  comparators; Resolved ≡ Graph by independent re-derivation, not a call\n  into the builder's own mapping; Graph ≡ Encoded element-by-element against\n  the persisted graph) so a failure names the two authorities that disagree;\n- **byte payload equivalence** — per representation, **both ends re-hashed\n  at verify time**: the source payload hash (recomputed from the checkpoint,\n  in segment order), the encoded payload-region hash (recomputed from the\n  container) and the hash the directory recorded must all agree. A drifted\n  checkpoint therefore fails differently (`source ≠ recorded`) from a\n  corrupted container (`encoded ≠ recorded`).\n\n\"Tensor count before == after\" is not verification and does not appear in\nthis format. The tensor *table* (name, dtype, shape, offset, length) is\ncompared entry by entry instead, because a dtype or shape relabel over\nidentical bytes is invisible to every hash in the container — the gate\nincludes a mutation test for exactly that case.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#20",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8. G5 — execution contract (5a + 5b-1 sealed; 5b-2–5e pinned design)",
+   "text": "Execute the system **using only semantic information present in the\ncontainer**. The executor owns *generic operations* — embedding, norms,\nattention, RoPE/NoPE, sliding/full span, FFN activations, linear,\nperception transformer, projection, drafter verification. It must not\nown architecture:\n\n- no `if family == X` branches — span/window/position come from\n  `AttentionLayerPolicy`, scaling scalars from the persisted config\n  surface;\n- no layer-pattern arithmetic (`layer % 4 == 3`) — the interleave is\n  already unrolled into the per-layer table;\n- no hardcoded tap constants — the drafter discovers\n  `target.hidden[…] → draft.feature_projector` from the\n  `HiddenStateEdge`, block size included.\n\n**The deletion invariant.** Removing the original checkpoint,\n`config.json`, HF model type and architecture name must not change\nexecution. The runtime sees `container → system graph → operation plan →\ngeneric kernels`, nothing else."
+  },
+  {
+   "id": "vindex3-format.md#21",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.0 The execution surface (5a — implemented)",
+   "text": "`Component` answers *what part of the system this is*; its\n`ExecutionSurface` (`graph/surface.rs`, graph schema v2) answers *what\nthe generic operations need to run it* — grouped by op (`attention`,\n`ffn`, `norm`, optional `head`), every value **fully resolved** at\nbuild/judgment time: an absent `hidden_act`, a shared post-norm epsilon\nand canonical 1/√d scaling are decided once, by the same detection\nsurface the serving path runs, and persisted. An executor reads; it\nnever defaults.\n\nThe **completeness contract** derives from the operations a component's\nobjects imply, never from what any architecture declares:\n\n```text\nDecoderStack / PerceptionTower object  →  attention + ffn + norm surface\nEmbedding / OutputHead object          →  head surface\n```\n\nIt is enforced twice: at plan time an incomplete surface is a blocking\nfinding (encode refuses — a missing `intermediate_size` is a schema\nrefusal, not a mid-forward-pass discovery), and on the container\n`larql vindex3 inspect --execution-complete` re-answers the question\nfrom the persisted graph alone. Perception surfaces are derived from the\nnested config reading plus **tensor evidence** (FFN gating from the\npresence of gate weights under the tower — whoever ships them), and a\nper-layer head-geometry variation is refused as a schema gap, never\naveraged away. G4 covers the surface automatically: link 2 re-derives it\nfrom today's source, link 3 compares it element-wise against the\npersisted graph."
+  },
+  {
+   "id": "vindex3-format.md#22",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.0 The execution surface (5a — implemented) (2)",
+   "text": "Two facts were moved out of family defaults by the first real\nfour-norm stack (whose generic fallback claimed `post_norms = false`\nwhile shipping four norms per layer):\n\n- **Norm placement is operand evidence** (`graph/roles.rs`): the norm\n  roles present across a stack's layers decide `PreOnly` vs `PrePost`;\n  a mixed estate refuses. When an execution-semantic structural fact can\n  be established from unambiguous operand topology, tensor evidence\n  outranks a family/default assumption. Count is not semantics —\n  placement is: under two norms, `post_attention_layernorm` *is* the\n  pre-FFN norm; under four it normalises the attention output.\n- **Attention output gating is a generic primitive**\n  (`AttentionSurface.output_gate` + `OperandRole::AttnOutputGate`), not\n  a family feature. Its judged semantics stay `None` until a model's\n  gate behaviour is actually judged — a stack shipping the operand\n  meanwhile fails operand closure with the primitive named."
+  },
+  {
+   "id": "vindex3-format.md#23",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.2 Operand closure and the operation plan (5b-1 — implemented)",
+   "text": "G4 proves *consistency* across the four authorities; it cannot prove\n*sufficiency* — all four can faithfully agree on an under-specified\nexecution model. The physical operand estate is the independent\nstructural witness that closes that hole:\n\n```text\nconsistency  (Declared ≡ Resolved ≡ Graph ≡ Encoded)\n+ operand closure  (every executable tensor ↔ a generic op)\n= execution sufficiency\n```\n\n`larql vindex3 ops <container> --component <id>` (`format/vindex3/opplan/`)\nemits the component's **generic operation program** solely from the\ncontainer — per-layer norm sites, attention geometry/scale/span/position\n(from the policy table, never an index pattern), FFN shape, embedding\nand head ops, every operand a logical-object id plus segment-relative\ntensor. The closure gate requires, before any plan exists:\n\n- every stack tensor classifies into an [`OperandRole`] — an\n  unclassified operand blocks;\n- every operand's op is declared by the surface — an operand implying an\n  absent op blocks **naming the required primitive** (before its gate\n  was judged, the real Glimmer target refused on exactly\n  `self_attn.gate_proj` × 52 layers: `required primitive: attention\n  output gate` — the discovery that forced the primitive into the IR);\n- every op the surface implies has its operands, with the stored shapes\n  the surface's geometry states;\n- per-layer accounting is total (`N/N operands accounted`) — counts or\n  family defaults are not sufficient."
+  },
+  {
+   "id": "vindex3-format.md#24",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.2 Operand closure and the operation plan (5b-1 — implemented) (2)",
+   "text": "**Sealed on the real pair**: the target closes at 52 layers × 12/12\nwith zero defects once its gate semantics were judged from the upstream\nreference implementation (`sigmoid(gate_proj(attention_input))`\nmultiplied into the aggregated head output before `o_proj`), and the\nassistant closes at 5 × 11/11 (two-norm placement, per-head QK-norms,\ngated FFN). The NoPE interleave reads directly off the persisted table\n— layers 3, 7, … 51 emit `Full / position None` with no layer\narithmetic anywhere.\n\nTwo judged facts arrived with the gate, both preserved unfolded because\nstrict parity is next:\n\n- **Query and score scales are separate ops** — the declared\n  `qk_scale_factor` multiplies the normalised query before position\n  encoding; the canonical `head_dim^-0.5` is a score-time multiply.\n  Folding them is algebra-equivalent but not fp-equivalent, and moving a\n  multiply across RoPE/matmul is exactly the silent normalisation 5b-2\n  would otherwise surface as a parity mystery.\n- **Parameter-free QK normalisation** is a judged semantic no tensor\n  evidence can reveal: the reference normalises Q and K while the stack\n  ships no norm weights. It lives on the surface as\n  `parameter_free_qk_norm`, distinct from weighted QK-norm."
+  },
+  {
+   "id": "vindex3-format.md#25",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.3 Next rungs (pinned; Stage A implemented)",
+   "text": "**5b-2 Stage A — implemented** (`opplan/exec/`): a reference executor\nthat consumes a `ComponentOpPlan` and nothing else — naive f32 loops\n(deliberately sharing no arithmetic with `larql-compute`), operands\nloaded only through the closure-verified\n`object → representation → segment` path, every judged enum matched\nexhaustively. Gate: on a dense F32 fixture, container-driven execution\nmatches the checkpoint-driven production forward **layer by layer**\n(observed reassociation-only margins ~7e-8 hidden / ~2.4e-7 logits,\nasserted at 100× the noise floor), with a corrupted-operand negative\ncontrol and a non-degeneracy check (independent arithmetic must not\nagree bit-for-bit). The judged Glimmer program shape — gate, weighted +\nparameter-free QK norm, four norms, hybrid span, both softcaps —\nexecutes finite end to end; its numerical reference is Stage B."
+  },
+  {
+   "id": "vindex3-format.md#26",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.3 Next rungs (pinned; Stage A implemented) (2)",
+   "text": "**5b-2 Stage B — implemented.** The judged semantics against an\nindependent golden implementation (`exec/tests/golden.rs`): a\ndeliberately literal oracle sharing *nothing* with the execution stack —\nits own safetensors byte reader, plain hardcoded arithmetic, no plan, no\nsurface, no shared enums — over a miniature Glimmer anatomy with\ndeliberately awkward dimensions (hidden 12, 3q/1kv, head_dim 4, ffn 20,\nvocab 29, seq 5; layer 0 Sliding+RoPE+gated, layer 1 Full+NoPE+gated).\nExecutor matches at ~5e-8 on logits; the trace checkpoints every novel\nboundary (post-pf-norm Q, post-scale Q, post-position Q, gate sigmoid,\npre/post-gate attention) and self-checks its own semantics (NoPE is\nbit-identically a positional no-op; the gate strictly gates).\n\n**5b-2 Stage C — implemented.** The three causal controls\n(`exec/tests/controls.rs`), each mutating **only the persisted graph**:\n\n```text\nC1  query_scale 3.87 → 3.5   diverges from layer 0     scalar authority\nC2  layer 1 None → Rope      layer 0 identical,        layer-policy\n                             layer 1 diverges           authority\nC3  gate judgment removed    refuses, names primitive  op-semantic\n                                                        authority\n```\n\nA hidden default is precisely a fact whose mutation changes nothing;\nthese controls are the search for hidden defaults, and they found none.\nThe ladder's engineering contract, complete:"
+  },
+  {
+   "id": "vindex3-format.md#27",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.3 Next rungs (pinned; Stage A implemented) (3)",
+   "text": "```text\nfour-authority consistency + operand closure   = execution sufficiency\nexecution sufficiency + independent parity     = execution correctness\nexecution correctness + causal mutation controls = semantic authority\n```\n\nClosure proves the program is complete; parity proves the program is\ncorrect; the controls prove the IR is in charge.\n\n**Remaining (5b-3).** Parity\n(hidden-state and logit, not argmax) against the checkpoint-driven\nfixture path, then three positive controls proving three independent\nsemantic pathways drive computation — a container fact must not merely\nsurvive serialization:\n\n```text\nscalar execution fact      mutate persisted attention scale   → output changes\nlayer policy fact          mutate one layer's None → RoPE     → output changes\noperand/op semantic fact   mutate/remove judged gate semantics → diverge or refuse\n```\n\nThe third exists because of the gate discovery: the two pieces the\ngeneric fallback failed to capture (NoPE layers, attention gating) are\nexactly the two that make the strongest controls."
+  },
+  {
+   "id": "vindex3-format.md#28",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.3 Next rungs (pinned; Stage A implemented) (4)",
+   "text": "Parity runs **layer by layer**, not final-logit-only: per layer\n`max_abs` / `mean_abs` / cosine on the hidden-state trace, then\nexact/near-exact logits per what the kernels actually promise. A\ndivergence at layer N localises immediately to norm ordering, QK\nnormalisation, scale placement, RoPE/NoPE, gate placement, residual or\nFFN ordering — and because `vindex3 ops` spells the generic program\nout, the debug object and the execution object are the same semantic\nrepresentation. The bar 5b-2 enforces: **the operation plan is not\ndocumentation of execution; it is execution.**\n\n**The compiler boundary.** Some execution semantics cannot be inferred\nfrom bytes — a gate's activation, a parameter-free QK normalisation\n(there are no weights to find), the exact application point of a scale.\nSome authority must tell the *compiler* what they mean, and that\nauthority is legitimately architecture-aware. The boundary is where\nfamily knowledge is allowed to live:\n\n```text\nSOURCE COMPILER / FRONT END          EXECUTION / BACK END\nHF model_type, upstream reference    VINDEX3 IR\n        ↓                                ↓\narchitecture-specific judgment OK    generic op plan\n        ↓                                ↓\ngeneric VINDEX3 IR                   generic kernels\n                                     — no family knowledge here\n```"
+  },
+  {
+   "id": "vindex3-format.md#29",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.3 Next rungs (pinned; Stage A implemented) (5)",
+   "text": "A `muse_glimmer` source decoder is fine; `if family == muse_glimmer`\nafter the vindex is produced is the violation. VINDEX3 permits\n**architecture-aware ingestion** and produces an\n**architecture-independent executable IR** — like language front ends\ncompiling to one IR for one backend, it does not need every upstream\ncheckpoint to be self-describing; it needs to *compile their semantics\naway*.\n\n**The naming-convention trap.** Dispatching on object-id *strings*\n(`if object_id.contains(\"perception_tower\")`) technically avoids a\nfamily branch but is the same defect laundered through a name: the\nconvention becomes an undeclared schema. Object ids identify; they never\nencode execution rules. Dispatch reads typed semantics only —\n`ObjectKind`, `ComponentRole`, `AttentionLayerPolicy`, `HiddenStateEdge`\nfields — so a renamed id changes nothing and a new architecture whose\ngraph carries the same kinds executes with zero runtime edits."
+  },
+  {
+   "id": "vindex3-format.md#30",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.1 The G5 gate — five proofs",
+   "text": "1. **Text forward from graph semantics** — the target component executes\n   from the container, output-identical to the checkpoint-driven path.\n2. **Position/span behaviour exclusively from `AttentionLayerPolicy`** —\n   NoPE/global vs RoPE/sliding per layer is a table read; mutating one\n   row of the persisted table provably changes execution (the positive\n   control), and no other source of that fact exists to consult.\n3. **Perception from the component, not family wiring** — the vision\n   tower and adapter run because a `perception` component with its\n   objects is present, not because the runtime knows Glimmer has one.\n4. **Drafter capture exclusively from the `HiddenStateEdge`** — which\n   hidden states are tapped, and the block protocol, are edge reads;\n   editing the edge redirects the capture.\n5. **Lookup by logical object id only** — operand resolution goes\n   `object id → representation → segment`; no original HF tensor name\n   appears anywhere on the execution path (they were already stripped at\n   encode).\n\nWhen the five hold, an architecture is an **instance** the container\ndescribes, not an implementation the executor contains: an architecture\nis *supported* when its execution semantics can be expressed in the\nmodel-system IR — not when its name has been added to the runtime.\n\n---"
+  },
+  {
+   "id": "vindex3-format.md#31",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "9. Relationship to existing formats",
+   "text": "- **LYRW v2** (`docs/lyrw-v2.md`) remains the physical layout for routed\n  MoE expert banks; under this spec it is one segment family a\n  representation may use, selected by profiles/variants\n  (`index.json` §profiles). Its region roles (`gate/up/down/bias/scales/\n  latents`) are operand-level structure *inside* an FFN object, not a\n  substitute for logical objects.\n- **VINDEX2** containers are a different generation; loaders refuse\n  cross-generation directories with a precise error naming both versions.\n- The **MoE manifest** (`moe_manifest.json`) continues to describe routed\n  programmes; the system graph does not replace it, it locates it."
+  },
+  {
+   "id": "vindex3-format-spec.md#1",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "Vindex Format Specification — VINDEX3",
+   "text": "**Version:** 3.0-draft-2\n**Date:** 2026-08-01 (draft-2: three binary-layout corrections + two clarifications from the first lyrw2 implementation — §6.2, §6.4, §6.3, §6.5; recorded per pre-freeze amendment rule)\n**Status:** Draft — pre-registration. No byte is frozen until the V2-0..V2-2 gates in the companion experiments document pass. **Five production models now encode and execute through this format**: gpt-oss-20b, Gemma 4 26B-A4B, and Granite 4.1 3B/8B/30B all round-trip through `larql vindex3 encode` → `inspect` → `verify` → `exec` byte-identically to their HF sources, and `larql serve` serves a V3 container over `/v1/completions` (see `docs/vindex3-runtime.md`). The conformance fixture-A round-trip through `format::vindex3` (write → detect → open → validate → bind → execute) also holds bit-identically, with fused and decomposed FC1 renderings satisfying the same programme id. The remaining pre-freeze rows (profile-authority derivation, variant-selection refusal, the not-hard-coded fixtures B–D, WALK/DESCRIBE parity) are still open, so the ABI is **not** frozen and `extract` still writes VINDEX2.\n**Predecessor:** [format-spec.md v0.4](format-spec.md) (VINDEX2)\n\n**Companion:** [`vindex3-experiments.md`](../../../docs/vindex3-experiments.md) (pre-registered experimental programme), [Conformance v1](conformance-v1.md), [Operations](operations-spec.md), [Ecosystem](ecosystem-spec.md), [LQL](../../../docs/lql-guide.md)\n**Implementation target:** `larql-vindex` crate (Rust)"
+  },
+  {
+   "id": "vindex3-format-spec.md#2",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "Vindex Format Specification — VINDEX3 (2)",
+   "text": "> **A note on the number 2 appearing throughout.** This document specifies\n> **VINDEX3**, and its own version is therefore `3.x`. Three things nearby keep\n> a `2` on purpose and are not typos:\n>\n> | name | why it stays |\n> |---|---|\n> | `V2-0`…`V2-4` gates | pre-registered identifiers with results already recorded against them; renaming would orphan the lineage |\n> | registry programme `vindex2` | same — it is an external key in chuk-experiments |\n> | `lyrw2` / `FORMAT_VERSION = 2` | the *bank* format's own version, on a different axis: a VINDEX2 container holds LYRW v1 files, a VINDEX3 container holds LYRW v2 files (see `format::generation`) |\n>\n> Only the container is versioned 3. An on-disk `index.json` carrying\n> `\"version\": 2` is a **VINDEX2** file — the predecessor above, not a draft of\n> this one.\n>\n> Real VINDEX3 containers now exist for conformance fixture A\n> (`format::vindex3`), so the format is no longer validated only through\n> VINDEX2-sourced operands. Real *models* are still VINDEX2: `extract` does not\n> emit VINDEX3 and will not until the outstanding V2-0/V2-1 rows close.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#3",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "1. What is VINDEX3?",
+   "text": "VINDEX3 is a **general-purpose serving container for sparse models** — serving meaning both inference *and* the LQL query surface (WALK, DESCRIBE, SELECT, EXPLAIN). It is the successor to the VINDEX2 dense/Gemma-oriented layout, and it exists to answer one question well:\n\n> Extract a supported checkpoint **once** into a stable, component-addressed layout, then vary **what is loaded, where it resides, what precision it uses, and whether a component is executed or queried** — without ever rebuilding the index.\n\n**The model IS the database** remains the founding principle, not a VINDEX2 legacy: the gate regions inside LYRW v2 banks *are* the KNN index, exactly as `gate_vectors.bin` *was* W_gate. VINDEX3 does not add a query index next to the weights; it keeps the weights queryable (§15).\n\nThe key principles of VINDEX2 are retained unchanged:\n\n- **The model IS the database.** Each weight tensor is stored once, canonically, in its serving format. Nothing is stored twice.\n- **Weights are separated by function, not by file size.** Sharding follows what inference does with a weight, not an arbitrary byte boundary.\n- **mmap-first.** Every physical object is independently mmap-able; the OS pages in only what execution touches.\n- **Loaders dispatch on declared tags, never sniff filenames.**\n- **Fail closed.** A profile that lacks a required operand refuses to load with a precise diagnosis; it never silently degrades authority.\n\nThe genuinely new pieces in VINDEX3 are exactly five:"
+  },
+  {
+   "id": "vindex3-format-spec.md#4",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "1. What is VINDEX3? (2)",
+   "text": "1. **Per-region quantisation.** Format belongs to each weight region, not to the entire layer file.\n2. **Multiple physical segments per logical expert bank.** A logical layer can span several files without changing model semantics.\n3. **Multiple bank kinds** — routed, shared and dense/hybrid — with declared geometry.\n4. **A validated MoE programme manifest** describing router, banks, transforms and combine semantics, replacing the Gemma/Mixtral-shaped `moe_config`.\n5. **Representation variants.** A region may carry several physically present encodings; profiles *select* among them and never request formats that were not extracted (§9.1)."
+  },
+  {
+   "id": "vindex3-format-spec.md#5",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "1.1 K3 validates the format; it does not define it",
+   "text": "The conformance envelope is defined by three real architectures plus a control:\n\n| Model | Routing | Shared experts | Expert space | Expert programme | Native format |\n| ----- | ------- | -------------- | ------------ | ---------------- | ------------- |\n| Direct MoE (control) | top-2 of 8 | 0 | residual | gated MLP | any |\n| GPT-OSS | top-4 of 32/128 | 0 | residual | clamped gated MLP w/ residual term | MXFP4 |\n| **Inkling-Small (276B-A12B)** | top-6 of 256, sigmoid + gate bias + norm_after_topk + route_scale 8.0; **shared-expert sink** (router scores shared experts) | 2 (always active) | residual | gated MLP; dense MLP at layer index 2 (mid-stack) | BF16, with NVFP4 / MXFP8 releases |\n| **Kimi-Linear-48B-A3B** | top-8 of 256, sigmoid + renormalise + 2.446 scaling | 1 | residual | gated MLP; layer 0 dense (`first_k_dense_replace=1`) | BF16 |\n| K3 | top-16 of 896 | 2 | latent 3584 | SiTU-GLU latent expert | (extraction: exact Q6_K baseline) |"
+  },
+  {
+   "id": "vindex3-format-spec.md#6",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "1.1 K3 validates the format; it does not define it (2)",
+   "text": "Inkling-Small replaces the hypothetical \"Inkling-shaped\" envelope member with the real released model (`thinkingmachines/Inkling-Small`, 532 GB BF16 + 4.46 GB MTP sidecar). It contributes what nothing else in the set can: real two-shared-expert reduction under a **shared-expert sink** router (shared experts inside the scoring/normalisation, `norm_after_topk`, gate bias, global scale — the richest router-semantics test in the envelope); real **NVFP4/MXFP8 native regions** via its quantised releases, whose mixed-precision convention (routed experts low-bit, shared experts and attention BF16) is itself a per-region-format use case; a mid-stack dense layer (`dense_mlp_idx: 2`) proving per-layer manifests handle arbitrary dense/MoE schedules, not just leading-dense; and — decisive for the rig — it is the first design-set model that **cannot be RAM-resident** on the M3 Max (~202 GiB routed at Q6_K, ~4.9 GiB per MoE layer, ~4.7 GiB of routed reads per token at top-6), so partial-residency, SSD-streaming and attn-local/FFN-remote profiles get their first *non-optional* real-model test at one-eighth K3 scale. Its MTP heads and multimodal towers are stored as optional auxiliary manifest-addressed tensors — the text backbone is the conformance target; the towers are opaque payload, and omitting MTP never changes authority (drafting only)."
+  },
+  {
+   "id": "vindex3-format-spec.md#7",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "1.1 K3 validates the format; it does not define it (3)",
+   "text": "Kimi-Linear-48B-A3B earns its seat three ways. It is the only **real, locally runnable** shared-expert member (98.3 GB BF16, ~3B active — Q6_K-class fits the M3 Max), so V2-4's shared-bank rung is proven on an actual checkpoint rather than a fixture. Its `first_k_dense_replace=1` hybrid stack is the only member exercising per-layer manifest heterogeneity (dense layer 0, MoE layers 1–26) on a real model. And it is K3's direct lineage ancestor — the same KDA(3):MLA(1) hybrid dense spine, 20 KDA + 7 MLA layers of real recurrence parameters — making it the dress rehearsal for the K3 adapter's class-1/class-2 plumbing at one-thirtieth the checkpoint size. Its sigmoid-scored, renormalised, scaled router also stress-tests the manifest's router vocabulary beyond softmax-top-k.\n\nK3 is the stress test — largest bank, latent expert space, shared pre/post projections. GPT-OSS and Inkling exist in the envelope precisely to stop K3-specific assumptions (a tensor literally named `gate_up`, top-16, no-shared-bank, residual-space-only) from becoming the ABI.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#8",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "2. Scope and non-goals",
+   "text": "VINDEX3 serves **one fixed checkpoint efficiently under different inference and query policies**. Browse/LQL is in scope (§15); training is not. It is explicitly not:\n\n- **A model-development store.** No optimisation for training, fine-tuning, gradient updates, adapter merging, or frequently rewritten weights. No copy-on-write component versioning. One extraction, then runtime policy.\n- **A general neural-graph container.** VINDEX3 does not duplicate ONNX/safetensors-plus-compiler. The expert-programme vocabulary is deliberately bounded (§8.3).\n- **A locality store.** Hot sets, retained experts, cache allocation, prefetch depth, local-versus-remote placement and reduced-top-K are **runtime metadata over the index**, never physical-format decisions (§9).\n\nThe supported contract is:\n\n> Sparse decoder MoEs composed from routed and shared expert banks, optional pre/post transforms, declarative routing/reduction semantics, and a bounded expert-programme vocabulary — plus every dense model VINDEX2 supports, expressed as the degenerate single-entry case.\n\nGenuinely novel expert topologies extend via a new `programme_id` (§8.4) without changing region storage.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#9",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "3. Design principles",
+   "text": "Principles 1–3 carry over from VINDEX2 §5.12; principle 1 is **amended** in VINDEX3."
+  },
+  {
+   "id": "vindex3-format-spec.md#10",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "3. Design principles (2)",
+   "text": "1. **Structure is orthogonal to quantisation — now at region granularity.** VINDEX2 declared one `quant_format` per layer file, forbidding `gate/up = Q6_K, down = MXFP4` inside a layer. VINDEX3 moves the format tag to each weight region. Re-quantising one projection role is rewriting those regions (or adding a sibling segment), not replacing the layer.\n2. **Unified for dense and MoE.** A dense layer is a bank with `num_entries = 1`. Binary format and dispatch path are identical.\n3. **Native OS addressability.** Each segment file is independently mmap'd; expert sharding reads only assigned entry byte ranges; no offset arithmetic into a global blob.\n4. **The split rule.** A component gets independent physical identity **only when LARQL may independently omit it, quantise it, place it, prefetch it, execute it — or query it.** Conceptual tensor taxonomy is not a reason to split. The query clause matters: WALK reads gate rows without up or down, so on a browse-enabled index the gate role has an independent access pattern by construction (§15.2), even if inference always fetches gate/up/down together.\n5. **Storage aligns with dispatch.** The natural extent is the expert group matching the grouped kernel's dispatch width, so one grouped dispatch ≈ one extent ≈ one prefetch/read unit.\n6. **Representable ≠ servable.** The format may describe combinations no kernel can yet execute. The capability registry (§10) distinguishes representable / reference-executable / dispatched / production, exactly mirroring the K3 ledger maturity discipline.\n7. **Logical ownership by layer.** The logic"
+  },
+  {
+   "id": "vindex3-format-spec.md#11",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "3. Design principles (3)",
+   "text": "al layer remains the stable semantic unit. Segmentation (§7) is a physical storage parameter, invisible to model semantics.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#12",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "4. The five durable weight classes",
+   "text": "The serving ABI freezes exactly five classes. These are the boundaries that inference policy may ever want to fetch, place, quantise or omit independently:\n\n| # | Class | Contents | Why independent |\n| - | ----- | -------- | --------------- |\n| 1 | **Control & router** | Embeddings, norms, LM head, router weights, routing metadata, recurrence/control parameters | Small, always resident, precision-sensitive |\n| 2 | **Dense spine** | Attention / KDA / MLA projections, per layer or major projection class | Touched every token; future KDA3 target; independent quantisation ladder |\n| 3 | **Shared FFN** | Shared experts and shared latent pre/post projections, per layer | Touched every token; different residency economics from routed |\n| 4 | **Routed gate/up banks** | Per-layer expert-group extents | Candidate for exact Q6_K or native low-bit; grouped-dispatch aligned |\n| 5 | **Routed down banks** | Per-layer expert-group extents | Independent quantisation, placement and (approximate-profile) omission policy |\n\nClasses 4 and 5 remain physically separable **because their inference treatment can differ** (precision, bandwidth, kernel maturity, residency, remote/local placement) — not because a tensor taxonomy says so. Where a model's serving policy treats them identically, a single fused `gate_up_fused + down` bank per layer satisfies the ABI (§6.5).\n\nNo sixth class. Everything else — hot sets, expert retention, cache sizing, prefetch order, exact-vs-approximate selection — is profile/runtime metadata (§9).\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#13",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "5. Directory layout",
+   "text": "```\nmodel.vindex/\n│\n├── index.json                # SOLE ROOT AUTHORITY (§12): version, identity, provenance,\n│                             # checksums, class map, segment lists, references to everything below\n├── moe_manifest.json         # model + MoE programme description (§8), referenced from index.json\n├── profiles/                 # execution profiles (§9), referenced from index.json\n│   ├── exact.json\n│   ├── attn-local-ffn-remote.json\n│   └── ...\n│\n├── control/                  # class 1\n│   ├── embeddings.bin\n│   ├── norms.bin\n│   ├── lm_head.bin           # omitted if tied\n│   └── routers.bin\n│\n├── dense/                    # class 2\n│   └── layer_{L}.weights     # LYRW v2, dense bank(s)\n│\n├── shared/                   # class 3\n│   └── layer_{L}.weights     # LYRW v2, shared bank + latent transforms\n│\n├── routed/                   # classes 4 & 5\n│   └── layer_{L}[.seg{S}].weights   # LYRW v2, routed bank, segmented as needed\n│\n├── query/                    # LQL metadata sidecars (§15.3) — metadata, not weights\n│   ├── down_meta.bin         # DMET format unchanged from v1 §5.3\n│   ├── feature_labels.json\n│   └── relation_clusters.json\n│\n├── tokenizer.json\n└── weight_manifest.json      # manifest-addressed tensors (control/dense), unchanged shape from v1 §5.9\n```\n\nNotes:"
+  },
+  {
+   "id": "vindex3-format-spec.md#14",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "5. Directory layout (2)",
+   "text": "- Control-class and non-bank dense tensors (routers, recurrence parameters, latent projections when the adapter prefers manifest addressing) remain ordinary **manifest-addressed tensors** with `key / shape / kind / offset / length` — the v1 `weight_manifest.json` shape is retained unchanged.\n- Component addressability does **not** require thousands of filesystem objects. A class may be one file or a few large ones; addressability comes from the region tables inside them.\n- **One root, as in v1.** `index.json` remains the manifest of record — it owns version, identity, provenance, checksums (every physical file's SHA256, verified by `larql verify`), the segment lists, and references to `moe_manifest.json`, `weight_manifest.json` and `profiles/`. There is no `superblock.json`: a second root creates competing authorities (whose checksums win? whose version controls compatibility?). A detached signing/atomic-replacement wrapper is introduced only if a concrete need for it appears, as an addition around `index.json`, never a rival to it.\n- Profiles are **not** covered by the immutable artifact checksum set — they are mutable policy. `index.json` records which profile names ship with the artifact; their contents are checksummed individually and replaceable.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#15",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6. LYRW v2 binary format",
+   "text": "LYRW v2 preserves the v1 magic and self-describing property, and generalises the fixed four-integer offset table into banks, segments and entry-region tables."
+  },
+  {
+   "id": "vindex3-format-spec.md#16",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.1 Header",
+   "text": "```\n[header]\n  magic:            u32   0x4C595257 (\"LYRW\")\n  format_version:   u32   = 2\n  logical_layer:    u32\n  num_banks:        u16\n  num_segments:     u16   (segments described by THIS file's tables; ≥1)\n  flags:            u32   (bit 0: this file is one segment of a multi-segment layer)\n  reserved:         u32\n```\n\nAll integers little-endian. All region offsets are from the start of the containing segment file and 64-byte aligned."
+  },
+  {
+   "id": "vindex3-format-spec.md#17",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.2 Bank descriptor (`num_banks ×`)",
+   "text": "```\n  bank_id:              u16\n  bank_kind:            u16   0=dense, 1=routed, 2=shared\n  region_schema_count:  u16   number of schema records this bank owns in the\n                              schema table (§6.4) — without it a reader cannot\n                              tell where one bank's schemas end  [draft-2]\n  flags:                u16   bit 0-1: browse mode (00=none, 01=direct,\n                              10=strided) per §15.2; rest reserved  [draft-2]\n  num_entries:          u32   1 (dense) or expert count\n  input_dim:            u32\n  intermediate_dim:     u32\n  output_dim:           u32\n```\n\nBank descriptor is 24 bytes (4-byte aligned), not the 20 the draft-1 field list implied.\n\n`input_dim`/`output_dim` are the expert's own operand dims — for K3's latent bank these are 3584/3584, not the 7168 residual width. Dense v1-style layers map to one bank: `bank_kind=0, num_entries=1`.\n\n**The binary carries no programme identity.** LYRW describes storage only — banks, entries, region schemas, offsets, formats. The MoE manifest binds `bank_id → programme` (§8.4). Two authorities for the same fact (\"binary says programme 4, manifest says gpt-oss-expert-v1\") is a disagreement waiting to happen; the manifest is the single one, consistent with the draft's own layering: storage holds regions, the manifest gives them meaning."
+  },
+  {
+   "id": "vindex3-format-spec.md#18",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.3 Segment descriptor (`num_segments ×`)",
+   "text": "```\n  bank_id:          u16\n  segment_index:    u16\n  first_entry:      u32\n  entry_count:      u32\n```\n\nA single-file layer has one segment covering `[0, num_entries)`. Multi-segment layers repeat the header in every segment file with `flags` bit 0 set; `index.json` lists the segment files per logical layer so the loader never globs. **A segment file's entry table covers only that segment's entries** (`entry_count` rows, indexed from `first_entry`) — never the whole logical bank. [clarified in draft-2]"
+  },
+  {
+   "id": "vindex3-format-spec.md#19",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.4 Region schemas and entry table",
+   "text": "Expert banks are homogeneous: every entry in a bank shares the same region layout. The region schema is therefore declared **once per bank**, and each entry stores only offsets and lengths. (This is the simplification that dropping LYRW v1 binary compatibility buys — see §6.6.)\n\n```\n[bank region schemas]   region_schema_count × per bank:\n  schema_index:     u16\n  role:             u16   (§6.5)\n  format:           u16   quant enum — 0=f32 1=f16 2=bf16 3=q4_0 4=q4_k 5=q6_k\n                          6=q8_0 7=fp4_larql 8=mxfp4 9=nvfp4 10=mxfp8 ...\n  packing:          u16   0=row_major, 1=blocks_with_scales_inline,\n                          2=blocks_values / 3=blocks_scales\n  pair_id:          u16   links a blocks_values schema to its blocks_scales\n                          schema; 0xFFFF = unpaired\n  reserved:         u16   pad — keeps the two u32 dims on a 4-byte boundary;\n                          record is 20 bytes, not draft-1's 18  [draft-2]\n  rows:             u32\n  cols:             u32\n\n[entry table]           entry_count × region_schema_count ×:\n  offset:           u64   (from start of containing segment file, 64-B aligned)\n  length:           u64\n```\n\nConsequences:"
+  },
+  {
+   "id": "vindex3-format-spec.md#20",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.4 Region schemas and entry table (2)",
+   "text": "- `gate_up_fused: mxfp4` + `down: q6_k` in one file, and GPT-OSS-style separate value/scale regions, without a new container.\n- Uniform expert geometry is explicit; parsing is O(schemas), not O(entries × regions).\n- Per-expert codec variation — which no grouped kernel supports — is **unrepresentable**, by construction rather than by convention.\n- `pair_id` makes values/scales pairing explicit; role tags alone are ambiguous once an entry carries more than one quantised tensor.\n- Exceptional per-entry overrides are reserved behind a header flag bit, undefined in v2.0 — added only if a real model forces them."
+  },
+  {
+   "id": "vindex3-format-spec.md#21",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.5 Region roles",
+   "text": "Registered roles (extensible; new roles do not bump `format_version`):\n\n```\n0  gate\n1  up\n2  gate_up_fused\n3  down\n4  bias\n5  scales          (paired with a values region via packing=2/3)\n6  latent_in       (shared pre-projection, when bank-local storage is preferred)\n7  latent_out      (shared post-projection, likewise)\n8..255   reserved-registered\n256..    vendor/experimental\n```\n\nThe fast-path contract is unchanged from v1: known kernels may **require** exactly `gate_up_fused + down` (or `gate + up + down`) and parse them into the same structures the grouped kernels use today. Presence of other roles does not invalidate a file; absence of a role a programme requires makes the file un-executable for that programme (§11), not invalid.\n\n**Unknown role, format and packing tags are preserved, not rejected, at read time.** Refusal belongs at capability-check time (§11): a browse-only reader must not choke on a `down` region encoded in a codec it never touches, and a future codec must not invalidate old readers' ability to serve the regions they do understand. The reader reports unknown tags; the capability check refuses the *operations* that need them. [clarified in draft-2]"
+  },
+  {
+   "id": "vindex3-format-spec.md#22",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "6.6 Relationship to the v1 layer files — greenfield, deliberately",
+   "text": "LYRW v2 owes **no binary compatibility** to the §5.12 `layers/*.weights` files. Those files are an internal detail of VINDEX2: they exist only inside VINDEX2 directories, are parsed only by the VINDEX2 loader path, and were never a public contract in their own right. No external tool depends on their byte layout.\n\nConsequences:\n\n- **No synthesis adapter.** A LYRW v2 reader never opens a v1 layer file, and vice versa. Each container generation's loader reads its own layer format, end of story.\n- **No in-place upgrade** of multi-hundred-GB indexes. Migration is `checkpoint → VINDEX3 extractor`, or optionally `VINDEX2 → VINDEX3 importer` — a standalone tool, not a loader feature.\n- **Design freedom.** The bank-level region-schema table (§6.4), explicit value/scale pairing, and segment descriptors are all clean-sheet choices that a v1-compat shim would have contaminated. The `LYRW` magic and `format_version=2` are retained purely as self-description and forensics — a v1 reader that encounters a v2 file fails fast on the version field with a precise \"requires VINDEX3 loader\" error, never a parse error.\n\nThe compatibility obligation that **does** bind is one level up: larql must support VINDEX2 and VINDEX3 side by side (§12.1).\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#23",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "7. Segmentation",
+   "text": "Motivating arithmetic (K3, exact Q6_K):\n\n```\nparams per expert        = 3 × 3584 × 3072            = 33,030,144\nparams per routed layer  = 33,030,144 × 896           = 29,595,009,024\nQ6_K bytes (210/256)     ≈ 24.28 GB  =  22.61 GiB\n```\n\nThat exceeds the published 20 GiB shard cap, so `one logical layer = one physical file` cannot hold for K3 exact Q6_K. **Segment width and group width are two different scales, decided by two different measurements** — conflating them turns a 2-file layer into a 14-file layer for no read-path benefit:\n\n| Scale | Optimises | Typical size |\n| ----- | --------- | ------------ |\n| **Segment file** | file count, mmap management, shard distribution, the 20 GiB cap | as large as the cap allows — for K3 exact Q6_K, **2 segments of 448 experts** (~11.3 GiB each), not 14 of 64 |\n| **Group extent** (inside a segment) | SSD reads, prefetch units, grouped-kernel dispatch | 8/16/32 experts (E2/E3) |\n\nA K3 routed layer therefore becomes:\n\n```\nrouted/layer_037.seg00.weights   experts   0–447\n  ├── group extent  0: experts   0– 15\n  ├── group extent  1: experts  16– 31\n  └── ... (28 extents of 16)\nrouted/layer_037.seg01.weights   experts 448–895\n```\n\nAt ~92 MoE layers this is ~184 routed segment files, not ~1,288.\n\nRules:"
+  },
+  {
+   "id": "vindex3-format-spec.md#24",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "7. Segmentation (2)",
+   "text": "- Segment boundaries **must** fall on group-extent boundaries; group width **must** divide segment width.\n- Both widths are extraction-time storage parameters chosen by measurement (E2 sweeps them independently), not semantic commitments. They may differ per model and per layer.\n- Physical expert order within a segment need not equal logical order — the entry table is the indirection. Permuted layouts are legal but must not be adopted without the E2/E6 evidence bar."
+  },
+  {
+   "id": "vindex3-format-spec.md#25",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "7.1 Group extents",
+   "text": "The unit of read alignment and prefetch is the **group extent** inside a segment, sized to the grouped kernel's natural dispatch width. One grouped dispatch ≈ one group extent ≈ one read unit; the extent boundary is what the payload layout aligns to, and the entry table makes extents addressable without a separate structure. Individual-expert files are prohibited at K3 scale (896 experts × ~92 MoE layers × several roles is an operational failure, not a design).\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#26",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "8. The MoE programme manifest",
+   "text": "`moe_manifest.json` describes how regions form an MoE computation. The physical index stores tensor regions; the manifest gives them meaning; the runtime selects an optimised kernel when it recognises the programme."
+  },
+  {
+   "id": "vindex3-format-spec.md#27",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "8.1 Per-layer shape",
+   "text": "```json\n{\n  \"moe_layer\": {\n    \"layer\": 12,\n    \"input_space\": \"residual\",\n    \"router\": {\n      \"scores\": \"layers.12.router.weight\",\n      \"selection\": { \"kind\": \"top_k\", \"k\": 16 },\n      \"normalisation\": \"k3_quantile_balanced\"\n    },\n    \"transforms\": {\n      \"routed_input\":  \"layers.12.routed_expert_down_proj\",\n      \"routed_output\": \"layers.12.routed_expert_up_proj\"\n    },\n    \"routed_bank\": {\n      \"experts\": 896,\n      \"programme\": \"latent-moe-v1\",\n      \"storage\": \"routed/layer_012\",\n      \"expert_dims\": { \"input\": 3584, \"intermediate\": 3072, \"output\": 3584 }\n    },\n    \"shared_bank\": {\n      \"experts\": 2,\n      \"programme\": \"gated-mlp-v1\",\n      \"storage\": \"shared/layer_012\"\n    },\n    \"reduction\": \"gate_weighted_sum\",\n    \"routed_output_norm\": \"layers.12.routed_out_norm\",\n    \"combine\": \"residual_add\"\n  }\n}\n```\n\nFor a conventional MoE, `transforms` are null. For GPT-OSS, `routed_bank.programme = \"gpt-oss-expert-v1\"` and `shared_bank` is absent. For Inkling, shared and routed banks coexist in residual space. Per-layer variation (hybrid dense+MoE stacks, differing expert counts) is expressed by per-layer manifests, not global fields."
+  },
+  {
+   "id": "vindex3-format-spec.md#28",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "8.2 What stays model-specific (adapter-owned)",
+   "text": "Router scoring/normalisation details, shared-expert participation in normalisation, activation functions, expert residual semantics, clamps/biases/scales, fusion preferences, layer-specific expert counts. The manifest names these; the adapter implements them."
+  },
+  {
+   "id": "vindex3-format-spec.md#29",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "8.3 Bounded programme vocabulary",
+   "text": "The declarative vocabulary is inference-shaped and closed by design:\n\n```\nlinear · fused linear · activation · clamp · multiply · add · scale ·\nnormalise · route · gather · weighted reduction · residual merge ·\npre/post transform\n```\n\nNo general graph interpreter. Known arrangements compile to specialised kernels; a generic reference executor provides correctness for everything representable."
+  },
+  {
+   "id": "vindex3-format-spec.md#30",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "8.4 Programme registry",
+   "text": "```\nprogramme_id  0  gated-mlp-v1\n              1  gated-mlp-fused-fc1-v1\n              2  gpt-oss-expert-v1        (clamped gated MLP + residual term)\n              3  shared-routed-mlp-v1\n              4  latent-moe-v1            (K3 SiTU-GLU latent expert)\n```\n\nEach programme declares its **required region roles**. New programmes register an id, a version, required roles, and optional opaque model metadata — region storage is untouched.\n\nThe manifest is the **only** binding of `bank_id → programme_id`; LYRW files never carry programme identity (§6.2). Kernel capability entries (§10) reference programmes by registry id.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#31",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9. Execution profiles and authority",
+   "text": "A profile is a small JSON file selecting inference behaviour over one extracted index. Profiles never trigger reslicing — and they never trigger conversion (§9.1).\n\n```json\n{\n  \"profile\": \"routed-mxfp4\",\n  \"base\": \"exact\",\n  \"select\": {\n    \"routed.gate_up\": \"native-mxfp4\",\n    \"routed.down\":    \"exact-q6k\"\n  },\n  \"placement\": { \"routed\": \"local\", \"dense\": \"local\" },\n  \"runtime_policy\": {\n    \"resident_experts\": \"routing-profile-2026-08-14.json\",\n    \"prefetch_group\": 32\n  }\n}\n```\n\nThe profile carries **no `authority` claim of its own** — authority is derived (§9.2)."
+  },
+  {
+   "id": "vindex3-format-spec.md#32",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.1 Representation variants — profiles select bytes, they don't request formats",
+   "text": "A profile saying `\"format\": \"mxfp4\"` cannot turn Q6_K bytes into MXFP4 bytes by declaration. Exactly one representation model is legal: **a region set may carry multiple physically present variants; a profile selects a present variant.**\n\n```json\n{\n  \"region_set\": \"layer.12.routed.gate_up\",\n  \"variants\": {\n    \"exact-q6k\":    { \"storage\": \"routed/layer_012.q6k\",    \"fidelity\": \"source-equivalent\" },\n    \"native-mxfp4\": { \"storage\": \"routed/layer_012.mxfp4\",  \"fidelity\": \"source-exact\" }\n  },\n  \"baseline\": \"exact-q6k\"\n}\n```\n\n- **Selecting an absent variant fails closed**, naming the region set, the requested variant and the variants actually present — before any byte is read.\n- **No runtime conversion, ever.** \"No hidden decode-time repacking\" (§10) holds by construction: the bytes executed are the bytes stored.\n- **Incremental packs.** New variants are added beside the baseline as independent, checksummed segment files — the multi-terabyte baseline is never rewritten. A routed-MXFP4 pack for K3 touches only routed region sets; attention, embeddings, routers and dense weights are untouched.\n- **Single-copy, clarified.** The v1 principle forbids storing the *same* bytes twice; it does not forbid deliberate alternative encodings. The `baseline` variant is the canonical authority; additional variants are opt-in, per-component, and individually removable."
+  },
+  {
+   "id": "vindex3-format-spec.md#33",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.2 Authority — graded, derived, never asserted",
+   "text": "**Levels** (mandatory, fail-closed):\n\n| Level | Meaning |\n| ----- | ------- |\n| `source-exact` | Decoded values bit-identical to the source checkpoint, in the checkpoint's own encoding family (e.g. native MXFP4 regions of a native-MXFP4 model) |\n| `source-equivalent` | Different encoding whose decode reproduces the source values exactly (e.g. a lossless Q6_K container of native MXFP4 values) |\n| `numerically-approximate` | Same architecture, lossy representation (e.g. Q6_K quantised from BF16) |\n| `structurally-approximate` | Components omitted or replaced (reduced top-K, shared-only layers, compiled subexperts) — must list `omitted_components` / `replacement` |\n| `analysis-only` | Incapable of complete forward execution (router/browse slices) |\n\nAuthority is **derived, not declared**: every variant carries a region-level `fidelity` set at extraction time from provenance, and a profile's authority is the weakest fidelity across its active selections, further capped by programme traversal (§11) when required operands are absent. This closes the loophole where a lossy extraction becomes \"exact\" merely by being named the baseline — the baseline's own fidelity is recorded against the source checkpoint, not against itself. A profile cannot claim above its derived level; it may voluntarily claim below it.\n\nStandard profile names: `exact`, `native-lowbit`, `mixed-precision`, `attn-local-ffn-remote`, `partial-residency`, `reduced-top-k`, `shared-only`, `router-browse`, `compact-approximate`."
+  },
+  {
+   "id": "vindex3-format-spec.md#34",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.2 Authority — graded, derived, never asserted (2)",
+   "text": "**Runtime metadata, never format:** top-K/retention %, hot/warm/cold assignment, resident experts, per-layer popularity, adaptive cache size, prefetch ordering, exact-vs-approx selection, static per-layer precision choice."
+  },
+  {
+   "id": "vindex3-format-spec.md#35",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.3 Omission semantics (\"dropping down\")",
+   "text": "The manifest distinguishes the materially different meanings:\n\n| Mode | Authority | Notes |\n| ---- | --------- | ----- |\n| Client omission (FFN remote) | inherits selection (up to source-exact) | The whole routed branch moves; the K3 latent boundary makes whole-branch RPC ~14 KB/layer f16 vs ~100 KB for projection-split — never split gate/up local from down remote absent contrary measurement |\n| Analysis/router slice | analysis-only | Retains routers, gate vectors, metadata; no decode claim |\n| Cheaper down representation | numerically-approximate | The production interpretation of \"cheap down\" |\n| Down replaced by compact approximation | structurally-approximate | Must name `replacement` |\n| Routed branch skipped (shared-only) | structurally-approximate | Dropping an expert's `w2` alone yields **no** expert output — the honest mode is skipping the expert/branch, not a half-expert |\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#36",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "10. Kernel capability registry",
+   "text": "Kernels advertise what they can execute:\n\n```\nprogramme_id · region roles · formats per role · grouping widths ·\ninput layout · maturity\n```\n\nMaturity ladder, matching the serving-format ledger: **Representable → Reference → Grouped → Dispatched → Production.** The loader reports, per (programme, format, grouping) combination, which rung it sits on. Mixed per-region formats are either supported by a kernel or **explicitly refused** — never silently repacked at decode time.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#37",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "11. Capability checking",
+   "text": "The loader does not hard-code \"down weights present\" tests. It traverses the layer's MoE programme and reports which required operands are absent, then:\n\n- refuses execution profiles whose authority claim exceeds what the present operands support;\n- names the missing role, bank, layer and segment precisely (`VindexError::MissingRequiredRegion { layer, bank, role, .. }`);\n- distinguishes *representable-but-no-kernel* (falls back to reference executor, flagged) from *operand-absent* (hard refusal).\n\nProgramme-derived checks give the right per-architecture answers for free: routed removal on Inkling leaves shared experts contributing; on GPT-OSS it leaves no FFN contribution; on K3, a missing `routed_output` transform invalidates even completed expert computation.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#38",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "12. Versioning and coexistence",
+   "text": "Three version surfaces already exist; v2 adds nothing loosely named \"vindex v2\" in metadata. Precisely:\n\n| Contract | v1 value | v2 value |\n| -------- | -------- | -------- |\n| LYRW `format_version` | 1 (VINDEX2-internal) | **2** (self-description only; no cross-reading, §6.6) — trails the container generation by one, permanently |\n| `index.json` `version` | 2 | **3** — the container-generation discriminator |\n| `vindex_spec_version` | 1 | **2** (programme manifest + profiles enter the validated public contract) |\n| MoE manifest schema | — | **1** (new) |\n\n**On the numbering.** The container generation *is* `index.json.version` — VINDEX2 is `version: 2`, VINDEX3 is `version: 3`. An earlier draft called the shipped generation \"VINDEX1\" while its `index.json.version` was already 2, putting a permanent off-by-one between the name and the sole discriminator. Both were renamed so the two agree. The LYRW layer format keeps its own sequence (v1 in VINDEX2, v2 in VINDEX3) and is deliberately not aligned: it is a different artifact with a different lifetime, and its numbering was already correct.\n\nThe FP4 additive-extension precedent is retained within each generation: new region formats, roles and programme ids are enum additions, not format bumps."
+  },
+  {
+   "id": "vindex3-format-spec.md#39",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "12.1 Dual-generation support in larql — the real compatibility contract",
+   "text": "The binding obligation is not between the two on-disk formats (there is none — §6.6). It is that **one larql binary supports both vindex generations, indefinitely for reading and serving**:\n\n- **Detection.** `index.json.version` is the sole **schema** discriminator, and the loader maps supported schema revisions to their owning container generation. No filename sniffing, no directory-shape heuristics. A missing or unknown version fails naming the version found and the schema sets this binary supports.\n\n  The mapping is **many-to-one, not an identity**:\n\n  | `index.json.version` | generation | note |\n  | -------------------- | ---------- | ---- |\n  | 1 | VINDEX2 | legacy schema; absent fields load with defaults |\n  | 2 | VINDEX2 | what a fresh VINDEX2 extraction writes |\n  | 3 | VINDEX3 | |"
+  },
+  {
+   "id": "vindex3-format-spec.md#40",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "12.1 Dual-generation support in larql — the real compatibility contract (2)",
+   "text": "A generation is *named* for the schema it currently writes, not for the only schema it can read. Treating the version as a generation identifier rather than a generation floor refuses every legacy-schema index in existence — which E0 caught in practice, not in review. Unified dispatch routes schema 1 to the VINDEX2 loader; the VINDEX3 loader still refuses it by name.\n- **One entry point.** `Vindex::open(path)` returns the generation-appropriate handle behind a common trait; `larql run / serve / verify / slice / publish / pull` all accept either generation. Generation-specific verbs (e.g. profile selection) error precisely on a v1 index rather than silently no-op.\n- **No cross-loading, no silent conversion.** The VINDEX2 loader path is frozen-but-maintained: it never opens VINDEX3 directories, never gains VINDEX3 features, and VINDEX3 code never re-implements VINDEX2 parsing. Conversion is only ever the explicit `VINDEX2 → VINDEX3` importer.\n- **Hub and distribution.** `larql publish` stamps the container generation into the hub artifact metadata; `larql pull` selects the reader from that stamp and refuses a generation the installed binary lacks — before downloading terabytes, not after.\n- **Wire protocols are generation-agnostic.** The expert-RPC and FFN-dispatch wire contracts carry activations and results, not container bytes; a grid may therefore mix v1 and v2 shards. A shard's container generation is a local concern of that shard's loader.\n- **Support policy.** VINDEX2 remains fully supported for read/verify/serve/publish/pull. New extractions default to VINDEX3 once th"
+  },
+  {
+   "id": "vindex3-format-spec.md#41",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "12.1 Dual-generation support in larql — the real compatibility contract (3)",
+   "text": "e ABI freezes **and** the E0 preservation matrix passes; v1 extraction remains available until then and is deprecated (not removed) after.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#42",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "13. Conformance envelope",
+   "text": "The ABI freezes only after all four fixtures pass the generic reference executor (fixtures defined in the experiments document):\n\n| Capability | Direct | GPT-OSS | IS-276B | KL-48B | K3 |\n| ---------- | :----: | :-----: | :-----: | :----: | :-: |\n| Variable expert count / top-K | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Routed experts | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Shared experts | – | – | ✓ (2) | ✓ (1) | ✓ |\n| Shared-sink router (shared experts scored) | – | – | ✓ | – | – |\n| Residual-space experts | ✓ | ✓ | ✓ | ✓ | – |\n| Latent-space experts | – | – | – | – | ✓ |\n| Hybrid dense+MoE stack | – | – | ✓ (mid-stack, idx 2) | ✓ (layer 0) | ✓* |\n| Non-softmax router (sigmoid + scaling) | – | – | ✓ (+ gate bias, norm_after_topk) | ✓ | – |\n| Custom expert programme | – | ✓ | – | – | ✓ |\n| Native low-bit regions | ✓ | MXFP4 | NVFP4/MXFP8 (real releases) | – (BF16) | MXFP4 |\n| Mixed per-role format | ✓ | ✓ | ✓ (release convention: routed low-bit, rest BF16) | ✓ | ✓ |\n| Fused/decomposed tensors | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Grouped dispatch | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Auxiliary optional components (MTP, towers) | – | – | ✓ | – | ✓ (multimodal) |\n| Single-segment routed layer | ✓ | ✓ | ✓ (~4.9 GiB/layer Q6_K) | ✓ (~1.4 GiB/layer Q6_K) | – |\n| Segmented logical layer | – | – | – | – | ✓ |\n| Exceeds-RAM residency (partial/remote non-optional) | – | – | ✓ | – | ✓ |\n| WALK/DESCRIBE (residual-space browse) | ✓ | ✓ | ✓ | ✓ | – |\n| WALK via latent transform (§15.4) | – | – | – | – | ✓ |\n\n\\* K3's dense/MoE layer schedule is confirmed at adapter time; KL-48B's `first_k_dense_replace=1` is confirmed from the released config."
+  },
+  {
+   "id": "vindex3-format-spec.md#43",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "13. Conformance envelope (2)",
+   "text": "Order of real-model implementation: **Gemma MoE → GPT-OSS → Kimi-Linear-48B-A3B → Inkling-Small → K3.** GPT-OSS is the first practical target (small, official reference paths). Kimi-Linear proves shared-expert banks, the hybrid stack and the KDA/MLA dense spine on a RAM-resident checkpoint — the K3 adapter dress rehearsal. Inkling-Small then escalates on two axes at once: real NVFP4/MXFP8 native regions with the routed-low-bit/rest-BF16 mixed-precision release convention, and the first *forced* partial-residency/remote serving (it cannot be RAM-resident on the rig) — the K3 **serving** dress rehearsal, as KL-48B is the adapter one. Fixture C is retained purely as the tiny deterministic conformance fixture; it no longer stands in for anything. K3 is extracted **once**, last, into the frozen ABI.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#44",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "14. What the experiments must decide",
+   "text": "Only these decisions genuinely belong in the on-disk ABI; everything else stays runtime policy:\n\n| Decision | Experiment | Why it matters |\n| -------- | ---------- | -------------- |\n| Region granularity (fused vs split roles) | E1, E4 | mmap count, rewriting, read amplification |\n| Expert-group / segment width | E2, E3 | couples SSD reads to grouped kernels; K3 20 GiB cap |\n| Fused vs decomposed FC1 storage | E1, E7, V2-1 | checkpoint import cost, mixed precision, **and gate-only browse reads** — the serving and query answers must be reconciled here, not assumed |\n| Per-region format tags | structural (E4 gates *promotion* only) | representation is justified by native values/scales, v1's existing mixed precision, and format-neutral banks; E4 decides only whether a mixed-format **profile** reaches Production |\n| Physical expert ordering | E2, E6 | possible locality gain vs model-specific assumption risk |\n| Profile/variant-selection mechanism | E5, V2-0 | avoids reslicing per deployment; selection-not-request semantics (§9.1) |\n| Capability/authority metadata | V2-0 | approximate slices must never present as exact |"
+  },
+  {
+   "id": "vindex3-format-spec.md#45",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "14. What the experiments must decide (2)",
+   "text": "Registered prior (falsifiable): one file-set per routed layer (two segments for K3 Q6_K), one entry per expert, down independently addressable, locality as runtime metadata, omission = skip-the-branch, remote = whole-routed-branch RPC. Per-region format tags are in the ABI **structurally** (not gated on E4); the registered prior is that no mixed-format *profile* reaches Production before real-K3-layer evidence (E4 stage 3). Gate/up fusion is **no longer a prior** — it is a per-index extraction choice decided by E1/E7 (§15.2).\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#46",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15. Query layer — the model IS the database",
+   "text": "The LQL browse surface (WALK, DESCRIBE, SELECT, EXPLAIN WALK) is a first-class consumer of VINDEX3, with the same single-copy contract as v1: **no query index is stored beside the weights; the weights are the query index.**"
+  },
+  {
+   "id": "vindex3-format-spec.md#47",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.1 What replaces `gate_vectors.bin`",
+   "text": "There is no `gate_vectors.bin` in v2. The gate rows live where the split rule puts them — as `gate` (or the gate half of `gate_up_fused`) regions inside LYRW banks. Gate KNN mmaps the segment files and walks gate regions in place:\n\n- **f16/f32 regions:** zero-copy reinterpret, exactly the v1 fast path.\n- **Block-quantised regions (FP4/FP8/Q-K):** lazy per-feature dequantisation at walk time via the existing block codecs — the v1 §5.10 mechanism, now applied to bank regions. The v1 §12.2 caveat carries over verbatim: 4-bit gate KNN is noisy; inference compensates, isolated dot products do not.\n- Untouched `up`/`down` pages cost nothing under mmap, so browse over a full-fat index reads only gate bytes even when nothing was sliced.\n\nMoE browse semantics are unchanged from v1: gate KNN selects features **across all experts, no router needed** — a bank with `num_entries = E` simply contributes `E × intermediate_dim` walkable features per layer. Feature numbering stays v1-flattened (`layer:feature`, experts contiguous within the layer) so `feature_labels.json` keys survive migration untouched."
+  },
+  {
+   "id": "vindex3-format-spec.md#48",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.2 The gate-addressability rule (resolves the fusion collision)",
+   "text": "A browse-enabled index requires gate rows to be readable without decoding up. Two legal ways to satisfy that:\n\n1. **Decomposed storage** (`gate` + `up` regions): clean gate-only reads; the E1/V2-1 fused-vs-decomposed parity requirement already guarantees kernels accept it.\n2. **Fused storage with strided browse** (`gate_up_fused`): legal only when the packing permits striding into the gate half without decoding up rows (row-major f16 yes; interleaved quantised blocks generally no).\n\nThe choice is recorded per bank at extraction time (a `browse: none | direct | strided` tag in the bank descriptor's flags, matching §6.2's normative encoding). **Serving-only indexes may fuse freely.** A browse-enabled index defaults to decomposed unless E1/E7 shows the fused serving advantage exceeds its own promotion bar — the previous blanket \"gate/up stay fused\" prior is withdrawn."
+  },
+  {
+   "id": "vindex3-format-spec.md#49",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.3 Query metadata (`query/`)",
+   "text": "`down_meta.bin` (DMET, unchanged), `feature_labels.json` and `relation_clusters.json` move to `query/`. These are **derived metadata, not weight copies** — single-copy is not violated. Two v2-specific notes:\n\n- For latent MoE banks, `down_meta` is computed at extraction through the full output path — expert `w2` → `routed_output` transform → unembed — so its top-token claims describe residual-space effect, not raw latent columns.\n- `query/` is optional per profile; its absence downgrades DESCRIBE/SELECT label richness, never WALK correctness."
+  },
+  {
+   "id": "vindex3-format-spec.md#50",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.4 Browsing latent-space banks (the genuinely new problem)",
+   "text": "K3's gate rows live in the 3584-dim latent space; WALK queries originate in residual space. The programme manifest already carries what browse needs: `routed_input` names the residual→latent transform. WALK against a latent bank projects the query vector through that transform **once per query**, then dot-products against latent gate rows unchanged. `EXPLAIN WALK` reports the space hop. Residual-space banks (Direct, GPT-OSS, Inkling, all shared banks) walk exactly as v1."
+  },
+  {
+   "id": "vindex3-format-spec.md#51",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.5 Browse profiles and slices",
+   "text": "- **Profile:** `browse` is a standard profile at authority `analysis-only` — requires gate regions (decodable), embeddings, tokenizer; `query/` and routers optional. Capability checking (§11) derives this; no filename tests.\n- **Slice:** a published browse slice is produced by copying **only gate regions** into gate-only LYRW files (absent roles are legal, §6.5) plus `control/embeddings` + `query/`. The v1 ~3 GB browse economics are preserved; the loader reports the slice as `analysis-only` automatically because the programme's required inference operands are missing."
+  },
+  {
+   "id": "vindex3-format-spec.md#52",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "15.6 Extract-level mapping",
+   "text": "| v1 extract level | v2 equivalent |\n| ---------------- | ------------- |\n| Browse | `browse` profile / gate-only slice (§15.5) |\n| Inference | `exact` profile over classes 1–5 |\n| All / COMPILE | full index — COMPILE reads regions to reconstruct safetensors, exactly as v1 read `gate_vectors.bin` |\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#53",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "16. Success criteria — \"done\" is defined here, in advance",
+   "text": "VINDEX3 is a successful successor when all seven hold. Each is bound to the gate or experiment that proves it, so the bar cannot drift after the fact:\n\n| # | Criterion | Proven by |\n| - | --------- | --------- |\n| 1 | An existing VINDEX2 model loads, verifies, serves and publishes through the dual-generation binary with zero behavioural regression | E0 (continuous, CI) |\n| 2 | Gemma and GPT-OSS run through the same LYRW2 bank machinery and the same production dispatch interface | V2-3, V2-4 rungs 1–2 |\n| 3 | Routed **and** shared banks are genuinely generic — proven on a shared-expert model or fixture, not asserted | Fixture C + **KL-48B (1 shared) and Inkling-Small (2 shared, sink router)** — real, V2-4 rungs 3–4 |\n| 4 | K3 is extracted once and served with no K3-specific physical layout — only a manifest and an adapter | V2-4 rung 4 |\n| 5 | A new representation or placement is introduced via variants, profiles and kernel capabilities, without rebuilding unrelated weights | §9.1 mechanism + V2-0 profile-resolution acceptance |\n| 6 | Unsupported or approximate configurations fail closed and report exactly why — operand, bank, role, layer, segment, variant | V2-0, §11 |\n| 7 | Onboarding the **next** conventional MoE requires an importer and a programme adapter — zero format changes, zero new region roles, zero kernel-interface changes | **E8 held-out architecture** |"
+  },
+  {
+   "id": "vindex3-format-spec.md#54",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "16. Success criteria — \"done\" is defined here, in advance (2)",
+   "text": "Criterion 7 deserves emphasis: the four conformance fixtures cannot prove it, because the ABI was designed against them. Only a held-out architecture, onboarded after freeze under a no-format-changes rule, tests generalisation rather than fit. If E8 fails, the \"portable sparse-serving substrate\" claim is downgraded to \"K3/GPT-OSS/Inkling serving format\" — honestly, in this section.\n\nThe maturity ladder governs claims throughout: **Representable → Reference → Grouped → Dispatched → Production.** No criterion is met by a representable-only demonstration.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#1",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "VINDEX3 Experimental Programme",
+   "text": "**Version:** 1.0-draft-1\n**Date:** 2026-08-01\n**Status:** Pre-registered. Decision rules and promotion gates are fixed here before any arm runs.\n**Companion:** [`vindex3-format-spec.md`](../crates/larql-vindex/docs/vindex3-format-spec.md)\n**Registry programme:** `vindex2` (chuk-experiments) — kept at `vindex2` deliberately: arms are already recorded under that key, and re-keying a pre-registered programme would orphan its results. The gate ids `V2-x` below are external identifiers for the same reason. The *format* is VINDEX3; see the note at the top of the companion spec.\n**Discipline:** DEC-style — every arm has a registered prior, a numeric gate, and a named negative outcome. A result that fails its gate closes its thread; it does not get re-argued.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#2",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "0. Structure",
+   "text": "Five gates (V2-0 … V2-4) sequence the work. Nine experiments (E0 … E8) supply the evidence. Four test assets carry the experiments — no single proxy answers everything:\n\n| Asset | Scale | Answers |\n| ----- | ----- | ------- |\n| **Conformance fixtures A–D** | tiny, deterministic | format, loader, programme and manifest correctness |\n| **Byte-faithful K3 bank** | 1–4 full-sized routed layers | SSD, mmap, segmentation, grouping, cache behaviour |\n| **Loaded Gemma MoE** | existing real model | real buffers, real scheduling, end-to-end integration |\n| **Kimi-Linear-48B-A3B-Instruct** | real model, laptop-runnable end-to-end | real shared-expert + sigmoid-router serving, hybrid dense/MoE manifests, KDA/MLA spine adapter de-risking, real same-lineage routing traces |\n| **Inkling-Small (276B-A12B)** | real model, exceeds rig RAM | real 2-shared sink-router reduction, real NVFP4/MXFP8 regions + mixed-precision release convention, first forced partial-residency/remote serving |\n| **K3 trace pack** | selected real layers | fidelity, routing locality, omission decisions |\n\nNothing about K3 locality is decided from Gemma. K3's quantile-balanced top-16-of-896 routing is designed to suppress exactly the per-layer collapse Gemma exhibits; Gemma proves methodology only (consistent with Milestone D in ROADMAP_STATUS).\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#3",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.1 Conformance fixtures (functional, not trained)",
+   "text": "Deterministic weights; purpose is numerical parity against a per-architecture oracle, not speed.\n\n**A — Direct routed MoE (control)**\n```\nhidden 256 · experts 8 · top_k 2 · shared 0 · programme gated-mlp-v1\n```\n\n**B — GPT-OSS-shaped**\n```\nhidden 288 · intermediate 288 · experts 32 · top_k 4 · shared 0\nprogramme gpt-oss-expert-v1 (clamp + residual term)\nrepresentation: MXFP4-like blocks + separate scale regions\n```\n\n**C — Inkling-shaped**\n```\nhidden 256 · experts 32 · top_k 6 · shared 2\nprogramme routed + always-active shared bank\nrepresentations: BF16, FP8-like, FP4-like\n```\nCatches: shared-expert reduction order, router-normalisation participation, mixed routed/shared storage.\n\n**D — K3-shaped (Mini-K3)** [dimensions frozen 2026-08-01]\n```\nhidden 512 · latent 256 · expert intermediate 256\nexperts 112 · top_k 16 · shared 2 · programme latent-moe-v1\n```\nSame architecture graph, same routing shape, same shared latent projections; small enough to regenerate and rewrite repeatedly."
+  },
+  {
+   "id": "vindex3-experiments.md#4",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.1 Conformance fixtures (functional, not trained) (2)",
+   "text": "**Why not the literal 1/16 downscale.** The draft-1 dimensions (448 / 224 / 192) break Q4_K/Q6_K superblock alignment on every matrix: `pad_cols_to_256` pads 224 → 256 (+14 %) and 192 → 256 (+33 %), so the fixture's byte ledger would be a padding artefact rather than a scaled K3. No proportional downscale fixes it — alignment needs `latent/d ≡ 0 (mod 256)` and `inter/d ≡ 0 (mod 256)`, and with `3584 = 2⁹·7`, `3072 = 2¹⁰·3` that admits only `d ∈ {1, 2}`. 512 / 256 / 256 is 256-aligned everywhere, preserves K3's 2:1 hidden:latent exactly, and pads nowhere. The one deviation is intermediate:latent, which is 1:1 here against K3's 1:0.857.\n\n**Why 112 experts, not 56.** 56 preserves the literal 1/16 expert-count scaling but is not a whole multiple of the 16-expert group width, so it would bake a partial group into the fixture — and group width dividing segment width is a physical-design *rule* (§7), not a preference. 112 = 7 × 16 divides cleanly, stays tiny, and leaves exact-K3-scale fidelity where it belongs: the byte-faithful bank, which runs 896 unscaled.\n\n**Standing caveat:** never quote a byte or latency number from this fixture as a K3 number. It answers correctness, not SSD."
+  },
+  {
+   "id": "vindex3-experiments.md#5",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.2 Byte-faithful K3 routed bank",
+   "text": "Opaque or deterministic quantised payloads at **real K3 expert byte sizes**: 896 experts, gate/up and down at real Q6_K lengths (per-expert 3×3584×3072 params; ~24.28 GB / 22.61 GiB per full layer — deliberately over the 20 GiB cap so segmentation is exercised, not simulated). One layer is a meaningful SSD experiment; four layers expose cache exhaustion and sustained behaviour."
+  },
+  {
+   "id": "vindex3-experiments.md#6",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.3 Kimi-Linear-48B-A3B-Instruct (the K3 dress rehearsal)",
+   "text": "Verified from the released `config.json` (`moonshotai/Kimi-Linear-48B-A3B-Instruct`, 98.3 GB BF16, ~3B active):\n\n```\nlayers 27 · first_k_dense_replace 1 (layer 0 dense FFN @ intermediate 9216;\n                                      layers 1–26 MoE)\nhidden 2304\nrouted experts 256 · top-8 · shared experts 1 · moe_intermediate 1024\nrouter: sigmoid scores · renormalised · routed_scaling_factor 2.446\n        · grouped top-k (1 group — degenerate but present in the schema)\ndense spine: 20 KDA layers + 7 MLA layers, 3:1 interleave\n             (full_attn_layers = 4,8,12,16,20,24,27; 1-based)\nMLA: kv_lora_rank 512 · qk_nope 128 · qk_rope 64 · v_head 128 · no q-LoRA\nKDA: 32 heads × head_dim 128 · short_conv 4\n```\n\nRouted-bank arithmetic (Q6_K, 210 B / 256 params):\n\n```\nparams per expert   = 3 × 2304 × 1024        =  7,077,888\nbytes per expert    ≈ 5.54 MiB\nper MoE layer (256) ≈ 1.38 GiB   → single segment, well under the cap\n26 MoE layers       ≈ 36 GiB routed — whole model Q6_K ≈ 40 GB class\n                      → runs end-to-end on the M3 Max\n```"
+  },
+  {
+   "id": "vindex3-experiments.md#7",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.3 Kimi-Linear-48B-A3B-Instruct (the K3 dress rehearsal) (2)",
+   "text": "What it uniquely contributes: the only **real, decodable** shared-expert model in the set (fixture C stays synthetic for cheap conformance); the only real hybrid dense+MoE stack (per-layer manifest heterogeneity for free); a non-softmax router (sigmoid + renormalise + scaling factor) that stress-tests the manifest router vocabulary; and — most valuable — the **same KDA:MLA hybrid spine lineage as K3** at 1/30th checkpoint scale, so the class-1/class-2 adapter work (recurrence parameters, conv states, MLA latent KV, layer scheduling off `full_attn_layers`) is debugged here before the K3 adapter, the roadmap's main blocker. It also proves the single-segment routed path with real weights while the byte-faithful bank proves the multi-segment path — the two segmentation regimes each get a real test.\n\n**Boundary:** KL-48B enters the *design set*. It is therefore ineligible as E8's held-out model, its sigmoid routing does not transfer locality conclusions to K3's quantile-balanced routing, and its BF16-only release means native low-bit region handling leans on GPT-OSS (MXFP4) and Inkling-Small (NVFP4/MXFP8, §1.4)."
+  },
+  {
+   "id": "vindex3-experiments.md#8",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.4 Inkling-Small (the K3 serving dress rehearsal)",
+   "text": "Verified from the released `config.json` (`thinkingmachines/Inkling-Small`, 532 GB BF16 + 4.46 GB `mtp.safetensors`; 276B total / 12B active per the release notes; Apache-2.0):\n\n```\nlayers 42 · hidden 4096 · dense MLP at layer index 2 (dense_intermediate 16384)\nrouted experts 256 · top-6 · shared experts 2 · moe intermediate 2048\nrouter: sigmoid gate activation · gate bias · norm_after_topk · route_scale 8.0\n        · global scale · shared_expert_sink = true (shared experts scored\n          by the router — always active, inside normalisation)\nattention: 5:1 local(SWA-512):global · GQA 32/8 · head_dim 128\n           · SConv kernel 4 on residual branches · d_rel/rel_extent relative terms\naux: 8 chained MTP heads (separate safetensors) · vision hMLP patchifier\n     · dmel audio encoder — auxiliary manifest-addressed tensors, optional\nreleases: BF16 + NVFP4 + MXFP8; quantised convention = routed experts low-bit,\n          shared experts / attention / gates BF16 (a real mixed-precision index)\n```\n\nRouted-bank arithmetic (Q6_K, 210 B / 256 params):\n\n```\nparams per expert    = 3 × 4096 × 2048       = 25,165,824\nbytes per expert     ≈ 19.69 MiB\nper MoE layer (256)  ≈ 4.92 GiB  → still single segment, under the cap\n~41 MoE layers       ≈ 202 GiB routed — CANNOT be RAM-resident on the M3 Max\nrouted reads/token   ≈ 6 × 19.69 MiB × 41 ≈ 4.7 GiB at top-6\n```"
+  },
+  {
+   "id": "vindex3-experiments.md#9",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.4 Inkling-Small (the K3 serving dress rehearsal) (2)",
+   "text": "What it uniquely contributes: the real two-shared-expert reduction under a **sink router** — shared experts inside the scoring and normalisation, exactly the semantics fixture C could only fake, and the richest test of the manifest's router vocabulary (sigmoid + bias + post-top-k norm + route scale + global scale). Real **NVFP4/MXFP8 native regions** from the quantised releases, including the mixed-precision convention (routed low-bit, everything else BF16) that is itself a per-region-format and variants-model use case — native low-bit no longer leans on GPT-OSS alone. A **mid-stack dense layer** (`dense_mlp_idx: 2`) — per-layer manifests handle it for free where any `first_k_dense_replace` field would have failed. And the residency escalation: it is the first design-set model where partial-residency, SSD streaming and attn-local/FFN-remote profiles are **forced rather than optional** on the rig — the K3 *serving* dress rehearsal at one-eighth scale, complementing KL-48B as the K3 *adapter* dress rehearsal. MTP heads are stored as optional auxiliary tensors whose omission never changes authority (drafting only); multimodal towers are opaque auxiliary payload — the text backbone is the conformance target.\n\n**Boundary:** Inkling-Small enters the design set — ineligible as E8's held-out model. Its sink routing is a third distinct balancing mechanism (vs KL-48B's grouped sigmoid and K3's quantile-balancing): more evidence that locality conclusions do not transfer between routers, and none of its traces inform K3 locality."
+  },
+  {
+   "id": "vindex3-experiments.md#10",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "1.5 K3 trace pack (E6 prerequisite)",
+   "text": "Real K3 routing/activation captures across prose, code, agent/tool use, long-context retrieval, multilingual, repeated multi-turn. Per layer/token: expert IDs, gate scores, selection order, co-activation sets, reuse distance, latent input norm, expert output norms, aggregate routed delta.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#11",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "Result log — fixture A container (2026-08-02)",
+   "text": "The first VINDEX3 container to exist on disk. Recorded here rather than in the\nspec because it is evidence, not specification.\n\n```text\nwrite_container        index.json schema 3 + moe_manifest.json + LYRW v2 bank\ndetect_generation      V3, from the written directory (not a JSON literal)\nVindex3Container::open manifest parsed and validated, storage keys resolved\nregion round-trip      every gate/up/down region byte-for-byte\nbind + execute         BIT-IDENTICAL to the same weights held in memory\nfused vs decomposed    BIT-IDENTICAL under one programme id (gated-mlp-v1)\nverify                 structural, defects carry {layer, entry, role}\nCLI                    show/verify dispatch on generation; v3 defect → exit 1\n```\n\nRows now discharged:"
+  },
+  {
+   "id": "vindex3-experiments.md#12",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "Result log — fixture A container (2026-08-02) (2)",
+   "text": "| Gate | Row | Status |\n| ---- | --- | ------ |\n| V2-0 | indexes inspectable without loading weights | closed |\n| V2-0 | unknown `programme_id` fails cleanly | closed (`MoeManifest::parse`) |\n| V2-0 | missing regions diagnosed with coordinates | closed — `ContainerDefect::MissingRegion` carries `{layer, bank, role, segment}` plus entry |\n| V2-0 | generation boundary enforced both ways | closed |\n| V2-0 | a profile dropping a component cannot exceed derived authority | closed — by *pre-existing* tests in `capability/authority.rs` (`weakening_any_region_never_raises_authority` and four siblings), not by the container work |\n| V2-0 | variant-selection refusal (select only present variants) | closed — `index.variants` catalogues each region set's present variants and baseline; a `Profile` selects per region set and `Vindex3Index::select_profile` refuses an absent one naming the region set, the request and what is present. Enforced in `Vindex3Container::open` for **every** declared profile, before a segment byte is read — pinned by deleting the segment files and asserting the error still names the variant. `declares_profile` remains, documented as a name check only. **Ceiling:** the refusal is real; *steering* is not exercised end to end, because no writer emits a multi-variant container yet (`ContainerSpec` has no variant field) and `BankRef.storage` still names storage directly, so a selection does not yet change which bytes the runtime binds. That wiring belongs with the first real pack. |\n| V2-1 | native oracle vs container output exact | closed (fixture A) |\n| V2-1 | fused"
+  },
+  {
+   "id": "vindex3-experiments.md#13",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "Result log — fixture A container (2026-08-02) (3)",
+   "text": "vs decomposed identical under one manifest | closed |\n| V2-1 | expert counts and top-K not hard-coded | closed — (8,2), (32,4), (5,1) through one code path, each read from its own container |\n| V2-1 | shared banks not hard-coded | **open**, and *blocked*: `BoundMoeOperation::banks` documents unrouted shared banks as arriving with the Mini-K3 rung, so there is no execution path to test against |\n| V2-1 | WALK/DESCRIBE parity | **open** |\n| c8 | a real model layer written as a VINDEX3 container | closed 2026-08-04 — `format::vindex3::import` copies regions verbatim (no transcode, requantise or repack, so a downstream bit-identity claim is about the format and not about a reshape being self-consistent). Measured on `gemma4-26b-a4b.vindex` layer 0: hidden 2816, 128 experts, top-8, 704 semantic over 768 stored; 421 MB container reopens, verifies clean, **256/256 regions byte-identical** to the VINDEX2 source. Driver: `examples/vindex3_import_gemma_layer.rs`. **Ceiling:** a round-trip result, not an execution one — execution parity still runs over VINDEX2 bytes; c8's contribution is that those are demonstrably the same bytes. |\n| c9 | *all* layers as a VINDEX3 container | **open** — c8's importer already does the work; c9 is a loop plus a size question (layer 0 alone is 421 MB). At c9, `extract` gaining a VINDEX3 mode becomes a question rather than a violation. |\n\nTwo corrections worth carrying forward, both from getting it wrong first:"
+  },
+  {
+   "id": "vindex3-experiments.md#14",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "Result log — fixture A container (2026-08-02) (4)",
+   "text": "- **`gated-mlp-v1` admits both layouts** (`role_alternatives → [FUSED,\n  DECOMPOSED]`). It is not \"the decomposed programme\"; `gated-mlp-fused-fc1-v1`\n  is the one that narrows to fused only. So the parity arm is *one programme\n  admitting two renderings*, which is the stronger property and the one K3\n  needs.\n- **Storage fidelity and execution fidelity need separate assertions.** A\n  single execution test can pass while the writer stored the wrong bytes, if\n  the reader makes a compensating mistake. The region round-trip test exists to\n  make that impossible."
+  },
+  {
+   "id": "vindex3-experiments.md#15",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "V2-0 — Format skeleton",
+   "text": "Build superblock, LYRW v2 header/bank/segment/region tables, manifest schema, profile inheritance, authority levels, checksums, required/optional role semantics. Tiny tensors only.\n\n**Acceptance**\n- indexes inspectable without loading weights;\n- unknown `programme_id` fails cleanly;\n- missing required regions diagnosed with `{layer, bank, role, segment}` precision;\n- a profile that drops a required component cannot exceed its derived authority (§9.2) — verified by test, not review;\n- **profile resolution**: a profile can select only variants physically present; selecting an absent variant fails naming region set, requested variant and present variants; no code path performs silent conversion; region-level fidelity aggregates to profile authority as weakest-link; a profile referencing incompatible segment sets is refused;\n- generation boundary enforced: the v2 loader refuses a VINDEX2 directory (and vice versa) with a precise \"requires VINDEX{n} loader\" error naming both versions — never a parse error, never silent conversion (spec §6.6/§12.1)."
+  },
+  {
+   "id": "vindex3-experiments.md#16",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "V2-1 — Generic reference executor (runs E1 arms functionally)",
+   "text": "All four fixtures execute through the generic path and match their oracles.\n\n**Acceptance**\n- native oracle vs vindex2 output: exact (integer/quantised paths) or tolerance-bounded parity;\n- fused vs decomposed FC1 storage produce identical results under one manifest;\n- expert counts, top-K and shared banks are demonstrably not hard-coded (fixtures differ on all three);\n- **WALK/DESCRIBE parity**: gate KNN over in-place bank regions returns identical top-K rankings to a v1-style extracted `gate_vectors.bin` control on fixtures A–C, and latent-space WALK on fixture D returns the correct ranking after the `routed_input` projection (spec §15.4)."
+  },
+  {
+   "id": "vindex3-experiments.md#17",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "V2-3 — Production kernel binding (runs E3)",
+   "text": "Bind existing grouped kernels through the capability registry, Gemma first (then GPT-OSS as first non-Gemma real model).\n\n**Acceptance**\n- reference and grouped paths agree per-layer and at final logits;\n- caller-owned buffers/command buffers work; no hidden decode-time repacking;\n- mixed per-region formats supported or explicitly refused, never coerced."
+  },
+  {
+   "id": "vindex3-experiments.md#18",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "V2-4 — Real-model portability",
+   "text": "Import and execute in order: Gemma MoE → GPT-OSS → **Kimi-Linear-48B-A3B** → **Inkling-Small** → K3. Rung 3 (KL-48B): full import, exact decode against the reference implementation (token parity), then grouped dispatch with the shared expert in the execution path and sigmoid-renormalised-scaled gate weights flowing through the standard reduction. Rung 4 (Inkling-Small): BF16 import + token parity on the text backbone, then the NVFP4 release imported as paired values/scales regions under the mixed-precision convention, then the first forced partial-residency / attn-local-FFN-remote serving profiles — rung 4 acceptance explicitly includes decoding a model that does not fit in RAM. Fixture C is retained as the tiny deterministic conformance fixture only. Only after V2-0..V2-3 pass does the one-time K3 extraction run.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#19",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E0 — VINDEX2 preservation matrix (continuous regression, not a one-shot)",
+   "text": "VINDEX3 development must not degrade the shipped generation. E0 runs using the same binary that carries the v2 code, from the first V2-0 commit onward, in CI.\n\n#### E0 corpus — constructed and pinned [amended 2026-08-01]\n\nDraft-1 said \"existing production v1 indexes\". On the actual rig that named **nothing**: no vindex of any generation exists on the box, so the experiment's premise was empty and E0 would have passed vacuously. The corpus is therefore constructed and pinned, not assumed:\n\n| | Corpus | Purpose |\n| - | ------ | ------- |\n| **C1** | A fresh Gemma v1 extract at **`--level all`**, plus all eight slice presets cut from it (`client`, `attn`, `embed`, `server`, `browse`, `router`, `expert-server`, `all`) | The primary subject. Covers every v1 path the matrix exercises. `--level all` is required, not preferred: the `all` preset needs `lm_head` and the `router` preset needs router weights, neither of which `--level inference` extracts — a lower level would silently reduce preset coverage to those the extract happened to reach. |\n| **C2** | Published v1 artifacts pulled from the hub | Exercises the `publish`/`pull` path and the generation stamp against artifacts this box did not build. |\n| **C3** | **Golden outputs captured once from the pre-v2 binary and committed** | The comparison baseline. |"
+  },
+  {
+   "id": "vindex3-experiments.md#20",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E0 — VINDEX2 preservation matrix (continuous regression, not a one-shot) (2)",
+   "text": "**C3 is load-bearing.** Without committed goldens, \"zero behavioural regression\" quietly degrades into \"the two binaries agree with each other\" — a condition any *shared* bug satisfies. The goldens must be captured from a binary that predates the v2 code, so the assertion is against a fixed record rather than a live second run.\n\n**Pin recipes, not artifacts.** C1 is a multi-GB directory and C2 is a download; neither belongs in the repo, and neither needs to — both are *reproducible*. What gets committed is the recipe and the outputs:\n\n| Item | Committed? | Why |\n| ---- | ---------- | --- |\n| C1 vindex | No — **recipe pinned** | Re-extractable from the checkpoint at any time. Pin: model repo + revision hash + exact extract flags (`--level all --quant q4k`). |\n| C2 hub artifacts | No — **coordinates pinned** | Re-pullable. Pin: artifact ref + expected checksums. |\n| C3 goldens | **Yes** | Small text. The only thing that cannot be regenerated *later* without also regenerating the binary that produced it. |\n| C3 baseline binary | No — **commit SHA pinned** | `git checkout <sha> && cargo build --release -p larql-cli` reproduces it. Git keeps the SHA reachable indefinitely. |"
+  },
+  {
+   "id": "vindex3-experiments.md#21",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E0 — VINDEX2 preservation matrix (continuous regression, not a one-shot) (3)",
+   "text": "**There is no expiry.** An earlier draft of this section claimed C1/C3 had to be captured before VINDEX3 merged, on the grounds that the pre-v2 baseline stopped being available. That was wrong: the checkpoint still extracts and the baseline commit is still checkoutable. The correct reason to build the corpus early is that E0 is specified as *continuous* — it should be catching regressions as later V2-0 work (manifest, profiles, capability checking) touches shared code, not auditing at the end. Early because the gate is meant to be live, not because anything is running out.\n\n**What must be recorded, or the corpus is unfalsifiable:** the baseline commit SHA inside the golden set itself. Without it a reader cannot tell whether a given golden predates the v2 work it is supposed to police.\n\n**Matrix**\n\n```\nload a C1/C2 v1 index           → identical ModelWeights surface\nprovenance / checksums          → larql verify byte-identical verdicts\nbrowse extraction + WALK        → identical top-K rankings\nattention-only client slice     → loads, serves\nfull inference                  → token-identical decode vs pre-v2 binary\nlayer sharding (--layers)       → identical RSS bound behaviour\nexpert sharding (--experts)     → identical 404-before-read behaviour\npublish / pull round-trip       → hub artifacts unchanged; generation stamp added\n                                  without invalidating existing v1 artifacts\ngeneration dispatch             → index.json.version 2→3 routing correct;\n                                  unknown version fails naming both sides\n```"
+  },
+  {
+   "id": "vindex3-experiments.md#22",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E0 — VINDEX2 preservation matrix (continuous regression, not a one-shot) (4)",
+   "text": "#### Two gates, named separately [amended 2026-08-01]\n\n\"E0 green\" must never be reported when only part of it ran. The matrix splits by what a runner can actually execute:\n\n| Gate | Covers | Where |\n| ---- | ------ | ----- |\n| **E0-CI** | Generation/schema boundary and every weight-free compatibility check. Needs no checkpoints. | Required merge check on every PR touching the crate |\n| **E0-FULL** | The checkpoint-backed matrix — token-identical decode, WALK rankings, slicing, sharding, publish/pull — against the committed C3 goldens | Local, against a real index; status recorded as \"green at commit `<sha>`\" |\n\nReporting convention:\n\n```text\nE0-CI:   green on every merge\nE0-FULL: green at last recorded local run <commit>\n```\n\nE0-CI is deliberately the subset most at risk from VINDEX3 work: every commit touching the loader, the generation module or the LYRW parsers can break it, and nothing else in CI would notice. It caught a real regression on its first run — `index.json` schema 1 refused as a non-generation — which is the argument for it existing.\n\nA later improvement would add a tiny synthetic VINDEX2 artifact exercising load, verify, slice and one trivial decode in CI. That would not replace the multi-GB goldens, but it would narrow the gap between boundary-only checking and full local validation.\n\n**Acceptance:** zero behavioural change on every v1 path, measured **against the C3 goldens** — token-identical serving, identical verify verdicts, identical slice/publish/pull outputs. The K3 artefact itself only ever needs v2; E0 protects everyone already on v1."
+  },
+  {
+   "id": "vindex3-experiments.md#23",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E0 — VINDEX2 preservation matrix (continuous regression, not a one-shot) (5)",
+   "text": "**Decision rule:** any E0 regression blocks merge, full stop. VINDEX3 defaulting for new extractions (§12.1 support policy) is gated on E0 green plus the ABI freeze."
+  },
+  {
+   "id": "vindex3-experiments.md#24",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E1 — LYRW physical-layout gate",
+   "text": "Determines whether v2's layout ideas beat the current format before any K3 byte is written.\n\n**Arms**\n```\nL0  current LYRW v1 (one format per layer file)\nL1  LYRW v2 per-region formats, same file & offset-table shape\nL2  projection-separated files (layer_N.gate_up / layer_N.down)\nL3  expert-group files (layer_N.experts_000_031 …)\n```\n\nRun first on Mini-K3, all arms with identical Q6_K weights.\n\n**Measure:** exact output parity; loader complexity; mmap/open count and latency; dispatch construction time; bytes faulted; sequential and random top-16 execution; manifest-level omission/override capability; **gate-only browse cold bytes** (a WALK sweep touching only gate regions — the browse-read cost of each layout).\n\n**Decision rule.** Choose the **least fragmented** layout within:\n- 2% of best warm execution;\n- 5% of best cold physical bytes read;\n- exact parity.\n\nDo not promote L2/L3 for conceptual tidiness. **Registered prior: L1 wins.** The fused-vs-decomposed gate/up question inside L1 is **not** settled here — E1 records the serving delta between the two; E7 records the browse delta; §15.2's per-bank rule reconciles them at extraction time."
+  },
+  {
+   "id": "vindex3-experiments.md#25",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E2 — Byte-faithful SSD replay (segment & ordering)",
+   "text": "On the 1–4-layer byte-faithful bank, replay routing traces under memory budgets of 2/4/8/16 GB:\n\n| Trace | Purpose |\n| ----- | ------- |\n| Uniform random top-16 | worst-case balanced routing |\n| Zipf/skewed | strong hot-expert case |\n| Gemma empirical | existing real proxy |\n| Kimi-Linear empirical | real same-lineage MoE traces (sigmoid top-8-of-256) — a better structural proxy than Gemma, still NOT a K3 locality substitute |\n| Inkling-Small empirical | real sink-router top-6-of-256 traces captured during rung-4 serving — a third router family for the replay table; same non-transfer rule applies |\n| Clustered co-activation | tests physical grouping |\n| Adversarial rotation | defeats cache and prefetch |\n| Repeated conversation | temporal locality |\n\n**Sweep — two independent scales** (spec §7): group-extent width ∈ {8, 16, 32, 64} experts × segment width ∈ {112, 224, 448, 896-split-2} experts, plus physical orderings ID / frequency / co-activation-cluster / random (via the entry-table indirection — ordering is independent of both widths). Group width optimises reads/prefetch/dispatch; segment width optimises file count, mmap management and the 20 GiB cap — the winning pair is reported separately, never as one number.\n\n**Measure:** actual SSD bytes/token; useful bytes vs read amplification; page faults; read count and extent sizes; p50/p95/p99 layer latency; degradation onset; late steady-state floor; next-layer prefetch effect; permutation effect."
+  },
+  {
+   "id": "vindex3-experiments.md#26",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E2 — Byte-faithful SSD replay (segment & ordering) (2)",
+   "text": "**Decision rules.**\n- Group width: simplest width within a small margin of best sustained result; must divide the segment width and match a grouped-kernel dispatch width.\n- Segment width: as large as the 20 GiB cap and shard-distribution needs allow (prior: 448 for K3 Q6_K); must be a whole multiple of the group width.\n- Physical ordering: bake a non-ID permutation into the permanent index **only** on ≥10% sustained improvement across multiple plausible traces with no bad uniform-routing regression. **Registered prior: per-expert offsets + runtime cache beat permanent locality encoding.**"
+  },
+  {
+   "id": "vindex3-experiments.md#27",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E3 — Loaded-model grouped A/B (critical path; doubles as first V2-3 production experiment)",
+   "text": "On loaded Gemma MoE:\n\n```\nA  existing production expert layout\nB  current LYRW v1 + grouped execution\nC  LYRW v2 (E1 winner) + grouped execution\nD  split-file layout + grouped execution   (kept only if E1 didn't kill it)\n```\n\nHold constant: representation, selected experts, routing weights, activation layout, command-buffer ownership, output reduction.\n\n**Measure:** per-layer output equivalence; final logits/token equivalence; command submissions and syncs; warm and cold latency; full-model decode throughput; memory and SSD traffic.\n\nPass = the E1/E2 winner survives real buffers, real scheduling and the actual forward path. This is the final proxy gate before K3 integration (per the release ladder's K3-0).\n\n**E3b — repeat on Kimi-Linear-48B** once V2-4 rung 3 imports it: same held-constants, arms B/C only. This is the first grouped A/B with a shared expert inside the dispatch path and non-softmax gate weights in the reduction — the two things Gemma cannot exercise — and it doubles as the KDA/MLA-spine integration shakedown for the K3 adapter."
+  },
+  {
+   "id": "vindex3-experiments.md#28",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E4 — Projection-specific quantisation (the decisive LYRW v2 justification)",
+   "text": "**Arms**\n\n| Arm | gate/up | expert down |\n| --- | ------- | ----------- |\n| Q0 | Q6_K | Q6_K |\n| Q1 | native MXFP4 | Q6_K |\n| Q2 | Q6_K | native MXFP4 |\n| Q3 | native MXFP4 | native MXFP4 |\n| Q4 | approx lower | Q6_K |\n| Q5 | Q6_K | approx lower |\n\nNo Cartesian sweep. Three stages: (1) Mini-K3 numerical mechanics, (2) loaded Gemma full-model proxy, (3) real K3 layer replay once the trace pack exists.\n\n**Measure:** expert-output cosine and normalised error; weighted aggregate latent output; next-layer router agreement; teacher-forced BPB; token-level KL; greedy agreement; long-generation stability; measured bytes and kernel throughput.\n\n**Decision rule — reframed.** Per-region format tags are in the ABI **structurally**: native value/scale codecs, v1's existing mixed gate/up/down precision, and format-neutral banks justify representability without a performance argument. E4 therefore decides one thing only: **whether a mixed-format profile is promoted to Production** — requiring a mixed arm to beat both uniform alternatives by ≥5% projected whole-system gain at the same fidelity gate. A failed E4 leaves the format intact and the mixed profiles at Reference/Grouped maturity (representable ≠ servable)."
+  },
+  {
+   "id": "vindex3-experiments.md#29",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E5 — Weight omission (profile semantics; NOT an ABI gate)",
+   "text": "E5 decides profile authority and approximation policy. No E5 outcome changes a byte of LYRW2 — it cannot block the freeze.\n\nDisambiguation first: K3's shared latent `routed_expert_down_proj` (7168→3584) is not an expert's `w2` (3072→3584). Dropping a selected expert's `w2` yields no expert output — dominated by skipping the expert. Arms therefore test **useful** omission modes:\n\n```\nO0  exact baseline (top-16)\nO1  reduced top-K: 16/12/8/4 — with and without gate renormalisation\nO2  cumulative gate-mass retention: 99 / 97.5 / 95 / 90 %\nO3  shared-only layers — per-layer interventions, then structured patterns\n    (every 4th MoE layer; early/middle/late; lowest-measured-impact)\nO4  entire routed branch remote — whole-branch RPC (~14 KB/layer f16)\n    vs projection-split (~100 KB/layer): do NOT split unless measurement\n    overturns the arithmetic\nO5  down-only lower precision — all experts execute; cheap w2 representation\n    (the honest \"cheap down\"; feeds E4/Q2/Q5)\n```\n\n**Promotion gate (production approximation):** ≤0.5% BPB regression; no pathological p99 KL; no next-layer routing-agreement collapse; no recurrent/long-generation instability; gain recomposed against the whole-model byte ledger. A layer-selective O3 result is valuable even if whole-model routed removal fails."
+  },
+  {
+   "id": "vindex3-experiments.md#30",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E6 — Real K3 routing/locality traces",
+   "text": "The only experiment that cannot be run honestly on Gemma or synthetic routing — **nor on Kimi-Linear**: KL-48B traces (cheap to capture locally) pilot the E6 capture/analysis machinery and feed the E2 replay table, but its sigmoid grouped-top-k router and K3's quantile-balanced router are different balancing mechanisms, so no K3 locality, hot-set or retention decision transfers from it. Required **before** freezing any physical expert permutation, permanent hot set, co-activation grouping, or per-layer retention policy.\n\n**Compute:** per-layer frequency entropy; cumulative mass curves; co-activation matrices; temporal reuse-distance distributions; static-LFU / LRU / hybrid per-layer cache hit rates; hot-set stability across workloads.\n\n**Decision rule — scope.** E6 blocks exactly one physical decision: adopting a non-ID expert permutation (via E2's ≥10% bar re-run on real K3 traces). It does **not** gate the ABI freeze — the ID-order layout is always legal, and locality otherwise stays runtime metadata permanently. Cache policy, residency and retention conclusions feed profiles, not the format."
+  },
+  {
+   "id": "vindex3-experiments.md#31",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E7 — Query-layer conformance and browse economics",
+   "text": "Proves \"the model IS the database\" survives v2 as a measured property, not a slogan.\n\n**Arms** (on fixtures A–D, then the byte-faithful bank, then loaded Gemma):\n\n```\nW0  VINDEX2 control: WALK over an extracted gate_vectors.bin\n    — DENSE MODELS ONLY, see the coverage note below\nW1  in-place WALK over decomposed gate regions (f16)\nW2  in-place WALK over fused gate_up regions, strided (f16 row-major)\nW3  in-place WALK over block-quantised gate regions (lazy dequant)\nW4  gate-only browse SLICE built by region copy (spec §15.5)\n```\n\n#### Coverage note — W0 is not a control for expert regions [amended 2026-08-01]\n\nMeasured on a fresh VINDEX2 extract of Gemma 4 26B A4B (128 experts × 704 expert width, hidden 2816, 30 layers): the shipped generation's `gate_vectors.bin` exposes **2,112 walkable features per layer** — the *dense* FFN width. The expert population would contribute **128 × 704 = 90,112**. The expert weights are present and decode correctly (30 files, 12 GB); they are simply **not part of the searchable surface**.\n\nSo W0 covers 2.3 % of what §15.1 specifies, and on a MoE model it contains no expert regions at all. W1/W2/W3/W4 are *about* expert regions. Comparing them to W0 would measure a coverage difference wearing a parity result's clothes, and the registered pass condition (\"identical top-K rankings\") is unevaluable because the two arms do not rank over the same population."
+  },
+  {
+   "id": "vindex3-experiments.md#32",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E7 — Query-layer conformance and browse economics (2)",
+   "text": "**Resolution — the claim is restated, not the control rebuilt.** Making expert features searchable is a **new capability of VINDEX3, not parity with VINDEX2**. Writing it up as parity would be claiming a comparison that cannot be made. Concretely, E7 splits:\n\n| Claim | Arms | Baseline |\n| ----- | ---- | -------- |\n| **Parity** — in-place region WALK matches the extracted-index path | W0 vs W1 on a **dense** model | W0, a genuine like-for-like control |\n| **Capability** — expert features are searchable in place, with no separate index | W1/W2/W3/W4 on MoE | none exists; correctness is established against the weights themselves, not against W0 |\n\nThe rejected alternative was constructing an expert-bearing VINDEX2 index specifically to serve as a control. It would be a control built *for* the experiment rather than the thing that shipped — a weaker claim that reads as a stronger one.\n\n**Measure:** top-K ranking parity vs W0 **on the dense arm** (exact for f16; ranking-overlap metric for W3, with the v1 §12.2 4-bit noise caveat as the expected failure shape); for the capability arm, ranking correctness against directly-computed gate dot products rather than against W0. Plus, for both: cold bytes faulted per WALK; queries/sec warm; slice size vs v1's ~3 GB browse economics; latent-WALK correctness and query-projection overhead on fixture D and the K3-shaped bank; DESCRIBE/SELECT correctness against `query/` sidecars, including latent-bank `down_meta` computed through the full output path."
+  },
+  {
+   "id": "vindex3-experiments.md#33",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E7 — Query-layer conformance and browse economics (3)",
+   "text": "**Decision rules.**\n- W1 vs W2 sets the browse half of the §15.2 fusion decision: fused storage keeps browse eligibility only if strided WALK is within 10% of decomposed on cold bytes and warm throughput; otherwise browse-enabled indexes mandate decomposed gate/up.\n- W3 promotes quantised-region browse only at a pre-declared ranking-overlap floor (top-50 overlap ≥ 0.9 vs W0); below it, browse-enabled extraction keeps gate at f16 regardless of the serving format — a legitimate per-region format divergence that E4 machinery already supports.\n- W4 must reproduce W1 rankings bit-for-bit (it is the same bytes relocated), or the slicer is wrong."
+  },
+  {
+   "id": "vindex3-experiments.md#34",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "E8 — Held-out architecture (generalisation, not fit)",
+   "text": "The conformance fixtures and design-set models cannot prove spec §16 criterion 7, because the ABI was designed against them — and **Kimi-Linear-48B and Inkling-Small are now in the design set, so both are ineligible here**. E8 onboards a MoE deliberately excluded from the design set — candidate: Mixtral 8x7B or a Qwen-MoE (cheap, well-documented, conventional) — **after** the ABI freeze, under a hard rule:\n\n```\nallowed:    checkpoint importer, MoE manifest, programme adapter\n            (existing registered programmes only, or ONE new programme_id\n             using existing region roles)\nforbidden:  LYRW2 byte-layout changes · new region roles · new packing modes ·\n            kernel-interface changes · loader special cases keyed on the model\n```\n\n**Acceptance:** token parity against a trusted implementation through the generic reference path, then through grouped dispatch if a compatible kernel exists — with a diff of the vindex crates showing zero format-layer changes.\n\n**Falsification is a real outcome:** if E8 requires format changes, spec §16 downgrades the substrate claim to \"K3/GPT-OSS/Inkling serving format\" in writing, and the needed changes are queued for a future LYRW revision — they are not smuggled in retroactively.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#35",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "4. Run order",
+   "text": "**Run now (no K3 adapter required)**\n0. E0 preservation matrix wired into CI (stays green for the life of the programme)\n1. Fixtures A–D + Mini-K3 → V2-0, V2-1\n2. E1 layout gate\n3. E2 one-layer byte-faithful bank (extend to 4 layers if one layer is inconclusive)\n4. E3 loaded Gemma grouped A/B\n5. E4 stages 1–2\n6. E7 query-layer conformance (fixtures + Gemma; the K3-shaped latent-WALK arm rides the byte-faithful bank)\n\n**Freeze the ABI** — after E0 green + E1/E2/E3/E7 decided + V2-0/V2-1 accepted:\n7. LYRW `format_version=2`, `index.json` v3, `vindex_spec_version=2`, MoE manifest v1. E5/E6 do **not** gate this (they decide profiles and permutation only); E4 does not either (per-region tags are structural, E4 gates promotion).\n\n**After freeze, before the K3 extraction** (profile and locality decisions):\n8. V2-4 rung 3: Kimi-Linear-48B import → token parity → E3b grouped A/B — the K3 adapter dress rehearsal (KDA/MLA spine, shared expert, sigmoid router)\n9. KL-48B trace capture — pilots the E6 machinery, feeds the E2 replay table\n10. V2-4 rung 4: Inkling-Small BF16 import → text-backbone parity → NVFP4 variant import (paired values/scales, mixed-precision convention) → first forced partial-residency + attn-local/FFN-remote serving — the K3 serving dress rehearsal\n11. E8 held-out architecture — the generalisation test runs against the frozen ABI\n12. K3 trace pack (E6 capture)\n13. E4 stage 3 on real layers (mixed-profile Production promotion)\n14. E5 on real layers (O1–O5)\n15. E6 locality/cache simulation (gates only a non-ID permutation)"
+  },
+  {
+   "id": "vindex3-experiments.md#36",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "4. Run order (2)",
+   "text": "**Then extract K3 once**, into the frozen five-class layout, exact Q6_K baseline (fidelity recorded per §9.2 — `source-equivalent` if losslessly containing native values, `numerically-approximate` otherwise), two 448-expert segments per routed layer with group extents at the E2-chosen width, no locality decisions baked in.\n\n---"
+  },
+  {
+   "id": "vindex3-experiments.md#37",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "5. Registered priors (falsifiable, dated 2026-08-01)",
+   "text": "1. One file-set per routed layer (segmented past 20 GiB) remains correct.\n2. One entry per expert remains correct.\n3. **(Revised 2026-08-01, pre-freeze, on reinstating the query layer.)** Down stays independently addressable. Gate/up fusion is no longer a blanket prior: serving-only indexes fuse; browse-enabled indexes default to decomposed, reconciled per bank by E1 (serving delta) + E7 (browse delta) under §15.2.\n4. **(Revised on adopting the variants model.)** Per-region format tags are in the ABI structurally; the prior is now that no mixed-format *profile* clears E4's 5% Production bar on Gemma, and the first to clear it does so only with real K3 layers (E4 stage 3).\n5. Expert locality remains runtime metadata (E2/E6 fail the 10% bar).\n6. \"Dropping down\" locally resolves to \"skip the routed branch,\" never a half-expert mode (E5).\n7. Exact remote deployment moves the whole routed branch, not split projections (O4 arithmetic holds).\n8. L1 wins E1; L2/L3 die there.\n9. **(Revised 2026-08-01, on measuring the VINDEX2 control.)** Split in two, because the original prior conflated a parity claim with a capability claim. **(9a)** On a *dense* model, in-place WALK over decomposed f16 gate regions matches the VINDEX2 `gate_vectors.bin` path within noise (E7/W0-vs-W1). **(9b)** On a *MoE* model, expert features are searchable in place at all — which VINDEX2 does not do, so there is no baseline to match and no dedicated query index is needed because none previously existed for this population. Falsifier for 9b is a correctness failure against directly-computed gate dot products, n"
+  },
+  {
+   "id": "vindex3-experiments.md#38",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "5. Registered priors (falsifiable, dated 2026-08-01) (2)",
+   "text": "ot a parity failure against W0.\n10. Quantised-region browse (E7/W3) fails the ranking-overlap floor for ≤4-bit formats, and browse-enabled indexes keep gate at f16 as a per-region divergence — the query layer becomes the second consumer of per-region format tags after E4.\n11. Dual-generation support costs nothing on the v1 hot path — E0 stays green throughout without a single v1-loader change (the generations share a trait, not code).\n12. E8 passes: the held-out conventional MoE onboards with an importer + manifest + existing `gated-mlp-v1` programme, zero format-layer diffs — the envelope generalises beyond its design set.\n13. K3's exact-Q6_K baseline lands at `source-equivalent`, not `source-exact` — and nothing downstream ever quotes it as bit-faithful to the release encoding.\n14. Kimi-Linear-48B onboards through `gated-mlp-v1` + shared bank + existing region roles — its entire KDA/MLA spine lands in classes 1–2 as manifest-addressed tensors, touching the expert-bank format not at all.\n15. The KL-48B→K3 adapter delta is confined to the five documented K3 additions (SiTU-GLU, AttnRes, latent MoE transforms, MLA output gate, full-rank KDA gate) — i.e. the dress rehearsal genuinely de-risks the main blocker rather than merely preceding it.\n16. Inkling-Small onboards through `gated-mlp-v1` + shared bank + existing region roles; the sink router, gate bias, post-top-k norm and route/global scales are entirely manifest router-vocabulary items — no new region role, no new programme beyond a router descriptor.\n17. The NVFP4 and MXFP8 releases import as paired values/scales region"
+  },
+  {
+   "id": "vindex3-experiments.md#39",
+   "source": "the pre-registered programme",
+   "doc": "vindex3-experiments.md",
+   "heading": "5. Registered priors (falsifiable, dated 2026-08-01) (3)",
+   "text": "s using the existing packing vocabulary (packing 2/3 + pair_id) — no new packing mode is needed; if one is, that is an ABI-RC finding, not a post-freeze patch.\n\nAny prior falsified is recorded here with the run ID and the format consequence, then the spec is amended before freeze — never after.\n\n---"
+  },
+  {
+   "id": "vindex-generation-policy.md#1",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Container-generation policy: the VINDEX2 → VINDEX3 transition",
+   "text": "Status: **contract adopted; default not yet flipped.**\nThe semantic catch-up phase closed 2026-08-22: VINDEX3 reached full LQL\nparity with VINDEX2 (execution, inference, browse, mutation, patching,\ncompose + parity, COMPILE, logical DIFF, COMPACT), gated cross-platform,\nwith a real-model compose smoke green on granite-4.1-3b. VINDEX3 is the\n**candidate primary generation**; VINDEX2 is the **compatibility\ngeneration**."
+  },
+  {
+   "id": "vindex-generation-policy.md#2",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "The migration contract",
+   "text": "```text\nNew extraction        → VINDEX3 by default            (after the flip)\nExisting VINDEX2      → continues to open and run\nGeneration detection  → bind once at load\nHigher layers         → never care which generation was bound\nNew semantic features → V3 only, unless compatibility requires V2\nV2                    → compatibility generation, no architectural expansion\nEscape hatch          → explicit V2 extraction/binding during the transition\n```"
+  },
+  {
+   "id": "vindex-generation-policy.md#3",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "The default-flip gate",
+   "text": "The flip is a **named decision, made in exactly one place** — never a\nside effect of a CLI default, a recipe template, or a surface-local\nfallback:\n\n- `crates/larql-vindex/src/format/generation.rs` —\n  `DEFAULT_EXTRACTION_GENERATION` is the generation an extraction with no\n  expressed preference writes. It is `V2` today.\n- `crates/larql-vindex/src/format/generation_tests.rs` —\n  `auto_extraction_resolves_to_v2_until_the_default_flip_is_decided` pins\n  it. Flipping means changing the constant **and** this test in the same\n  commit; that pair is the decision.\n\nEvery extraction surface resolves caller intent to a `GenerationRequest`\n(`Auto` | `Explicit(generation)`) and passes it through\n`admit_extraction_generation`. `Auto` gains its meaning only there.\n\"V3 was requested and refused\" and \"V3 was never requested\" are distinct\nby construction, and an explicit request is **never downgraded** — a\nsurface that cannot produce the requested generation refuses by name."
+  },
+  {
+   "id": "vindex-generation-policy.md#4",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Surfaces",
+   "text": "| Surface | Request spelling | Today (`Auto` → V2) |\n|---|---|---|\n| LQL | `EXTRACT MODEL \"m\" INTO \"o\" [FORMAT VINDEX2\\|VINDEX3]` | `FORMAT VINDEX3` encodes + auto-binds; `FORMAT VINDEX2` explicit; absent = policy |\n| CLI | `larql extract --generation {v2\\|v3}` | `--generation v3` encodes; omitted = policy |\n| Factory | `extractor.options.generation: \"v2\"\\|\"v3\"` → forwarded as `--generation` | absent = tool policy; a pin participates in `build_id` |\n| V3 producer | `larql vindex3 encode <hf-artifacts>` | the multi-artifact system encoder |"
+  },
+  {
+   "id": "vindex-generation-policy.md#5",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "What a V3 request produces",
+   "text": "Both extraction surfaces run one shared pipeline —\n`larql_vindex::format::vindex3::encode::checkpoint::encode_checkpoint`:\n\n```text\ncheckpoint dir (config.json + *.safetensors)\n  → build_inventory     interpretation, once\n  → plan_system         admissibility, blocking findings ITEMISED in the refusal\n  → encode_system       segments + system_graph + index\n  → capability snapshot tokenizer.json + tokenizer_config/special_tokens_map/\n                        generation_config/chat_template\n```\n\nThe capability snapshot is what keeps a V3-produced container servable:\nthe encoder proper writes only what execution needs, so without it a\nfresh container binds with token-id capability only and refuses `INFER`.\n`larql vindex3 encode` places the same files, so all three producers\nagree.\n\nSources the encoder cannot consume refuse **by name**, never by\ndowngrade: GGUF (a container may not transcode on the way in — use\n`FORMAT VINDEX2`), non-checkpoint directories, and V2-only transcoding\nflags (`--quant`, `--expert-banks`, `--compact`, …) passed alongside\n`--generation v3`.\n\nAfter a V3 extraction the LQL session is **already bound**, through the\nsame `bind_v3_session` block `USE` uses — gated by an equality test, so\n`EXTRACT` cannot grow a second binding path that drifts.\n\nBinding needs no policy: `detect_generation` (`index.json` schema\nversion, the sole discriminator — no filename or shape sniffing) already\ndispatches `USE`, the server bootstrap, and `DIFF` operands, and fails\nclosed on unknown schemas."
+  },
+  {
+   "id": "vindex-generation-policy.md#6",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Cross-generation contract: prompt encoding",
+   "text": "A user prompt must reach both generations as the **same token sequence**.\n\nThe two surfaces learn the BOS fact from different places, and that is\ndeliberate:\n\n| | Source of the BOS fact |\n|---|---|\n| V2 | the reconstructed `ModelArchitecture` — `arch.bos_token_id()` |\n| V3 | the container's own carried `generation_config.json` → `tokenizer_config.json` |\n\nV3 must not reconstruct architecture, so it reads the checkpoint's own\ndeclaration, carried into the container by the M2 capability snapshot.\nBoth then prepend through one shared contract\n(`larql_inference::maybe_prepend_bos`: prepend only when the tokenizer's\npost-processor did not already).\n\nThis matters for exactly the models where the tokenizer's\n`TemplateProcessing.single` template omits BOS while the model requires\nit — Gemma 4 is the live case: architecture and `generation_config.json`\nboth say id 2. Gated by\n`v2_and_v3_prompt_encoders_agree_on_a_bos_requiring_model`, whose control\n(passing no declared BOS) reproduces the pre-fix divergence `[2,3]` vs\n`[3]`.\n\nA container that declares nothing — including any predating the\ncapability snapshot — encodes exactly as before."
+  },
+  {
+   "id": "vindex-generation-policy.md#7",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Consumer matrix (M3)",
+   "text": "**Acceptance criterion: no VINDEX3 artifact can enter the system and\nthen silently disappear from a consumer surface.** Every consumer is in\none of two states — *supports*, or *refuses explicitly, naming the\ngeneration*. \"Hidden\", \"not found\", and an empty listing are failures of\nthis contract, not neutral outcomes.\n\n| Consumer | V3 state | How |\n|---|---|---|\n| `USE` / binding | supports | `detect_generation`, bind-once |\n| `INFER` / `TRACE` / browse / mutation / lifecycle | supports | the V3 statement arms |\n| `EXTRACT ... FORMAT VINDEX3` | supports | M2's shared encode pipeline |\n| `SHOW MODELS` | supports | `summarize_container`, generation column |\n| `/v1/models` | supports | `generation` reported for **both** classes |\n| `larql vindex3 *` | supports | V3-native verbs |\n| `link` | supports | aliasing is generation-agnostic |\n| `run` | explicit refuse | `load_vindex_config` names the generation |\n| Vindexfile `FROM` | explicit refuse | `load_vindex_config` names the generation |\n| `publish` | explicit refuse | `load_vindex_config` names the generation |\n| `slice` | explicit refuse | `unsupported_generation(\"slice\", …)` |\n| quantisation conversion | explicit refuse | `unsupported_generation(…)` |\n\nTwo of these were genuine defects rather than gaps:"
+  },
+  {
+   "id": "vindex-generation-policy.md#8",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Consumer matrix (M3) (2)",
+   "text": "- **`SHOW MODELS` hid V3 containers.** It listed only directories whose\n  `index.json` parsed as a V2 config, so a container the user had just\n  extracted did not appear at all. It now reads the generation-neutral\n  `summarize_container`, names the generation in its own column, and\n  lists a container it cannot identify as `unreadable` rather than\n  dropping the row.\n- **`slice` and quantisation conversion would have produced wrong\n  output**, not an error: both select or parse by V2 layout, so a V3\n  container yields a copy missing its weights, or a serde error about a\n  missing field rather than about the generation. Both now refuse up\n  front through `unsupported_generation`, one wording to grep for when\n  these refusals start becoming implementations.\n\nCapability strings are part of this contract. The V3 `SUPPORTED` string\nlists `EXTRACT` and `SHOW MODELS`, which execute on a V3 binding and\npreviously went unadvertised — a binding that understates what it serves\nis the same class of problem as a listing that hides what exists."
+  },
+  {
+   "id": "vindex-generation-policy.md#9",
+   "source": "the generation policy",
+   "doc": "vindex-generation-policy.md",
+   "heading": "Rungs to the flip",
+   "text": "- **M1 — the seam. DONE** (PR #290): policy type, pinned default,\n  explicit request spellings on every surface, refusals instead of\n  downgrades. No behaviour change.\n- **M2 — V3 production reachable from the extraction surfaces. DONE**:\n  one shared `encode_checkpoint` pipeline behind `FORMAT VINDEX3` /\n  `--generation v3`, capability snapshot closing the tokenizer/HF\n  metadata gap on all three producers, post-extract auto-bind through\n  `USE`'s own binding block.\n- **M3 — consumer readiness. DONE**: every consumer supports V3 or\n  refuses naming the generation; see the consumer matrix above.\n- **M4 — the flip.** `DEFAULT_EXTRACTION_GENERATION = V3` + the pinned\n  test, in one commit. V2 becomes the explicitly-requested compatibility\n  generation. Evidence rows required by then: the real-model compose\n  smoke (done — granite-4.1-3b) and whatever Metal-path/scale rows the\n  release checklist names.\n\nAfter the flip, V2 receives no architectural expansion — compatibility\nfixes only."
+  }
+ ]
+}

@@ -48,6 +48,7 @@ export type AnswerType =
 	| "related"
 	| "refusal"
 	| "synthesis"
+	| "spec_excerpts"
 	| "unsupported";
 
 export type ExplanationAction = { label: string; href: string; accent?: boolean };
@@ -76,6 +77,8 @@ export type ExplanationResponse = {
 	/** The HAUSE treatment the resolved subgraph declares for itself —
 	 * rendered as the real instrument, not a picture of one. */
 	visual?: "ffn_gate_up_down" | "attention_qkv" | "moe_router";
+	/** spec_excerpts / synthesis: the specification's own words. */
+	passages?: { source: string; heading: string; text: string }[];
 	snapshot: string;
 };
 
@@ -95,6 +98,8 @@ export type SynthesisFacts = {
 	entities: { id: string; display: string; five: string; role: string; detail: string; relations: { rel: string; to: string }[] }[];
 	canonical: { summary: string; answer: string }[];
 	gates: GateNode[];
+	/** Attached server-side by corpus retrieval — the spec's own words. */
+	passages?: { source: string; heading: string; text: string }[];
 };
 
 export function resolveForSynthesis(question: string): SynthesisFacts {
@@ -127,7 +132,7 @@ export function resolveForSynthesis(question: string): SynthesisFacts {
 const STOP = new Set([
 	"the", "a", "an", "is", "are", "was", "it", "its", "of", "to", "in", "on", "and", "or", "for",
 	"with", "does", "do", "can", "i", "my", "me", "from", "that", "this", "there", "be", "just",
-	"another", "about", "vindex3", "vindex", "what", "why", "how", "actually", "mean", "means",
+	"another", "about", "what", "why", "how", "actually", "mean", "means",
 ]);
 
 const ABUSE =
