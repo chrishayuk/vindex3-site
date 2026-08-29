@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
 	Terminal,
 	type TerminalLine,
+	type TerminalPanel,
 	type TerminalResult,
 } from "@chrishayuk/hause/components/forms/Terminal";
 import { ENTITIES, entity, type Entity } from "@/data/vindexGraph";
@@ -141,7 +142,7 @@ const HELP: Line[] = [
 	{ text: "  SNAPSHOT · HELP · CLEAR", tone: "dim" },
 ];
 
-function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: string | null; clear?: boolean } {
+function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: string | null; clear?: boolean; panel?: TerminalPanel } {
 	const need = (): Line[] => [{ text: "no model open — OPEN vindex3-demo first", tone: "err" }];
 	switch (cmd.kind) {
 		case "help":
@@ -180,7 +181,28 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 			if (!model) return { lines: need() };
 			const a = cmd.address;
 			const sem = semanticEntity(a);
-			if (sem) return { lines: describeEntity(a, sem) };
+			if (sem) {
+				const physical =
+					sem.id === "gate" || sem.id === "up"
+						? "stored with its pair as routed.gate_up — consumed together, stored together"
+						: sem.id === "down"
+							? "stored as routed.down — consumed apart, stored apart"
+							: sem.id === "router"
+								? "32 × 2048 · f32 · preserved at source precision"
+								: undefined;
+				return {
+					lines: [],
+					panel: {
+						designed: <EntityCard ent={sem} address={a} physical={physical} />,
+						raw: {
+							address: a,
+							entity: { id: sem.id, five: sem.five, role: sem.role, group: sem.group, relations: sem.relations },
+							physical: physical ?? null,
+							authority: "the VINDEX knowledge graph — one vocabulary, linked authorities",
+						},
+					},
+				};
+			}
 			if (/^layer\.12\.routed\.gate_up$/i.test(a))
 				return {
 					lines: [
@@ -208,17 +230,20 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 		case "walk-weights": {
 			if (!model) return { lines: need() };
 			const rows = [
-				{ l: 24, f: "24:1882", sc: "0.83" },
-				{ l: 27, f: "27:0413", sc: "0.79" },
-				{ l: 31, f: "31:2050", sc: "0.71" },
+				{ l: 24, f: "24:1882", sc: 0.83 },
+				{ l: 27, f: "27:0413", sc: 0.79 },
+				{ l: 31, f: "31:2050", sc: 0.71 },
 			].slice(0, Math.max(1, Math.min(cmd.top, 3)));
 			return {
-				lines: [
-					{ text: "LAYER    FEATURE      SCORE", tone: "dim" },
-					...rows.map((r) => ({ text: `layer ${r.l}   feature ${r.f}   ${r.sc}`, tone: "accent" as const })),
-					{ text: "read from the stored gate rows in place — no forward pass, no side index", tone: "dim" },
-					{ text: "a worked shape, not a recorded run — expert-region browse parity is an open row on the Record", tone: "dim" },
-				],
+				lines: [],
+				panel: {
+					designed: <WalkPanel prompt={cmd.prompt} rows={rows} />,
+					raw: {
+						statement: `WALK "${cmd.prompt}" TOP ${cmd.top}`,
+						results: rows.map((r) => ({ layer: r.l, feature: r.f, score: r.sc })),
+						note: "a worked shape, not a recorded run — expert-region browse parity is an open row on the Record",
+					},
+				},
 			};
 		}
 		case "walk-misused":
@@ -336,6 +361,72 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 	}
 }
 
+/* ── Designed results — a command need not return text. The DESIGNED
+   view is the HAUSE rendering; RAW (one tab away) is the structured
+   object it was projected from. ── */
+
+function EntityCard({ ent, address, physical }: { ent: Entity; address: string; physical?: string }) {
+	return (
+		<div className="flex flex-col gap-2">
+			<p className="voice-editorial text-lg sm:text-xl m-0">{ent.display}</p>
+			<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-accent)" }}>{ent.five}</p>
+			<p className="voice-system text-sm opacity-85 leading-relaxed m-0 max-w-xl">{ent.role}</p>
+			{physical && (
+				<p className="voice-evidence text-[11px] opacity-60 m-0">
+					PHYSICAL&nbsp;&nbsp;{physical}
+				</p>
+			)}
+			<div className="flex flex-wrap gap-2 mt-1">
+				<a
+					href={`/ask?q=${encodeURIComponent("what does " + ent.names[0] + " do?")}`}
+					className="voice-evidence text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 border"
+					style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
+				>
+					ASK — what does {ent.names[0]} do? →
+				</a>
+				<a
+					href={ent.href}
+					className="voice-evidence text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 border opacity-70"
+					style={{ borderColor: "var(--color-mist)" }}
+				>
+					THE ANATOMY →
+				</a>
+			</div>
+			<p className="voice-evidence text-[10px] opacity-40 m-0 mt-1">{address} · from the VINDEX knowledge graph</p>
+		</div>
+	);
+}
+
+function WalkPanel({ prompt, rows }: { prompt: string; rows: { l: number; f: string; sc: number }[] }) {
+	return (
+		<div className="flex flex-col gap-2">
+			<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-accent)" }}>
+				WALK &quot;{prompt}&quot; — read from the stored gate rows, in place
+			</p>
+			{rows.map((r) => (
+				<div key={r.f} className="grid grid-cols-[4.5rem_minmax(0,8rem)_2.5rem_1fr] gap-3 items-center">
+					<span className="voice-evidence text-[11px] opacity-60">layer {r.l}</span>
+					<span className="voice-evidence text-[11px]">feature {r.f}</span>
+					<span className="voice-evidence text-[11px]" style={{ color: "var(--color-accent)" }}>{r.sc.toFixed(2)}</span>
+					<div className="h-2.5 border" style={{ borderColor: "var(--color-mist)" }}>
+						<div
+							className="h-full"
+							style={{
+								width: `${r.sc * 100}%`,
+								backgroundImage:
+									"repeating-linear-gradient(45deg, var(--color-accent) 0, var(--color-accent) 1px, transparent 1px, transparent 4px)",
+							}}
+						/>
+					</div>
+				</div>
+			))}
+			<p className="voice-evidence text-[10px] opacity-45 m-0">
+				no forward pass · no side index · a worked shape — browse parity is an open row on the Record
+			</p>
+		</div>
+	);
+}
+
 /** Route a semantic address to its graph entity — the same records
  *  Ask's definitions and the Anatomy chapter answer from. */
 function semanticEntity(address: string): Entity | undefined {
@@ -368,26 +459,6 @@ function semanticEntity(address: string): Entity | undefined {
 	};
 	const id = map[rest];
 	return id ? entity(id) : undefined;
-}
-
-function describeEntity(address: string, ent: Entity): Line[] {
-	const physical =
-		ent.id === "gate" || ent.id === "up"
-			? "stored with its pair as routed.gate_up — consumed together, stored together"
-			: ent.id === "down"
-				? "stored as routed.down — consumed apart, stored apart"
-				: ent.id === "router"
-					? "32 × 2048 · f32 · preserved at source precision"
-					: undefined;
-	return [
-		{ text: `ADDRESS          ${address}` },
-		{ text: `SEMANTIC         ${ent.display}` },
-		{ text: `SIGNATURE        ${ent.five}`, tone: "accent" },
-		{ text: `ROLE             ${ent.role}` },
-		...(physical ? [{ text: `PHYSICAL         ${physical}` }] : []),
-		{ text: `WHAT DOES ${ent.display.split(" ")[0]} MEAN? — ask VINDEX3 →`, tone: "accent", href: `/ask?q=${encodeURIComponent("what does " + ent.names[0] + " do?")}` },
-		{ text: "THE ANATOMY — the machinery, opened →", tone: "dim", href: ent.href },
-	];
 }
 
 const SEED = ["TREE layer.12", 'WALK "the capital of France" TOP 3', "DESCRIBE layer.12.attention", "DESCRIBE layer.12.ffn.gate", "SHOW REPRESENTATIONS", "SHOW AUTHORITY layer.12"];
@@ -550,6 +621,7 @@ export function VindexTerminal() {
 		if (out.model !== undefined) setModel(out.model);
 		return {
 			lines: out.lines,
+			panel: out.panel,
 			clear: out.clear,
 			refused: cmd.kind === "forbidden" || (cmd.kind === "unknown" && cmd.input !== ""),
 		};
@@ -566,7 +638,7 @@ export function VindexTerminal() {
 			complete={(line) => completeLine(line, transport === "live")}
 			autorun={autorun}
 			notice={notice}
-			fallback="Type from the first moment: the immutable snapshot answers instantly, and when the live endpoint wakes, a quiet ● LIVE line appears and the same grammar starts executing on a real container — the capability profile enforced in the server, after parsing, before execution. DESCRIBE a semantic address (layer.12.ffn.gate, layer.12.attention.q) and the answer comes from the same graph entities Ask and the Anatomy chapter read — one authority, three surfaces."
+			fallback="Type from the first moment: the immutable snapshot answers instantly, and when the live endpoint wakes, a quiet ● LIVE line appears and the same grammar starts executing on a real container — the capability profile enforced in the server, after parsing, before execution. And a command need not return text: DESCRIBE a semantic address or WALK the weights and the answer arrives as a designed object — the HAUSE rendering in front, the RAW structured result one tab away, joined to the same knowledge graph Ask resolves."
 			footnote="The model is the database — as an interaction, not a metaphor. Read-only · rate-limited · nothing to drop."
 		/>
 	);
