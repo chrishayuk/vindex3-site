@@ -77,6 +77,13 @@ const cases: Case[] = [
 	{ q: "how does WALK work?", expect: ["definition", "canonical"] },
 	{ q: "what is index.json?", expect: ["definition", "canonical"] },
 
+	// ── The quantization chapter's questions ──
+	{ q: "why is a 4-bit model never four bits?", expect: "canonical", mustMention: "never four bits" },
+	{ q: "how many bits does a model need?", expect: "canonical", mustMention: "never four bits" },
+	{ q: "what is a precision map?", expect: ["definition", "canonical"], mustMention: "precision map" },
+	{ q: "what does effective bits per weight mean?", expect: ["definition", "canonical"] },
+	{ q: "why not judge quantisation by the token it picked?", expect: "canonical", mustMention: "never judge" },
+
 	// ── The honesty rule: no supported subgraph → refusal, never a guess ──
 	{ q: "what is the capital of France?", expect: ["refusal", "related"] },
 	{ q: "who maintains the kubernetes scheduler?", expect: ["refusal", "related"] },

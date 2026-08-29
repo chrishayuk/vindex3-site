@@ -10,6 +10,8 @@ import {
 import { ENTITIES, entity, type Entity } from "@/data/vindexGraph";
 import {
 	componentsPanel,
+	precisionPanel,
+	explainRepresentationPanel,
 	representationsPanel,
 	provenancePanel,
 	authorityPanel,
@@ -90,6 +92,8 @@ type Cmd =
 	| { kind: "walk-misused"; address: string }
 	| { kind: "find"; term: string }
 	| { kind: "explain-plan"; layer?: number }
+	| { kind: "show-precision" }
+	| { kind: "explain-representation"; address: string }
 	| { kind: "show-authority"; address?: string }
 	| { kind: "read"; address: string }
 	| { kind: "infer"; prompt: string }
@@ -125,6 +129,9 @@ function parse(raw: string): Cmd {
 	if (m) return { kind: "walk-misused", address: m[1] };
 	m = s.match(/^FIND\s+(.+)$/i);
 	if (m) return { kind: "find", term: m[1] };
+	if (/^SHOW\s+PRECISION$/i.test(s)) return { kind: "show-precision" };
+	m = s.match(/^EXPLAIN\s+REPRESENTATION\s+(\S+)$/i);
+	if (m) return { kind: "explain-representation", address: m[1] };
 	m = s.match(/^SHOW\s+AUTHORITY(?:\s+(\S+))?$/i);
 	if (m) return { kind: "show-authority", address: m[1] };
 	m = s.match(/^EXPLAIN\s+(?:EXECUTION|PLAN)(?:\s+layer\.(\d+))?$/i);
@@ -148,6 +155,8 @@ const HELP: Line[] = [
 	{ text: "  SHOW PROVENANCE [<address>]         hashes and lineage" },
 	{ text: "  SHOW AUTHORITY [<address>]          the derived fidelity" },
 	{ text: "  EXPLAIN EXECUTION [layer.N]         the generic op program" },
+	{ text: "  SHOW PRECISION                      the compiled precision map" },
+	{ text: "  EXPLAIN REPRESENTATION <addr>       the policy, resolving" },
 	{ text: "  FIND <term>                         search the catalogue" },
 	{ text: "  READ <addr>[a..b]                   raw bytes (live endpoint)" },
 	{ text: "  INFER <prompt>                      execute (live endpoint)" },
@@ -294,6 +303,10 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 					{ text: "RULE             a profile cannot claim above its derived level", tone: "accent" },
 				],
 			};
+		case "show-precision":
+			return { lines: [], panel: precisionPanel() };
+		case "explain-representation":
+			return { lines: [], panel: explainRepresentationPanel(cmd.address) };
 		case "explain-plan": {
 			if (!model) return { lines: need() };
 			const l = cmd.layer ?? 12;
@@ -524,7 +537,7 @@ type Transport = "snapshot" | "live";
 
 const SNAPSHOT_VERBS = [
 	"SHOW MODELS", "SHOW COMPONENTS", "SHOW REPRESENTATIONS", "SHOW PROVENANCE", "SHOW AUTHORITY",
-	"OPEN vindex3-demo", "DESCRIBE ", "TREE ", 'WALK "', "FIND ", "EXPLAIN EXECUTION", "READ ", "INFER ",
+	"OPEN vindex3-demo", "DESCRIBE ", "TREE ", 'WALK "', "FIND ", "EXPLAIN EXECUTION", "SHOW PRECISION", "EXPLAIN REPRESENTATION ", "READ ", "INFER ",
 	"HELP", "CLEAR", "SNAPSHOT",
 ];
 const LIVE_VERBS = [
@@ -610,6 +623,9 @@ export function VindexTerminal() {
 			const semantic = semanticPanel(dm[1]);
 			if (semantic) return semantic;
 		}
+		if (/^SHOW\s+PRECISION$/i.test(trimmed)) return { lines: [], panel: precisionPanel() };
+		const em = trimmed.match(/^EXPLAIN\s+REPRESENTATION\s+(\S+)$/i);
+		if (em) return { lines: [], panel: explainRepresentationPanel(em[1]) };
 		// The typed protocol endpoints: structured facts from the REAL
 		// container, rendered as designed panels — RAW is the server's
 		// own JSON. A failed fetch falls through to /v1/query lines.

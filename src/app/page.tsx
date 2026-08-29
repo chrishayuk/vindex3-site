@@ -22,13 +22,14 @@ import { ContainerReveal } from "@/components/ContainerReveal";
 const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
 	{ n: "01", href: "/why", title: "THE PHYSICS", hook: "Why is a file format, of all things, where the battle is fought?" },
 	{ n: "02", href: "/anatomy", title: "THE ANATOMY", hook: "What is actually inside a model — what do gate, query, expert mean?" },
-	{ n: "03", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
-	{ n: "04", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
-	{ n: "05", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
-	{ n: "06", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, with zero architecture branches?" },
-	{ n: "07", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
-	{ n: "08", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
-	{ n: "09", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
+	{ n: "03", href: "/quantization", title: "QUANTIZATION", hook: "How many bits does a model need — and why is “4-bit” an incomplete sentence?" },
+	{ n: "04", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
+	{ n: "05", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
+	{ n: "06", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
+	{ n: "07", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, with zero architecture branches?" },
+	{ n: "08", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
+	{ n: "09", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
+	{ n: "10", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
 ];
 
 export default function Home() {
@@ -195,7 +196,7 @@ export default function Home() {
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">THE STORY, IN ORDER</p>
 					<p className="voice-editorial text-2xl sm:text-3xl mb-10 max-w-2xl">
-						Nine chapters. Each opens with what breaks without it, and hands its question to the next.
+						Ten chapters. Each opens with what breaks without it, and hands its question to the next.
 					</p>
 					<div className="flex flex-col">
 						{JOURNEY.map((c, i) => (

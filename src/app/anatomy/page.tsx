@@ -107,9 +107,9 @@ export default function AnatomyPage() {
 			<Connection
 				text="You now hold the vocabulary the rest of the exhibition assumes. Next: the file that keeps every one of these parts named, present, and checkable — or open a real one and walk it yourself."
 				links={[
+					{ href: "/quantization", label: "QUANTIZATION — HOW MANY BITS DO THESE WEIGHTS NEED?" },
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
 					{ href: "/explorer", label: "ENTER A MODEL — THE EXPLORER" },
-					{ href: "/graph", label: "THE GRAPH — HOW THE PARTS RELATE" },
 				]}
 			/>
 		</main>

@@ -427,6 +427,30 @@ export const CANON: CanonEntry[] = [
 
 export const CANON_EXTENSION: CanonEntry[] = [
 	{
+		id: "q-four-bit-isnt",
+		summary: "a four-bit model is never four bits",
+		entities: ["4-bit", "nvfp4", "scales", "scale", "4.5"],
+		intent: "why",
+		patterns: ["four bit", "four bits", "4 bits", "4-bit", "bits does a model need", "how many bits"],
+		answer:
+			"Because the scales are never free. In NVFP4, sixteen weights share one eight-bit scale and each picks a four-bit slot on it — 72 bits per sixteen weights, 4.5 effective. Mix in the components a precision map protects at BF16 and the recorded granite artifact lands at 5.65 effective bits per weight. 'This is a 4-bit model' is an incomplete sentence; the complete one is a precision map.",
+		path: [e("representation", "compiled_by"), e("quantisation", "disciplined_by")],
+		record: { status: "SUPPORTED", note: "recorded — granite-4.1-3b: 4.5 uniform · 5.65 with the late-5 map" },
+		explore: ["precision-map", "representation", "record"],
+	},
+	{
+		id: "q-never-judge-token",
+		summary: "never judge by the token",
+		entities: ["token", "argmax", "judge", "output", "same"],
+		intent: "why",
+		patterns: ["judge quant", "by the token", "same answer", "same output", "argmax", "text is the same", "looks the same"],
+		answer:
+			"Because the token can survive damage that destroys the model. In a recorded run, a ×100 scaling bug in the output head produced the same top token at every position — one hundred percent top-1 agreement, zero flips — while the probability distribution was annihilated: 55.775% became 100%, and the KL divergence hit 284.8 bits at one position. Every test that compares strings passed. Fidelity is measured in probability space — KL, ΔNLL, top-k, margin — never by the token the model picked.",
+		path: [e("quantisation", "held_to"), e("ev-parity", "protects")],
+		record: { status: "SUPPORTED", note: "recorded — granite-4.1-3b, the bug arm of the quality bank" },
+		explore: ["quantisation", "ev-parity", "record"],
+	},
+	{
 		id: "q-what-is-vindex3",
 		summary: "the model is the database",
 		entities: ["vindex3", "vindex", "database"],
@@ -1073,6 +1097,32 @@ export const ENTITIES: Entity[] = [
 		href: "/authority",
 	},
 	{
+		id: "precision-map-e",
+		names: ["precision map", "precision maps", "mixed precision"],
+		display: "THE PRECISION MAP",
+		five: "a compiled program of encodings",
+		role: "Not 'the model is four-bit' — a program: these tensors at one precision, those at another, an effective rate derived from the whole, stored as a physical fact inside the file.",
+		detail: "A default encoding, role-based eligibility, and exceptions matched in declaration order — first match decides. Execution honours it over the backend's blanket request: in the recorded granite artifact, sixteen tensors run above the requested format because the pack says so, at an effective 5.65 bits per weight.",
+		group: "format",
+		relations: [
+			{ rel: "compiles", to: "representation-e" },
+			{ rel: "answers_to", to: "fidelity-e" },
+		],
+		href: "/quantization",
+		explorer: "SHOW PRECISION",
+	},
+	{
+		id: "effective-bits",
+		names: ["effective bits", "effective precision", "bits per weight"],
+		display: "EFFECTIVE BITS / WEIGHT",
+		five: "the scales are never free",
+		role: "The honest rate: nominal bits plus the shared scales, metadata, and every component preserved at higher precision, divided over all the weights.",
+		detail: "NVFP4 is nominally four bits, but sixteen weights share an eight-bit scale — 72 bits per 16 weights, 4.5 effective. Mix in protected BF16 components and the recorded granite map lands at 5.65. A four-bit model is never four bits.",
+		group: "format",
+		relations: [{ rel: "derived_from", to: "precision-map-e" }],
+		href: "/quantization",
+	},
+	{
 		id: "byte-floor-e",
 		names: ["byte floor", "bandwidth", "memory bandwidth"],
 		display: "THE BYTE FLOOR",
@@ -1085,7 +1135,7 @@ export const ENTITIES: Entity[] = [
 	},
 	{
 		id: "quantisation-e",
-		names: ["quantisation", "quantization", "quantised", "quantized", "bits"],
+		names: ["quantisation", "quantization", "quantised", "quantized"],
 		display: "QUANTISATION",
 		five: "fewer bits, fidelity recorded",
 		role: "Storing each number in fewer bits — fewer allowed values, every weight snapped to its nearest level — trading exactness for bandwidth returned.",

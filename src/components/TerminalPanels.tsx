@@ -260,4 +260,98 @@ export function treePanel(layer: number, special: boolean, provenance: string, r
 	};
 }
 
+/* ── SHOW PRECISION — the recorded map from the quantization chapter ── */
+
+export function precisionPanel(): TerminalPanel {
+	const operands = ["mlp.down", "mlp.gate", "mlp.up", "attn.k", "attn.o", "attn.q", "attn.v"];
+	const raw = {
+		artifact: "granite-late5.vindex3 — recorded run, the quantization chapter's artifact",
+		map: [
+			{ layers: "0-34", ...Object.fromEntries(operands.map((o) => [o, 4.5])) },
+			{ layers: "35-39", "mlp.down": 16, "mlp.gate": 16, "mlp.up": 16, "attn.k": 4.5, "attn.o": 4.5, "attn.q": 4.5, "attn.v": 4.5 },
+		],
+		stored_bytes: 2221671460,
+		weights: 3145728000,
+		effective_bits_per_weight: 5.65,
+	};
+	return {
+		designed: (
+			<div>
+				<Kicker>THE PRECISION MAP · recorded — granite-4.1-3b (the quantization chapter&apos;s artifact)</Kicker>
+				<Row cols={["layers", ...operands]} dim />
+				<Row cols={["0–34", "4.50", "4.50", "4.50", "4.50", "4.50", "4.50", "4.50"]} />
+				<Row cols={["35–39", "16.00", "16.00", "16.00", "4.50", "4.50", "4.50", "4.50"]} accent />
+				<p className="voice-evidence text-[11px] mt-3 mb-0" style={{ color: "var(--color-accent)" }}>
+					effective 5.6500 bits / weight · 2.069 GiB stored over 3,145,728,000 weights
+				</p>
+				<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+					a compiled program inside the file, not a flag at load time — execution honours it over the backend&apos;s request
+				</p>
+			</div>
+		),
+		raw,
+		graph: [
+			{ from: "the precision map", rel: "compiles", to: "role-based eligibility + exceptions, first match decides" },
+			{ from: "precision", rel: "is a property of", to: "components — never a label on the model" },
+			{ from: "the map", rel: "answers to", to: "measured evidence on the Record" },
+		],
+	};
+}
+
+/* ── EXPLAIN REPRESENTATION — the policy, resolving ── */
+
+export function explainRepresentationPanel(address: string): TerminalPanel {
+	const m = address.toLowerCase().match(/^layer\.(\d+)\.(mlp|ffn)\.(down|gate|up)/);
+	const layer = m ? Number(m[1]) : null;
+	const protectedHit = layer !== null && layer >= 35 && layer <= 39;
+	const known = m !== null && layer !== null && layer <= 39;
+	const selected = known && protectedHit ? "BF16 · 16 bits / weight" : "NVFP4 · 4.5 bits / weight";
+	const rule = known && protectedHit ? "protect mlp.*@35-39 — rule 3, matched first" : "no exception matched — the default encoding applies";
+	const raw = {
+		artifact: "granite-late5.vindex3 — recorded policy, the quantization chapter's artifact",
+		component: address,
+		role: known ? { down: "FfnDown", gate: "FfnGate", up: "FfnUp" }[m![3]] : "unknown to this map",
+		default: "NVFP4 · 4.5 bits / weight",
+		matched_rule: known ? rule : null,
+		selected: known ? selected : null,
+		order: "exceptions matched in declaration order — first match decides",
+	};
+	if (!known) {
+		return {
+			designed: (
+				<div>
+					<Kicker>EXPLAIN REPRESENTATION · recorded — granite-4.1-3b</Kicker>
+					<p className="voice-system text-sm opacity-80 m-0 max-w-xl">
+						{address} is not an FFN address this map speaks for — try layer.0.mlp.down through layer.39.mlp.up. The
+						map is a policy over roles, and it only answers for what it governs.
+					</p>
+				</div>
+			),
+			raw,
+		};
+	}
+	return {
+		designed: (
+			<div>
+				<Kicker>THE POLICY, RESOLVING · recorded — granite-4.1-3b</Kicker>
+				<Row cols={["component", address]} accent />
+				<Row cols={["role", String(raw.role)]} />
+				<Row cols={["default", "NVFP4 · 4.5 bits / weight"]} />
+				<Row cols={["matched rule", rule]} accent={protectedHit} />
+				<Row cols={["selected", selected]} accent />
+				<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+					a precision map is a compiled program: a default, role-based eligibility, and exceptions matched in
+					declaration order — first match decides. Not a table: explainable policy.
+				</p>
+			</div>
+		),
+		raw,
+		graph: [
+			{ from: address, rel: "governed by", to: "the precision map" },
+			{ from: "the map", rel: "resolves by", to: "first matching rule" },
+			{ from: "the selection", rel: "is a physical fact in", to: "the file" },
+		],
+	};
+}
+
 export type { GraphRow };

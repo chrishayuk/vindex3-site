@@ -5,6 +5,7 @@ import { SoundToggle } from "@chrishayuk/hause/components/SoundToggle";
 const LINKS: NavLink[] = [
 	{ href: "/why", label: "Why", group: "THE JOURNEY" },
 	{ href: "/anatomy", label: "Anatomy", hide: "sm", group: "THE JOURNEY" },
+	{ href: "/quantization", label: "Quantization", hide: "lg", group: "THE JOURNEY" },
 	{ href: "/ask", label: "Ask", group: "ASK & EXPLORE" },
 	{ href: "/explorer", label: "Explorer", group: "ASK & EXPLORE" },
 	{ href: "/container", label: "Container", hide: "md", group: "THE SPEC" },
