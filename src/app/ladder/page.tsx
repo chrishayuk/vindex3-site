@@ -28,6 +28,11 @@ export default function LadderPage() {
 				dek="Where this site keeps its honesty: the gate ladders, the measured evidence, the history, and the questions still open. Every claim on every other page answers to something here."
 			/>
 
+			<Observation
+				label="THREE LADDERS, ONE KEY"
+				text="G0 through G8 belong to the living spec: the semantic rungs, from reading a source to alternate physical plans. The V2-0 through V2-4 gates named below belong to the ABI's pre-registered experiments: what must pass before a byte freezes. M1 through M4 belong to the generation policy: the migration to VINDEX3 by default. And the maturity ladder is the kernel ledger's vocabulary for how real an implementation claim is. Four instruments, one habit: nothing advances without its gate."
+			/>
+
 			<Ladder
 				kicker="THE LADDER — STATUS FROM THE LIVING SPEC, 2026-08-12"
 				rungs={[
@@ -141,19 +146,19 @@ export default function LadderPage() {
 						label: "It is fast — gpt-oss-20b served from a VINDEX3 container",
 						status: "SUPPORTED",
 						detail:
-							"106 tokens per second on a single M3 Max, up from 91 after encode-ahead and kernel fusion — measured with a per-stage GPU ledger, so every millisecond is attributed. The same container also decodes on plain CPU. And on every model where both generations exist, VINDEX3 meets or beats its predecessor.",
+							"106 tokens per second on a single M3 Max, measured 2026-08-20 — up from 91 after encode-ahead and kernel fusion, with a per-stage GPU ledger attributing every millisecond, and the same greedy ids held on every arm from 91 to 106. The same container also decodes on plain CPU. On every model where both generations exist, VINDEX3 meets or beats its predecessor.",
 					},
 					{
 						label: "Selecting a representation pays in real bytes",
 						status: "SUPPORTED",
 						detail:
-							"Switching one model's selected expert representation — from a 6.56 bits-per-weight transcode to native 4.25-bit banks — cut expert reads from 1,959 to 1,269 MB per token. No conversion happened. A profile simply selected different bytes that were already there.",
+							"Switching one model's selected expert representation — from a 6.56 bits-per-weight transcode to native 4.25-bit banks — cut expert reads from 1,959 to 1,269 MB per token (gpt-oss-20b, M3 Max, measured 2026-08-14). No conversion happened. A profile simply selected different bytes that were already there.",
 					},
 					{
 						label: "The speed never changed the answer",
 						status: "SUPPORTED",
 						detail:
-							"Across the whole optimisation ladder — 10.2 to 77.2 tokens per second on one machine — GPU and CPU produced the identical greedy output, re-verified at every rung. Faster is only accepted when it is provably the same.",
+							"Across the whole optimisation ladder — 10.2 to 77.2 tokens per second on one M3 Max, 2026-08-10 to 2026-08-14 — GPU and CPU produced the identical greedy output, re-verified at every rung; the later 91-to-106 arms held the same discipline. Faster is only accepted when it is provably the same.",
 					},
 				]}
 			/>
@@ -214,9 +219,31 @@ export default function LadderPage() {
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
-						<li>vindex3-format.md §2, §8 (the living spec)</li>
-						<li>vindex3-format-spec.md §10, §13, §16 (the ABI, 3.0-draft-2)</li>
-						<li>vindex3-experiments.md (gates V2-0…V2-4)</li>
+						<li>
+							<a href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex3-format.md — the living spec →
+							</a>
+						</li>
+						<li>
+							<a href="https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex3-format-spec.md — the ABI, 3.0-draft-2 →
+							</a>
+						</li>
+						<li>
+							<a href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-experiments.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex3-experiments.md — the pre-registered programme, gates V2-0…V2-4 →
+							</a>
+						</li>
+						<li>
+							<a href="https://github.com/chrishayuk/larql/blob/main/docs/vindex-generation-policy.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex-generation-policy.md — the migration contract →
+							</a>
+						</li>
+						<li>
+							<a href="https://github.com/chrishayuk/larql" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								github.com/chrishayuk/larql — the reference implementation →
+							</a>
+						</li>
 					</ul>
 				</div>
 			</section>

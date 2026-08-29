@@ -7,6 +7,7 @@ import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { ContainerExplorer } from "@/components/ContainerExplorer";
 import { ClassTraffic } from "@/components/StoryFigures";
+import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 
 export const metadata: Metadata = {
 	title: "The Container",
@@ -32,6 +33,11 @@ export default function ContainerPage() {
 			<Observation
 				label="WHAT THIS FIXES"
 				text="You download a checkpoint: a folder of shards whose meaning lives in filename conventions. You quantize it: now there are two files, and the lineage between them is a commit message somewhere. A colleague needs another precision: three. Delete the original to save space, and no one can ever again prove what the copies are. The release was a system — a model, its tower, its drafter, its precisions. The folder is a rumor about it."
+			/>
+
+			<Observation
+				label="THE QUESTIONS A FOLDER CANNOT ANSWER"
+				text="What are these model objects? What operations can consume them? Which representations are equivalent? Which parts should be resident? What future computation will need them? A serving file answers one question — how do I store and run these tensors. The container is built to answer all of them."
 			/>
 
 			<Compilation
@@ -156,6 +162,11 @@ export default function ContainerPage() {
 			/>
 
 			<ClassTraffic />
+
+			<Procession
+				stages={["inventory", "plan", "encode", "inspect", "verify", "execute", "serve"]}
+				caption="one checkpoint — every stage, once"
+			/>
 
 			<Connection
 				text="Named parts are a promise. The next chapter is whether you can check it — down to the byte."

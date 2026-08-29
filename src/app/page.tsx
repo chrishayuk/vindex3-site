@@ -1,19 +1,17 @@
+import Link from "next/link";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Transformation } from "@chrishayuk/hause/components/forms/Transformation";
-import { Unfolding } from "@chrishayuk/hause/components/forms/Unfolding";
-import { Procession } from "@chrishayuk/hause/components/forms/Procession";
+import { Film } from "@chrishayuk/hause/components/forms/Film";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
-import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 /**
- * The thesis exhibit, with an on-ramp: what VINDEX3 is and does comes
- * before what it believes. Grounded in the actual specs in
- * the specification documents — every quoted question and figure below
- * is verbatim or near-verbatim from those documents, not illustrative.
- * See the Scope note and Sources at the bottom.
+ * The overture: thesis → demonstration → evidence → choose a path.
+ * Deliberately not encyclopedic — the chapters carry the spec; this
+ * page earns the title. Every number states its model, hardware and
+ * date, and answers to the Record.
  */
 export default function Home() {
 	return (
@@ -26,14 +24,9 @@ export default function Home() {
 				dek="A way of storing an AI model so the same copy can be run, questioned, and checked — nothing repackaged, nothing thrown away."
 			/>
 
-			<Observation text="An AI model is billions of learned numbers. Today they ship as a sealed box: you may run it, and nothing more. VINDEX3 keeps the same numbers as an open catalogue — every part named, findable, checkable — so one copy can be executed, searched, and proven faithful to the original." />
+			<Observation text="An AI model is billions of learned numbers, and today's formats keep those numbers perfectly — as storage. What they do not keep is everything else the release meant: which parts are which, what may consume them, which precisions are still the same model, what was ever proven about any of it. VINDEX3 keeps the numbers and the meaning — every part named, every representation catalogued, every claim checkable — for the life of the artifact." />
 
 			<Statement text="A modern model release is not a weights file. It is a system." />
-
-			<Observation
-				label="THE QUESTIONS"
-				text="A serving file needs to answer one question: how do I store and run these tensors? VINDEX3 is built to answer more. What are these model objects? What operations can consume them? Which representations are equivalent? Which parts should be resident? What future computation will need them?"
-			/>
 
 			<Transformation
 				kicker="ONE RELEASE — TWO INTERPRETATIONS"
@@ -57,6 +50,54 @@ export default function Home() {
 				}}
 			/>
 
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						ONE QUERY, STRAIGHT AT THE WEIGHTS
+					</p>
+					<p className="voice-evidence text-base sm:text-lg mb-6" style={{ color: "var(--color-accent)" }}>
+						WALK &quot;the capital of France&quot; TOP 3
+					</p>
+					<div className="flex flex-col gap-2 max-w-xl" aria-hidden="true">
+						{[
+							{ layer: "layer 24", feature: "feature 24:1882", score: 0.83 },
+							{ layer: "layer 27", feature: "feature 27:0413", score: 0.79 },
+							{ layer: "layer 31", feature: "feature 31:2050", score: 0.71 },
+						].map((r, i) => (
+							<div
+								key={r.feature}
+								className="graph-pulse grid grid-cols-[5.5rem_minmax(0,10rem)_3rem_1fr] gap-4 items-center"
+								style={{ animationDelay: `${i * 140}ms` }}
+							>
+								<span className="voice-evidence text-xs opacity-60">{r.layer}</span>
+								<span className="voice-evidence text-xs">{r.feature}</span>
+								<span className="voice-evidence text-xs" style={{ color: "var(--color-accent)" }}>
+									{r.score.toFixed(2)}
+								</span>
+								<div className="h-3 border" style={{ borderColor: "var(--color-mist)" }}>
+									<div
+										className="h-full"
+										style={{
+											width: `${r.score * 100}%`,
+											backgroundImage:
+												"repeating-linear-gradient(45deg, var(--color-accent) 0, var(--color-accent) 1px, transparent 1px, transparent 4px)",
+										}}
+									/>
+								</div>
+							</div>
+						))}
+					</div>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
+						No forward pass, and no separate index — the answer is read from the stored gate rows themselves,
+						layer by layer. WALK and DESCRIBE are the browse surface the ABI itself specifies.
+					</p>
+					<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-3">
+						A worked shape, not a recorded run. The browse surface ships today as an analysis-only profile;
+						expert-region browse parity is still open — the Record keeps score.
+					</p>
+				</div>
+			</section>
+
 			<Film
 				title="Extract once"
 				description="A checkpoint compiles down into a container, is proven byte-faithful — and the checkpoint ghosts away, no longer needed. Thirty seconds, from the format's own performance."
@@ -64,36 +105,21 @@ export default function Home() {
 				poster="/films/extract-once-poster.jpg"
 			/>
 
-			<Statement text="VINDEX3 does not add a query index next to the weights. It keeps the weights queryable." />
-
-			<Observation
-				label="THE QUERY SURFACE"
-				text="No query index is ever stored beside the weights — the weights are the query index. Ask the model what it associates with a phrase. Filter what it knows like a table. Or run it. Same bytes, all three."
-			/>
-
-			<Procession
-				stages={["inventory", "plan", "encode", "inspect", "verify", "execute", "serve"]}
-				caption="one checkpoint — every stage, once"
-			/>
-
-			<Observation text="Extract a supported checkpoint once, into a stable, component-addressed layout. Then vary what is loaded, where it resides, what precision it uses, and whether a component is executed or queried — without ever rebuilding the index." />
-
-			<Unfolding
-				kicker="model.vindex/ — ONE CONTAINER, FIVE DURABLE WEIGHT CLASSES"
-				source={{ label: "model.vindex/", detail: "A directory, not a single blob — component-addressed from the start." }}
-				parts={[
-					{ label: "1 — CONTROL & ROUTER", detail: "Embeddings, norms, LM head, routers." },
-					{ label: "2 — DENSE SPINE", detail: "The non-routed backbone layers." },
-					{ label: "3 — SHARED FFN", detail: "Feed-forward blocks shared across experts." },
-					{ label: "4 & 5 — ROUTED BANKS", detail: "The expert weights, gate-up and down — segmented, independently addressable." },
-				]}
-				result={{ label: "index.json", detail: "Sole root authority — version, identity, provenance, checksums, class map, segment lists." }}
-			/>
-
 			<Statement text="106 tokens per second, from one container, on one laptop — and the answer, provably unchanged." />
 
+			<section className="hause-grid pb-4 -mt-10">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<p className="voice-evidence text-xs opacity-50">
+						gpt-oss-20b · one M3 Max · measured 2026-08-20 · same greedy ids on every arm —{" "}
+						<Link href="/ladder" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+							accounted on the Record →
+						</Link>
+					</p>
+				</div>
+			</section>
+
 			<Connection
-				text="The spec's load-bearing ideas each have their own exhibit."
+				text="Now choose a path — the physics from first principles, or straight into the container."
 				links={[
 					{ href: "/why", label: "THE PHYSICS — START AT FIRST PRINCIPLES" },
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
