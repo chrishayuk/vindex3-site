@@ -6,6 +6,7 @@ import {
 	type TerminalLine,
 	type TerminalResult,
 } from "@chrishayuk/hause/components/forms/Terminal";
+import { ENTITIES, entity, type Entity } from "@/data/vindexGraph";
 
 /**
  * ENTER A MODEL — the Explorer's terminal.
@@ -171,6 +172,8 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 		case "describe": {
 			if (!model) return { lines: need() };
 			const a = cmd.address;
+			const sem = semanticEntity(a);
+			if (sem) return { lines: describeEntity(a, sem) };
 			if (/^layer\.12\.routed\.gate_up$/i.test(a))
 				return {
 					lines: [
@@ -202,12 +205,15 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 			return {
 				lines: [
 					{ text: `layer.${l}` },
-					{ text: ` ├─ part_of        → target.decoder_stack` },
-					{ text: ` ├─ attention      → q/k/v/o · bf16` },
-					{ text: ` ├─ router         → 32 × 2048 · preserved` },
-					{ text: ` ├─ routed.gate_up → 32 experts${l === 12 ? " · 2 representations" : ""}`, tone: l === 12 ? "accent" : undefined },
-					{ text: ` └─ routed.down    → 32 experts` },
+					{ text: ` ├─ attention          q · k · v · output` },
+					{ text: ` │    the layer looking backwards along the sentence`, tone: "dim" },
+					{ text: ` ├─ norm ×2            keep the numbers in range`, tone: "dim" },
+					{ text: ` ├─ router             32 candidates · 4 chosen per token` },
+					{ text: ` └─ experts ×32        gate · up · down, each` },
+					{ text: `      gate_up          gate and up stored together — consumed together${l === 12 ? " · 2 representations" : ""}`, tone: l === 12 ? "accent" : undefined },
+					{ text: `      down             stored apart — consumed apart`, tone: "dim" },
 					{ text: `every edge is data in the container — nothing here was inferred from a name`, tone: "dim" },
+					{ text: `DESCRIBE any part — layer.${l}.ffn.gate · layer.${l}.attention.q · layer.${l}.routed.gate_up`, tone: "dim" },
 				],
 			};
 		}
@@ -300,7 +306,61 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 	}
 }
 
-const SEED = ["SHOW MODELS", "OPEN vindex3-demo", "WALK layer.12", "DESCRIBE layer.12.routed.gate_up", "SHOW AUTHORITY layer.12", "EXPLAIN EXECUTION layer.12"];
+/** Route a semantic address to its graph entity — the same records
+ *  Ask's definitions and the Anatomy chapter answer from. */
+function semanticEntity(address: string): Entity | undefined {
+	const m = address.toLowerCase().match(/^layer\.\d+\.(.+)$/);
+	if (!m) return undefined;
+	const rest = m[1];
+	const map: Record<string, string> = {
+		attention: "attention",
+		"attention.q": "q",
+		"attention.k": "k",
+		"attention.v": "v",
+		"attention.o": "o",
+		"attention.output": "o",
+		ffn: "feed-forward",
+		mlp: "feed-forward",
+		experts: "expert",
+		expert: "expert",
+		"ffn.gate": "gate",
+		"mlp.gate": "gate",
+		"experts.gate": "gate",
+		"ffn.up": "up",
+		"mlp.up": "up",
+		"experts.up": "up",
+		"ffn.down": "down",
+		"mlp.down": "down",
+		"experts.down": "down",
+		router: "router",
+		norm: "norm",
+		norms: "norm",
+	};
+	const id = map[rest];
+	return id ? entity(id) : undefined;
+}
+
+function describeEntity(address: string, ent: Entity): Line[] {
+	const physical =
+		ent.id === "gate" || ent.id === "up"
+			? "stored with its pair as routed.gate_up — consumed together, stored together"
+			: ent.id === "down"
+				? "stored as routed.down — consumed apart, stored apart"
+				: ent.id === "router"
+					? "32 × 2048 · f32 · preserved at source precision"
+					: undefined;
+	return [
+		{ text: `ADDRESS          ${address}` },
+		{ text: `SEMANTIC         ${ent.display}` },
+		{ text: `SIGNATURE        ${ent.five}`, tone: "accent" },
+		{ text: `ROLE             ${ent.role}` },
+		...(physical ? [{ text: `PHYSICAL         ${physical}` }] : []),
+		{ text: `WHAT DOES ${ent.display.split(" ")[0]} MEAN? — ask VINDEX3 →`, tone: "accent", href: `/ask?q=${encodeURIComponent("what does " + ent.names[0] + " do?")}` },
+		{ text: "THE ANATOMY — the machinery, opened →", tone: "dim", href: ent.href },
+	];
+}
+
+const SEED = ["OPEN vindex3-demo", "WALK layer.12", "DESCRIBE layer.12.attention", "DESCRIBE layer.12.ffn.gate", "SHOW REPRESENTATIONS", "SHOW AUTHORITY layer.12"];
 
 const LIVE_SEED = [
 	"SHOW COMPONENTS;",
@@ -334,32 +394,82 @@ function liveBanner(): Line[] {
 	];
 }
 
+
+type Transport = "snapshot" | "live";
+
+/* ── Completion — commands, then addresses like a filesystem ── */
+
+const SNAPSHOT_VERBS = [
+	"SHOW MODELS", "SHOW COMPONENTS", "SHOW REPRESENTATIONS", "SHOW PROVENANCE", "SHOW AUTHORITY",
+	"OPEN vindex3-demo", "DESCRIBE ", "WALK ", "FIND ", "EXPLAIN EXECUTION", "READ ", "INFER ",
+	"HELP", "CLEAR", "SNAPSHOT",
+];
+const LIVE_VERBS = [
+	"SHOW MODELS;", "SHOW COMPONENTS;", "SHOW LAYERS;", "SHOW REPRESENTATIONS;", "SHOW PROVENANCE;",
+	"SHOW AUTHORITY;", "STATS;", "DESCRIBE ", "WALK ", "SELECT * FROM EDGES LIMIT 5;",
+	"EXPLAIN INFER ", "INFER ", "HELP", "CLEAR",
+];
+const CHILDREN: Record<string, string[]> = {
+	"": ["attention", "ffn", "router", "norm", "routed"],
+	attention: ["q", "k", "v", "output"],
+	ffn: ["gate", "up", "down"],
+	routed: ["gate_up", "down"],
+};
+
+function completeLine(input: string, live: boolean): string[] {
+	const m = input.match(/^((?:DESCRIBE|WALK)\s+)(\S*)$/i);
+	if (m) {
+		const [, head, addr] = m;
+		const am = addr.match(/^(layer\.\d+)\.(.*)$/i);
+		if (am) {
+			const [, base, rest] = am;
+			const parts = rest.split(".");
+			const partial = parts.pop() ?? "";
+			const parent = parts[parts.length - 1] ?? "";
+			const kids = (CHILDREN[parent] ?? []).filter((k) => k.startsWith(partial.toLowerCase()));
+			return kids.map((k) => head + [base, ...parts, k].join("."));
+		}
+		if ("layer.12".startsWith(addr.toLowerCase()) && addr.length > 0) return [head + "layer.12"];
+		return [];
+	}
+	const verbs = live ? LIVE_VERBS : SNAPSHOT_VERBS;
+	const up = input.toUpperCase();
+	return input.length > 0 ? verbs.filter((v) => v.toUpperCase().startsWith(up) && v.toUpperCase() !== up) : [];
+}
+
 function snapshotBanner(): Line[] {
 	return [
 		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
-		{ text: "Profile: PUBLIC_EXPLORER (read-only) · live endpoint unreachable — walking the compiled snapshot", tone: "dim" },
-		{ text: "Type HELP, or start with SHOW MODELS;", tone: "dim" },
+		{ text: "Profile: PUBLIC_EXPLORER (read-only) · the live endpoint connects quietly in the background", tone: "dim" },
+		{ text: "Type now — HELP for the grammar, Tab completes, or start with WALK layer.12;", tone: "dim" },
 	];
 }
 
-type Transport = "connecting" | "live" | "snapshot";
-
 export function VindexTerminal() {
-	const [transport, setTransport] = useState<Transport>("connecting");
-	const [model, setModel] = useState<string | null>(null);
+	const [transport, setTransport] = useState<Transport>("snapshot");
+	// The demo model is open from the first keystroke — no ritual
+	// between a visitor and their first WALK.
+	const [model, setModel] = useState<string | null>("vindex3-demo");
+	const [notice, setNotice] = useState<Line | undefined>(undefined);
+	const [autorun, setAutorun] = useState<string | undefined>(undefined);
 
 	useEffect(() => {
+		setAutorun(new URLSearchParams(window.location.search).get("run") ?? undefined);
 		let cancelled = false;
 		(async () => {
 			try {
 				// Generous timeout: the machine auto-stops when idle and a
-				// cold start takes a few seconds.
+				// cold start takes a few seconds. Nobody waits on this —
+				// the snapshot answers from the first keystroke.
 				const r = await fetch(`${LIVE_ENDPOINT}/v1/health`, { signal: AbortSignal.timeout(20000) });
-				if (cancelled) return;
-				if (!r.ok) throw new Error(String(r.status));
+				if (cancelled || !r.ok) return;
 				setTransport("live");
+				setNotice({
+					text: "● LIVE — " + LIVE_ENDPOINT.replace("https://", "") + " connected · profile PUBLIC_EXPLORER · statements now execute on a real container (vindex3-demo: miniature, synthetic weights — the format is real)",
+					tone: "ok",
+				});
 			} catch {
-				if (!cancelled) setTransport("snapshot");
+				/* the snapshot is already serving */
 			}
 		})();
 		return () => {
@@ -393,7 +503,7 @@ export function VindexTerminal() {
 		} catch {
 			return {
 				refused: true,
-				lines: [{ text: "the live endpoint did not answer — try again, or reload for the snapshot", tone: "err" }],
+				lines: [{ text: "the live endpoint did not answer — the snapshot still serves; try again for live", tone: "err" }],
 			};
 		}
 	}
@@ -409,23 +519,18 @@ export function VindexTerminal() {
 		};
 	}
 
-	const banner =
-		transport === "connecting"
-			? [{ text: "Waking the live endpoint — the public VINDEX query surface…", tone: "dim" as const }]
-			: transport === "live"
-				? liveBanner()
-				: snapshotBanner();
-
 	return (
 		<Terminal
 			kicker="THE EXPLORER — ENTER A MODEL"
 			headline="psql, for a model."
-			banner={banner}
-			prompt={transport !== "live" && model ? `vindex/${model.split("-")[0]}>` : "vindex>"}
+			banner={transport === "live" ? liveBanner() : snapshotBanner()}
+			prompt="vindex>"
 			seeds={transport === "live" ? LIVE_SEED : SEED}
 			execute={(line) => (transport === "live" ? runLive(line) : runSnapshot(line))}
-			sessionKey={transport}
-			fallback="When live, every statement is sent to the hardened public VINDEX query endpoint and executes for real — the capability profile is enforced in the server after parsing, before execution, so a mutation verb parses and then refuses with the profile's own words. When the endpoint is unreachable, the terminal falls back to an immutable snapshot compiled into this site, and the banner says which universe you are in."
+			complete={(line) => completeLine(line, transport === "live")}
+			autorun={autorun}
+			notice={notice}
+			fallback="Type from the first moment: the immutable snapshot answers instantly, and when the live endpoint wakes, a quiet ● LIVE line appears and the same grammar starts executing on a real container — the capability profile enforced in the server, after parsing, before execution. DESCRIBE a semantic address (layer.12.ffn.gate, layer.12.attention.q) and the answer comes from the same graph entities Ask and the Anatomy chapter read — one authority, three surfaces."
 			footnote="The model is the database — as an interaction, not a metaphor. Read-only · rate-limited · nothing to drop."
 		/>
 	);

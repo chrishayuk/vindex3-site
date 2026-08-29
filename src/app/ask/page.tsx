@@ -12,9 +12,9 @@ export default function AskPage() {
 	return (
 		<main>
 			<Hero
-				kicker="ASK VINDEX3 · DETERMINISTIC · READ-ONLY"
+				kicker="ASK VINDEX3 · THE GRAPH IS THE AUTHORITY · READ-ONLY"
 				title="ASK"
-				dek="Natural language in, evidence out — every answer shows how your question was interpreted, the graph path it traversed, and the Record line it answers to."
+				dek="Any answerable question about the public VINDEX3 universe — resolved against the graph, never guessed. Every answer shows its interpretation, the path it traversed, and the Record line it answers to; when the graph does not establish something, Ask says exactly that."
 			/>
 
 			<QueryVindex />

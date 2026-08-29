@@ -1,70 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SNAPSHOT, NODES, EDGES, CANON, SUGGESTIONS, type CanonEntry } from "@/data/vindexGraph";
+import { SNAPSHOT, CANON, ENTITIES, SUGGESTIONS } from "@/data/vindexGraph";
+import { resolveAndExplain, type ExplanationResponse } from "@/data/explain";
 import { tick, refuse } from "@chrishayuk/hause/sound";
 
 /**
- * ASK VINDEX3 — an intelligent query interface, not a chatbot.
+ * ASK VINDEX3 — the natural-language projection of the graph.
  *
- * natural language → five-word canonical form → graph address →
- * evidence → answer. Fully deterministic: the question is matched
- * against a canonical index compiled into the site, the answer's
- * graph path and Record line are shown, and the interpretation is
- * displayed so the system reads as a query engine, not magic. No
- * model call, no server, no write surface — the universe is the
- * versioned public graph snapshot and nothing else. A synthesis tier
- * can sit behind this later without changing the contract.
+ * This component is only a renderer: the question goes to the
+ * resolver in src/data/explain.ts, which returns a typed
+ * ExplanationResponse from the graph — canonical answer, entity
+ * definition, component flow, derived status report, or an honest
+ * refusal when no supported subgraph exists. No model call in V1; a
+ * synthesis backend can sit behind the same contract later without
+ * this file changing. Deep-linkable: /ask?q=… asks on arrival, and
+ * the Explorer's results link here — two entrances, one graph.
  */
-
-const STOP = new Set(["the", "a", "an", "is", "are", "was", "it", "its", "of", "to", "in", "on", "and", "or", "for", "with", "does", "do", "can", "i", "my", "me", "from", "that", "this", "there", "be", "just", "another", "about", "vindex3", "vindex"]);
-
-const ABUSE = /system prompt|ignore (your|all|previous)|credential|api.?key|drop\s|delete\s|truncate|every node|all nodes|enumerate|dump (the|your)|exfiltrat/i;
-
-const INTENT_HINTS: [RegExp, CanonEntry["intent"]][] = [
-	[/^why|why\s/i, "why"],
-	[/differ|versus|vs\.?|compare|instead of|rather than|different/i, "compare"],
-	[/^how|how\s/i, "how"],
-	[/status|ready|frozen|today|current|open|passed/i, "status"],
-	[/show|story|example|demonstrat/i, "show"],
-	[/^what|what\s/i, "what"],
-];
-
-function tokens(q: string): string[] {
-	return q.toLowerCase().split(/[^a-z0-9._]+/).filter((t) => t.length > 1 && !STOP.has(t));
-}
-
-type MatchResult = { entry: CanonEntry; confidence: number };
-
-function interpret(q: string): { intent: CanonEntry["intent"] | null; matches: MatchResult[] } {
-	const toks = tokens(q);
-	let intent: CanonEntry["intent"] | null = null;
-	for (const [re, i] of INTENT_HINTS) if (re.test(q)) { intent = i; break; }
-	const ql = q.toLowerCase();
-	const scored = CANON.map((entry) => {
-		let score = 0;
-		for (const ent of entry.entities) if (toks.includes(ent) || ql.includes(ent)) score += 2;
-		const sumToks = tokens(entry.summary);
-		for (const t of toks) if (sumToks.includes(t)) score += 1;
-		if (entry.patterns) for (const p of entry.patterns) if (ql.includes(p)) score += 3;
-		if (intent && entry.intent === intent) score += 1;
-		return { entry, confidence: Math.min(1, score / 7) };
-	}).sort((a, b) => b.confidence - a.confidence);
-	return { intent, matches: scored.slice(0, 3) };
-}
-
-const node = (id: string) => NODES.find((n) => n.id === id)!;
-
-type Result =
-	| { kind: "answer"; q: string; m: MatchResult }
-	| { kind: "related"; q: string; ms: MatchResult[] }
-	| { kind: "none"; q: string }
-	| { kind: "unsupported"; q: string };
 
 export function QueryVindex({ compact = false }: { compact?: boolean }) {
 	const [q, setQ] = useState("");
-	const [result, setResult] = useState<Result | null>(null);
+	const [result, setResult] = useState<{ r: ExplanationResponse; q: string } | null>(null);
 	const [thinking, setThinking] = useState(false);
 
 	function ask(question: string) {
@@ -76,32 +33,21 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 		// The considered pause — an instant snap reads as broken, not fast.
 		setTimeout(() => {
 			setThinking(false);
-			if (ABUSE.test(query)) {
-				refuse();
-				setResult({ kind: "unsupported", q: query });
-				return;
-			}
-			const { matches } = interpret(query);
-			tick();
-			if (matches[0] && matches[0].confidence >= 0.5) setResult({ kind: "answer", q: query, m: matches[0] });
-			else if (matches[0] && matches[0].confidence >= 0.28)
-				setResult({ kind: "related", q: query, ms: matches.filter((m) => m.confidence >= 0.28) });
-			else setResult({ kind: "none", q: query });
+			const r = resolveAndExplain(query);
+			if (r.answer_type === "unsupported" || r.answer_type === "refusal") refuse();
+			else tick();
+			setResult({ r, q: query });
 		}, 650);
 	}
 
-	const pathRow = (edgeIdx: number, i: number) => {
-		const edge = EDGES[edgeIdx];
-		const a = node(edge.from);
-		const b = node(edge.to);
-		return (
-			<div key={i} className="graph-pulse flex items-baseline gap-3 flex-wrap" style={{ animationDelay: `${i * 140}ms` }}>
-				<span className="voice-evidence text-xs">{a.label}</span>
-				<span className="voice-evidence text-[10px] tracking-[0.08em] uppercase opacity-50">— {edge.rel.replace(/_/g, " ")} →</span>
-				<span className="voice-evidence text-xs" style={{ color: "var(--color-accent)" }}>{b.label}</span>
-			</div>
-		);
-	};
+	// /ask?q=… — the other entrance's door into this one.
+	useEffect(() => {
+		const param = new URLSearchParams(window.location.search).get("q");
+		if (param) ask(param);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	const r = result?.r;
 
 	return (
 		<section className="hause-grid py-16 sm:py-24">
@@ -125,7 +71,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 					<input
 						value={q}
 						onChange={(e) => setQ(e.target.value)}
-						placeholder="why isn't VINDEX3 just another quantised format?"
+						placeholder="what does the gate projection actually do?"
 						aria-label="Ask a question about VINDEX3"
 						className="voice-evidence text-sm flex-1 border bg-transparent px-4 py-3 outline-none focus-visible:outline-2"
 						style={{ borderColor: "var(--fg)", color: "var(--fg)" }}
@@ -151,18 +97,72 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 				<div className="mt-10 min-h-[4rem]" aria-live="polite">
 					{thinking && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse">resolving…</p>}
 
-					{result?.kind === "answer" && (
-						<div key={result.m.entry.id}>
-							<p className="voice-evidence text-[11px] opacity-50">
-								INTERPRETED AS&nbsp;&nbsp;<span style={{ color: "var(--color-accent)" }}>{result.m.entry.summary}</span>
-								&nbsp;&nbsp;·&nbsp;&nbsp;match {result.m.confidence.toFixed(2)} · snapshot {SNAPSHOT.id} / {SNAPSHOT.date}
-							</p>
-							<p className="voice-system text-base sm:text-lg opacity-90 leading-relaxed max-w-2xl mt-5">{result.m.entry.answer}</p>
+					{r && r.answer_type !== "unsupported" && r.answer_type !== "refusal" && r.answer_type !== "related" && (
+						<div key={result!.q}>
+							{r.interpreted && (
+								<p className="voice-evidence text-[11px] opacity-50">
+									INTERPRETED AS&nbsp;&nbsp;<span style={{ color: "var(--color-accent)" }}>{r.interpreted}</span>
+									{r.confidence !== undefined && <>&nbsp;&nbsp;·&nbsp;&nbsp;match {r.confidence.toFixed(2)}</>}
+									&nbsp;&nbsp;·&nbsp;&nbsp;snapshot {r.snapshot}
+								</p>
+							)}
+							{r.title && <p className="voice-editorial text-xl sm:text-2xl mt-5">{r.title}</p>}
+							<p className="voice-system text-base sm:text-lg opacity-90 leading-relaxed max-w-2xl mt-4">{r.summary}</p>
 
-							<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-8 mb-3">EVIDENCE — THE GRAPH PATH</p>
-							<div className="flex flex-col gap-2">{result.m.entry.path.map(pathRow)}</div>
+							{r.rows && (
+								<div className="flex flex-col mt-6 max-w-2xl">
+									{r.rows.map((row, i) => (
+										<div key={row.head} className="graph-pulse grid grid-cols-12 gap-3 py-3 border-t items-baseline" style={{ borderColor: "var(--color-mist)", animationDelay: `${i * 140}ms` }}>
+											<p className="col-span-4 sm:col-span-3 voice-evidence text-xs" style={{ color: "var(--color-accent)" }}>{row.head}</p>
+											<p className="col-span-8 sm:col-span-4 voice-evidence text-[11px] opacity-60">{row.five}</p>
+											<p className="col-span-12 sm:col-span-5 voice-system text-sm opacity-85">{row.body}</p>
+										</div>
+									))}
+								</div>
+							)}
 
-							{result.m.entry.record && (
+							{r.gates && (
+								<div className="flex flex-col gap-2 mt-6 max-w-2xl">
+									{r.gates.map((g, i) => (
+										<div key={g.id} className="graph-pulse flex items-baseline gap-4" style={{ animationDelay: `${i * 90}ms` }}>
+											<span className="voice-evidence text-xs w-24 shrink-0">{g.id}</span>
+											<span
+												className="voice-evidence text-xs w-24 shrink-0 status-mark"
+												style={{
+													color:
+														g.status === "PASSED"
+															? "var(--color-status-supported)"
+															: g.status === "BUILDING"
+																? "var(--color-accent)"
+																: "var(--color-status-open)",
+												}}
+											>
+												{g.status}
+											</span>
+											<span className="voice-system text-sm opacity-80">{g.label}
+												<span className="voice-evidence text-[11px] opacity-50">&nbsp;&nbsp;{g.note}</span>
+											</span>
+										</div>
+									))}
+								</div>
+							)}
+
+							{r.evidence && r.evidence.length > 0 && (
+								<>
+									<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-8 mb-3">EVIDENCE — THE GRAPH PATH</p>
+									<div className="flex flex-col gap-2">
+										{r.evidence.map((ev, i) => (
+											<div key={i} className="graph-pulse flex items-baseline gap-3 flex-wrap" style={{ animationDelay: `${i * 140}ms` }}>
+												<span className="voice-evidence text-xs">{ev.from}</span>
+												<span className="voice-evidence text-[10px] tracking-[0.08em] uppercase opacity-50">— {ev.rel} →</span>
+												<span className="voice-evidence text-xs" style={{ color: "var(--color-accent)" }}>{ev.to}</span>
+											</div>
+										))}
+									</div>
+								</>
+							)}
+
+							{r.record && (
 								<>
 									<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-6 mb-2">RECORD</p>
 									<p className="voice-evidence text-xs">
@@ -170,81 +170,86 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 											className="status-mark"
 											style={{
 												color:
-													result.m.entry.record.status === "OPEN"
+													r.record.status === "OPEN"
 														? "var(--color-status-open)"
-														: result.m.entry.record.status === "BUILDING"
+														: r.record.status === "BUILDING"
 															? "var(--color-accent)"
 															: "var(--color-status-supported)",
 											}}
 										>
-											{result.m.entry.record.status}
+											{r.record.status}
 										</span>
-										<span className="opacity-70">&nbsp;&nbsp;{result.m.entry.record.note}</span>
+										<span className="opacity-70">&nbsp;&nbsp;{r.record.note}</span>
 									</p>
 								</>
 							)}
 
-							<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-6 mb-2">EXPLORE</p>
-							<div className="flex flex-wrap gap-2">
-								{result.m.entry.explore.map((id) => {
-									const n = node(id);
-									return n.href ? (
-										<Link key={id} href={n.href} className="voice-evidence text-[11px] px-3 py-1.5 border hover:opacity-100 opacity-80" style={{ borderColor: "var(--color-accent)" }}>
-											{n.label} →
+							{r.actions.length > 0 && (
+								<div className="flex flex-wrap gap-2 mt-8">
+									{r.actions.map((a) => (
+										<Link
+											key={a.href + a.label}
+											href={a.href}
+											className="voice-evidence text-[11px] px-3 py-1.5 border hover:opacity-100 opacity-85"
+											style={{ borderColor: "var(--color-accent)", color: a.accent ? "var(--color-accent)" : undefined }}
+										>
+											{a.label}
 										</Link>
-									) : (
-										<span key={id} className="voice-evidence text-[11px] px-3 py-1.5 border opacity-60" style={{ borderColor: "var(--color-mist)" }}>
-											{n.label}
-										</span>
-									);
-								})}
-								{result.m.entry.id === "q-what-is-container" || result.m.entry.id === "q-lyrw" ? (
-									<Link href="/terminal" className="voice-evidence text-[11px] px-3 py-1.5 border" style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}>
-										SHOW ME — ENTER A MODEL →
-									</Link>
-								) : null}
-							</div>
+									))}
+								</div>
+							)}
 						</div>
 					)}
 
-					{result?.kind === "related" && (
+					{r?.answer_type === "related" && (
 						<div>
-							<p className="voice-evidence text-[11px] opacity-50">NO CANONICAL ANSWER — CLOSEST MATCHES</p>
+							<p className="voice-evidence text-[11px] opacity-50">NO SUPPORTED SUBGRAPH — CLOSEST CANONICAL QUESTIONS</p>
 							<div className="flex flex-col gap-3 mt-4">
-								{result.ms.map((m) => (
-									<button key={m.entry.id} onClick={() => ask(m.entry.summary)} className="text-left voice-evidence text-xs border px-4 py-3 opacity-80 hover:opacity-100" style={{ borderColor: "var(--color-mist)" }}>
-										{m.entry.summary} <span className="opacity-40">· {m.confidence.toFixed(2)}</span>
+								{r.related?.map((m) => (
+									<button key={m.ask} onClick={() => ask(m.ask)} className="text-left voice-evidence text-xs border px-4 py-3 opacity-80 hover:opacity-100" style={{ borderColor: "var(--color-mist)" }}>
+										{m.label}
 									</button>
 								))}
 							</div>
 						</div>
 					)}
 
-					{result?.kind === "none" && (
-						<p className="voice-system text-sm opacity-70 max-w-xl">
-							Nothing in the snapshot answers that yet — the canonical index covers the format itself. Try one of
-							the suggestions, or walk the chapters directly.
-						</p>
+					{r?.answer_type === "refusal" && (
+						<div className="border-l-2 pl-5 py-1 max-w-xl" style={{ borderColor: "var(--color-status-open)" }}>
+							<p className="voice-system text-base opacity-90">{r.summary}</p>
+							{r.related && r.related.length > 0 && (
+								<>
+									<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-4 mb-2">CLOSEST EVIDENCE</p>
+									<div className="flex flex-col gap-2">
+										{r.related.map((m) => (
+											<button key={m.ask} onClick={() => ask(m.ask)} className="text-left voice-evidence text-xs opacity-70 hover:opacity-100 w-fit border-b pb-0.5" style={{ borderColor: "var(--color-mist)" }}>
+												{m.label}
+											</button>
+										))}
+									</div>
+								</>
+							)}
+							<p className="voice-evidence text-[11px] opacity-40 mt-4">graph snapshot {r.snapshot}</p>
+						</div>
 					)}
 
-					{result?.kind === "unsupported" && (
+					{r?.answer_type === "unsupported" && (
 						<div className="border-l-2 pl-5 py-1 max-w-xl" style={{ borderColor: "var(--color-status-refuted)" }}>
 							<p className="voice-evidence text-xs tracking-[0.12em] uppercase" style={{ color: "var(--color-status-refuted)" }}>
 								UNSUPPORTED QUERY
 							</p>
-							<p className="voice-system text-sm opacity-70 mt-2">
-								That operation does not exist in this universe. The query surface is read-only over a versioned
-								public snapshot — there is nothing to disclose and nothing to drop.
-							</p>
+							<p className="voice-system text-sm opacity-70 mt-2">{r.summary}</p>
 						</div>
 					)}
 				</div>
 
 				{/* Always-present text fallback. */}
 				<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-10">
-					A deterministic query engine over graph snapshot {SNAPSHOT.id} ({SNAPSHOT.date}): natural language →
-					five-word canonical form → graph path → evidence → answer. {CANON.length} canonical questions, read-only,
-					no model call — the interface practises what the format preaches.
+					A deterministic resolver over graph snapshot {SNAPSHOT.id} ({SNAPSHOT.date}): question → five-word
+					canonical form → entity and status resolution → typed explanation. {CANON.length} canonical answers as the
+					cache, {ENTITIES.length} graph entities behind them, the Record&apos;s gates as status nodes — and when no
+					supported subgraph exists, Ask says so rather than guessing. No model call; the graph is the authority, and
+					a synthesis tier can only ever narrate it.
 				</p>
 			</div>
 		</section>

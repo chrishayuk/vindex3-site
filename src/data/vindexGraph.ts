@@ -414,3 +414,323 @@ export const SUGGESTIONS = [
 	"How do I know a container is faithful to its source?",
 	"Is it ready to use today?",
 ];
+
+/* ------------------------------------------------------------------
+   THE ENTITY LAYER — the machinery vocabulary as graph authority.
+
+   One entity per concept the site teaches; Ask definitions, the
+   Explorer's semantic DESCRIBE, and the Anatomy chapter all answer
+   from these records, so the three surfaces cannot disagree. Each
+   carries a five-word semantic signature — the compact address layer
+   over the graph — a one-sentence role, and its recorded relations.
+   ------------------------------------------------------------------ */
+
+export type EntityGroup = "layer" | "attention" | "feed-forward" | "moe" | "format";
+
+export type Entity = {
+	id: string;
+	/** The resolution surface — every name a question might use. */
+	names: string[];
+	display: string;
+	/** The five-word semantic signature. */
+	five: string;
+	/** One sentence: what it does. */
+	role: string;
+	/** System-voice explanation. */
+	detail: string;
+	group: EntityGroup;
+	relations: { rel: string; to: string }[];
+	href: string;
+	/** The Explorer command that shows it. */
+	explorer?: string;
+};
+
+export const ENTITIES: Entity[] = [
+	{
+		id: "layer",
+		names: ["layer", "layers", "block", "transformer block"],
+		display: "LAYER",
+		five: "attention then feed-forward, repeated",
+		role: "One pass of the machine: look backwards along the sentence, then transform what was found — repeated dozens of times per token.",
+		detail: "A layer does exactly two things. Attention reads every earlier token; the feed-forward network transforms what attention gathered. Each result is added to a running stream rather than replacing it, which is why a layer's contribution can be measured, attributed, or skipped.",
+		group: "layer",
+		relations: [
+			{ rel: "contains", to: "attention" },
+			{ rel: "contains", to: "feed-forward" },
+			{ rel: "disciplined_by", to: "residual" },
+			{ rel: "kept_in_range_by", to: "norm" },
+		],
+		href: "/anatomy",
+		explorer: "WALK layer.12",
+	},
+	{
+		id: "residual",
+		names: ["residual", "residual stream", "stream", "skip connection"],
+		display: "RESIDUAL",
+		five: "results added, never overwritten",
+		role: "The discipline that every layer adds its contribution to a running representation instead of replacing it.",
+		detail: "Because everything is added to the stream, a layer can be skipped, measured, or attributed without the story falling apart — the reason per-layer accounting is possible at all.",
+		group: "layer",
+		relations: [{ rel: "disciplines", to: "layer" }],
+		href: "/anatomy",
+	},
+	{
+		id: "norm",
+		names: ["norm", "norms", "layernorm", "rmsnorm", "normalization", "normalisation"],
+		display: "NORM",
+		five: "keeps numbers in workable range",
+		role: "A thermostat, not a thinker: keeps the stream's numbers in range before each move.",
+		detail: "Norms appear before attention and before the feed-forward network. They carry the source precision in a VINDEX3 container — small, precision-sensitive, always resident.",
+		group: "layer",
+		relations: [{ rel: "guards", to: "layer" }],
+		href: "/anatomy",
+	},
+	{
+		id: "embedding",
+		names: ["embedding", "embeddings", "embed", "vocab"],
+		display: "EMBEDDING",
+		five: "words become vectors of numbers",
+		role: "The table that turns a token into the hidden-width vector the layers operate on.",
+		detail: "One row per vocabulary entry. In the worked example the output head reuses the embedding — bound, not duplicated — which the system graph records as a relationship, not a naming convention.",
+		group: "layer",
+		relations: [{ rel: "feeds", to: "layer" }],
+		href: "/anatomy",
+	},
+	{
+		id: "attention",
+		names: ["attention", "self-attention", "attn"],
+		display: "ATTENTION",
+		five: "each token reads the past",
+		role: "The first move of a layer: every token asks questions of the tokens before it, and information flows back where the questions match.",
+		detail: "Attention gives each token three faces made by three tensors — a query, a key, a value — plus an output projection that writes the gathered result back to the stream.",
+		group: "attention",
+		relations: [
+			{ rel: "contains", to: "q" },
+			{ rel: "contains", to: "k" },
+			{ rel: "contains", to: "v" },
+			{ rel: "contains", to: "o" },
+			{ rel: "belongs_to", to: "layer" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.attention",
+	},
+	{
+		id: "q",
+		names: ["q", "query", "q_proj", "qproj", "queries"],
+		display: "Q — q_proj",
+		five: "what am I looking for",
+		role: "Turns this token's state into the questions it asks of every token before it.",
+		detail: "A verb asking for its subject; a pronoun asking who it stands for. The query is compared against every earlier token's key, and where they agree strongly, that token's value flows back.",
+		group: "attention",
+		relations: [
+			{ rel: "belongs_to", to: "attention" },
+			{ rel: "compared_against", to: "k" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.attention.q",
+	},
+	{
+		id: "k",
+		names: ["k", "key", "k_proj", "kproj", "keys"],
+		display: "K — k_proj",
+		five: "what do I contain",
+		role: "Gives every earlier token an answerable surface — the description queries are compared against.",
+		detail: "A strong query–key match means: this token matters to you. The key is the matching surface; the information itself travels through the value.",
+		group: "attention",
+		relations: [
+			{ rel: "belongs_to", to: "attention" },
+			{ rel: "answers", to: "q" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.attention.k",
+	},
+	{
+		id: "v",
+		names: ["v", "value", "v_proj", "vproj", "values"],
+		display: "V — v_proj",
+		five: "what do I return",
+		role: "Carries the actual information that flows back when a query matches a key.",
+		detail: "Keys are for matching; values are what is returned. When attention decides an earlier token matters, it is the value projection of that token that joins the current one.",
+		group: "attention",
+		relations: [{ rel: "belongs_to", to: "attention" }],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.attention.v",
+	},
+	{
+		id: "o",
+		names: ["o", "output", "o_proj", "oproj", "output projection"],
+		display: "O — o_proj",
+		five: "write the answer back",
+		role: "Collects what attention gathered across all heads and writes it into the stream, sized to fit.",
+		detail: "The closing move of attention: everything the heads collected, combined and projected back to the hidden width so the residual stream can absorb it.",
+		group: "attention",
+		relations: [{ rel: "closes", to: "attention" }],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.attention.output",
+	},
+	{
+		id: "feed-forward",
+		names: ["ffn", "feed-forward", "feedforward", "mlp", "feed forward"],
+		display: "FEED-FORWARD",
+		five: "expand, judge, compress, add",
+		role: "The second move of a layer, and where most of a model's weight lives: make the space bigger, decide what gets through, bring it back home.",
+		detail: "Three tensors — gate, up, down — are the entire mechanism. Up expands the hidden state into a wider working space, gate judges every channel of it, the two multiply, and down compresses the result back into the stream.",
+		group: "feed-forward",
+		relations: [
+			{ rel: "contains", to: "gate" },
+			{ rel: "contains", to: "up" },
+			{ rel: "contains", to: "down" },
+			{ rel: "belongs_to", to: "layer" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.ffn",
+	},
+	{
+		id: "gate",
+		names: ["gate", "gate_proj", "gateproj", "ffngate", "gate projection", "gating"],
+		display: "GATE — gate_proj",
+		five: "controls feed-forward feature activation",
+		role: "Builds a second wide vector whose job is judgement: it scores every expanded channel for how much it should matter right now.",
+		detail: "The gate's output multiplies the up projection's output, channel by channel — scored channels pass, the rest fade. That single multiplication is the whole trick the literature calls a gated unit (SwiGLU).",
+		group: "feed-forward",
+		relations: [
+			{ rel: "paired_with", to: "up" },
+			{ rel: "belongs_to", to: "feed-forward" },
+			{ rel: "represented_by", to: "gate-up" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.ffn.gate",
+	},
+	{
+		id: "up",
+		names: ["up", "up_proj", "upproj", "ffnup", "up projection"],
+		display: "UP — up_proj",
+		five: "expands hidden representation dimensionality",
+		role: "Expands the hidden state into a much wider intermediate space — more room to transform information than the stream itself allows.",
+		detail: "In the worked example, 2,048 numbers become 6,144. The width is temporary: after the gate's judgement applies, the down projection returns the result to the stream's width.",
+		group: "feed-forward",
+		relations: [
+			{ rel: "paired_with", to: "gate" },
+			{ rel: "belongs_to", to: "feed-forward" },
+			{ rel: "represented_by", to: "gate-up" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.ffn.up",
+	},
+	{
+		id: "down",
+		names: ["down", "down_proj", "downproj", "ffndown", "down projection"],
+		display: "DOWN — down_proj",
+		five: "returns intermediate representation home",
+		role: "Compresses the judged wide representation back to the hidden width, and the result joins the stream for the next layer.",
+		detail: "The closing move of the feed-forward network. In a VINDEX3 container it is stored as its own bank — unlike gate and up, which are consumed together and stored together.",
+		group: "feed-forward",
+		relations: [
+			{ rel: "belongs_to", to: "feed-forward" },
+			{ rel: "stored_apart_from", to: "gate-up" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.ffn.down",
+	},
+	{
+		id: "gate-up",
+		names: ["gate_up", "gateup", "gate-up", "routed.gate_up", "expertgateup"],
+		display: "GATE_UP — the paired bank",
+		five: "stores paired expert gate-up weights",
+		role: "The physical representation that stores gate and up together, because the gated feed-forward programme consumes them together.",
+		detail: "A semantic fact became a physical layout: gate and up are read in the same operation, so the container stores them as one bank per expert — and down separately, because it is consumed separately. The layout is an argument, not a habit.",
+		group: "feed-forward",
+		relations: [
+			{ rel: "represents", to: "gate" },
+			{ rel: "represents", to: "up" },
+			{ rel: "physical_reason", to: "feed-forward" },
+		],
+		href: "/representation",
+		explorer: "DESCRIBE layer.12.routed.gate_up",
+	},
+	{
+		id: "router",
+		names: ["router", "routing", "route"],
+		display: "ROUTER",
+		five: "reads token, picks few experts",
+		role: "A small tensor that reads each token and chooses which few experts answer it.",
+		detail: "In the worked example: 32 candidates, 4 chosen, per token. The router's weights are preserved at source precision — small, load-bearing, always resident. The routing is the model's; the residency is yours.",
+		group: "moe",
+		relations: [
+			{ rel: "selects", to: "expert" },
+			{ rel: "belongs_to", to: "moe" },
+		],
+		href: "/anatomy",
+		explorer: "DESCRIBE layer.12.router",
+	},
+	{
+		id: "expert",
+		names: ["expert", "experts"],
+		display: "EXPERT",
+		five: "another gate-up-down, kept many times",
+		role: "Nothing exotic: one more feed-forward triple — gate, up, down — kept dozens of times so a router can choose per token.",
+		detail: "A mixture-of-experts layer grows many ordinary feed-forward networks instead of one enormous one. Most experts stay dark on any given token, which is why residency policy exists at all.",
+		group: "moe",
+		relations: [
+			{ rel: "is_a", to: "feed-forward" },
+			{ rel: "selected_by", to: "router" },
+		],
+		href: "/anatomy",
+		explorer: "WALK layer.12",
+	},
+	{
+		id: "moe",
+		names: ["moe", "mixture of experts", "mixture-of-experts"],
+		display: "MIXTURE OF EXPERTS",
+		five: "many feed-forwards, chosen per token",
+		role: "The way models grew: not one enormous feed-forward network, but many ordinary ones with a router choosing a handful per token.",
+		detail: "Because most of the model sits idle on any one token, the format stores experts as addressable banks — and a profile decides what stays resident, what pages in, and what never loads.",
+		group: "moe",
+		relations: [
+			{ rel: "contains", to: "router" },
+			{ rel: "contains", to: "expert" },
+		],
+		href: "/anatomy",
+		explorer: "WALK layer.12",
+	},
+];
+
+export function findEntities(queryTokens: string[], queryLower: string): Entity[] {
+	const hits: Entity[] = [];
+	for (const ent of ENTITIES) {
+		const hit = ent.names.some((n) => (n.includes(" ") ? queryLower.includes(n) : queryTokens.includes(n)));
+		if (hit) hits.push(ent);
+	}
+	return hits;
+}
+
+export function entity(id: string): Entity | undefined {
+	return ENTITIES.find((e) => e.id === id);
+}
+
+/* ------------------------------------------------------------------
+   THE STATUS LAYER — the Record's gates as graph nodes, so a status
+   question derives its answer instead of asserting one.
+   ------------------------------------------------------------------ */
+
+export type GateNode = {
+	id: string;
+	label: string;
+	status: "PASSED" | "BUILDING" | "OPEN";
+	note: string;
+};
+
+export const GATE_NODES: GateNode[] = [
+	{ id: "G0", label: "read the source's declarations", status: "PASSED", note: "the source inspector emits the inventory" },
+	{ id: "G1", label: "the schema can describe it", status: "PASSED", note: "typed findings, non-zero exit on blockers" },
+	{ id: "G2", label: "generalise until reality fits", status: "PASSED", note: "blocking = mismatched = unknown = 0" },
+	{ id: "G3", label: "materialise the graph", status: "PASSED", note: "inspect reconstructs the system from the container alone" },
+	{ id: "G4", label: "prove source ≡ encoded", status: "PASSED", note: "four-authority comparison + payload-hash equality" },
+	{ id: "G5", label: "execute from the description", status: "BUILDING", note: "surface and closure implemented; five proofs staged" },
+	{ id: "G6", label: "drafter parity", status: "OPEN", note: "speculative execution from the HiddenStateEdge" },
+	{ id: "G7", label: "performance baseline", status: "OPEN", note: "reference numbers on the target hardware class" },
+	{ id: "G8", label: "alternate physical plans", status: "OPEN", note: "must not contaminate G0–G5" },
+	{ id: "M4", label: "the flip to default", status: "OPEN", note: "a named decision, made in one place — not yet made" },
+	{ id: "browse-parity", label: "expert-region browse parity", status: "OPEN", note: "an open pre-freeze row" },
+	{ id: "E8", label: "held-out architecture test", status: "OPEN", note: "runs after the freeze, by design" },
+];
