@@ -102,6 +102,8 @@ export default function AnatomyPage() {
 				caption="A weights file stops at 'this is a down projection.' A container continues: its identity, its representations, its byte range, its provenance, the authority selecting it. That descent is the whole format."
 			/>
 
+			<Statement text="Every definition on this page renders from the graph — the same records Ask answers with and the Explorer's DESCRIBE returns. Three surfaces, one authority; they cannot drift apart." />
+
 			<Connection
 				text="You now hold the vocabulary the rest of the exhibition assumes. Next: the file that keeps every one of these parts named, present, and checkable — or open a real one and walk it yourself."
 				links={[

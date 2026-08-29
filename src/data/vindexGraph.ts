@@ -398,7 +398,7 @@ export const CANON: CanonEntry[] = [
 		summary: "provenance survives every transformation",
 		entities: ["provenance", "lineage", "hash", "checksum", "faithful"],
 		intent: "how",
-		patterns: ["prove faithful", "provenance", "chain of custody"],
+		patterns: ["prove faithful", "provenance", "chain of custody", "faithful to its source", "faithful to the source"],
 		answer:
 			"Every canonical representation records the source payload hash computed while copying, and the encoded segment records its own; at verify time both ends are re-hashed and compared with what was recorded, so drift and corruption fail differently and by name. Variants carry fidelity graded against the source. The container is a chain of custody, not just a warehouse.",
 		path: [e("vindex3", "verified_by"), e("authority", "proven_by")],

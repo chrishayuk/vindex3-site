@@ -47,6 +47,7 @@ export type AnswerType =
 	| "status_report"
 	| "related"
 	| "refusal"
+	| "synthesis"
 	| "unsupported";
 
 export type ExplanationAction = { label: string; href: string; accent?: boolean };
@@ -70,8 +71,47 @@ export type ExplanationResponse = {
 	actions: ExplanationAction[];
 	/** Near-miss reask chips (related / refusal). */
 	related?: { label: string; ask: string }[];
+	/** Synthesis only: the model's own stated limits. */
+	caveats?: string;
 	snapshot: string;
 };
+
+/* ── The bounded fact bundle a synthesis backend receives ──
+ * Retrieval lives here, outside every backend: the model narrates the
+ * resolved facts and nothing else — its priors are not evidence. */
+
+export type SynthesisFacts = {
+	question: string;
+	snapshot: string;
+	entities: { id: string; display: string; five: string; role: string; detail: string; relations: { rel: string; to: string }[] }[];
+	canonical: { summary: string; answer: string }[];
+	gates: GateNode[];
+};
+
+export function resolveForSynthesis(question: string): SynthesisFacts {
+	const q = question.trim();
+	const toks = tokens(q);
+	const ql = q.toLowerCase();
+	const matched = findEntities(toks, ql);
+	const canon = scoreCanon(q)
+		.filter((c) => c.confidence >= 0.14)
+		.slice(0, 3)
+		.map((c) => ({ summary: c.entry.summary, answer: c.entry.answer }));
+	return {
+		question: q,
+		snapshot: `${SNAPSHOT.id} · ${SNAPSHOT.date}`,
+		entities: matched.slice(0, 4).map((m) => ({
+			id: m.id,
+			display: m.display,
+			five: m.five,
+			role: m.role,
+			detail: m.detail,
+			relations: m.relations,
+		})),
+		canonical: canon,
+		gates: STATUS_HINT.test(q) ? GATE_NODES : [],
+	};
+}
 
 /* ── The resolver — graph only, shared by every backend ── */
 
@@ -82,7 +122,7 @@ const STOP = new Set([
 ]);
 
 const ABUSE =
-	/system prompt|ignore (your|all|previous)|credential|api.?key|drop\s|delete\s|truncate|every node|all nodes|enumerate|dump (the|your)|exfiltrat/i;
+	/system prompt|ignore (your|all|previous)|credential|api.?key|drop\s+(table|database)|delete\s+from|truncate|every node|all nodes|enumerate|dump (the|your)|exfiltrat/i;
 
 const STATUS_HINT = /status|ready|frozen|open|passed|building|finished|complete|still|remains|gate|g\d\b|m4|parity/i;
 
@@ -172,6 +212,22 @@ export function resolveAndExplain(question: string): ExplanationResponse {
 				const n = NODES.find((x) => x.id === id);
 				return n?.href ? [{ label: `${n.label} →`, href: n.href }] : [];
 			}),
+			snapshot,
+		};
+	}
+
+	// L2b first when a gate is named outright: asking after G7 or a
+	// named open row is a status question even when it mentions experts.
+	const namedGates = GATE_NODES.filter(
+		(g) => toks.includes(g.id.toLowerCase()) || ql.includes(g.label.toLowerCase())
+	);
+	if (namedGates.length > 0) {
+		return {
+			answer_type: "status_report",
+			interpreted: "status derives from gate nodes",
+			summary: `The graph's record for ${namedGates.map((g) => g.id).join(", ")}:`,
+			gates: namedGates,
+			actions: [{ label: "THE RECORD — THE FULL LEDGER →", href: "/ladder", accent: true }],
 			snapshot,
 		};
 	}

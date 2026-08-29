@@ -24,11 +24,14 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 	const [result, setResult] = useState<{ r: ExplanationResponse; q: string } | null>(null);
 	const [thinking, setThinking] = useState(false);
 
+	const [synthesising, setSynthesising] = useState(false);
+
 	function ask(question: string) {
 		const query = question.trim();
 		if (!query) return;
 		setQ(query);
 		setThinking(true);
+		setSynthesising(false);
 		setResult(null);
 		// The considered pause — an instant snap reads as broken, not fast.
 		setTimeout(() => {
@@ -37,6 +40,29 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 			if (r.answer_type === "unsupported" || r.answer_type === "refusal") refuse();
 			else tick();
 			setResult({ r, q: query });
+			// The deterministic layers could not answer — offer the
+			// question to the synthesis tier. The refusal stands until
+			// (and unless) a grounded synthesis arrives; a missing tier
+			// or a failed call changes nothing.
+			if (r.answer_type === "refusal" || r.answer_type === "related") {
+				setSynthesising(true);
+				fetch("/api/explain", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ question: query }),
+					signal: AbortSignal.timeout(30000),
+				})
+					.then(async (res) => {
+						if (!res.ok) return;
+						const upgraded = (await res.json()) as ExplanationResponse;
+						if (upgraded.answer_type === "synthesis") {
+							tick();
+							setResult({ r: upgraded, q: query });
+						}
+					})
+					.catch(() => {})
+					.finally(() => setSynthesising(false));
+			}
 		}, 650);
 	}
 
@@ -98,7 +124,14 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 					{thinking && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse">resolving…</p>}
 
 					{r && r.answer_type !== "unsupported" && r.answer_type !== "refusal" && r.answer_type !== "related" && (
-						<div key={result!.q}>
+						<div key={result!.q + r.answer_type}>
+							{r.answer_type === "synthesis" && (
+								<p className="voice-evidence text-[11px] opacity-50">
+									<span style={{ color: "var(--color-accent)" }}>SYNTHESIS</span>
+									&nbsp;&nbsp;narrated from the resolved graph facts — the model is never the authority
+									&nbsp;&nbsp;·&nbsp;&nbsp;snapshot {r.snapshot}
+								</p>
+							)}
 							{r.interpreted && (
 								<p className="voice-evidence text-[11px] opacity-50">
 									INTERPRETED AS&nbsp;&nbsp;<span style={{ color: "var(--color-accent)" }}>{r.interpreted}</span>
@@ -108,6 +141,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 							)}
 							{r.title && <p className="voice-editorial text-xl sm:text-2xl mt-5">{r.title}</p>}
 							<p className="voice-system text-base sm:text-lg opacity-90 leading-relaxed max-w-2xl mt-4">{r.summary}</p>
+							{r.caveats && <p className="voice-evidence text-[11px] opacity-45 max-w-2xl mt-3">{r.caveats}</p>}
 
 							{r.rows && (
 								<div className="flex flex-col mt-6 max-w-2xl">
@@ -204,6 +238,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 					{r?.answer_type === "related" && (
 						<div>
 							<p className="voice-evidence text-[11px] opacity-50">NO SUPPORTED SUBGRAPH — CLOSEST CANONICAL QUESTIONS</p>
+							{synthesising && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse mt-2">the synthesis tier is composing from the resolved facts…</p>}
 							<div className="flex flex-col gap-3 mt-4">
 								{r.related?.map((m) => (
 									<button key={m.ask} onClick={() => ask(m.ask)} className="text-left voice-evidence text-xs border px-4 py-3 opacity-80 hover:opacity-100" style={{ borderColor: "var(--color-mist)" }}>
@@ -217,6 +252,7 @@ export function QueryVindex({ compact = false }: { compact?: boolean }) {
 					{r?.answer_type === "refusal" && (
 						<div className="border-l-2 pl-5 py-1 max-w-xl" style={{ borderColor: "var(--color-status-open)" }}>
 							<p className="voice-system text-base opacity-90">{r.summary}</p>
+							{synthesising && <p className="voice-evidence text-xs tracking-[0.1em] uppercase opacity-40 graph-pulse mt-2">the synthesis tier is composing from the resolved facts…</p>}
 							{r.related && r.related.length > 0 && (
 								<>
 									<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-50 mt-4 mb-2">CLOSEST EVIDENCE</p>

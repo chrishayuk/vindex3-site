@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { tick } from "@chrishayuk/hause/sound";
 import { Gating } from "@chrishayuk/hause/components/forms/Gating";
+import { entity } from "@/data/vindexGraph";
 
 /**
  * ANATOMY — the four instruments.
@@ -204,28 +205,23 @@ export function StackFigure() {
    ------------------------------------------------------------------ */
 const ATTN_ORDER = ["q", "k", "v", "o"] as const;
 
-const ATTN: Record<string, { title: string; text: string; addr: string }> = {
-	q: {
-		title: "QUERY — what am I looking for?",
-		text: "q_proj turns this token's state into the questions it asks of every token before it. A verb asking for its subject; a pronoun asking who it stands for.",
-		addr: "layer.17.attention.q_proj",
-	},
-	k: {
-		title: "KEY — what do I contain?",
-		text: "k_proj gives every earlier token an answerable surface — the description queries are compared against. A strong query–key match means: this one matters to you.",
-		addr: "layer.17.attention.k_proj",
-	},
-	v: {
-		title: "VALUE — what do I return?",
-		text: "v_proj carries the actual information. When a match is strong, it is the value — not the key — that flows back into the current token.",
-		addr: "layer.17.attention.v_proj",
-	},
-	o: {
-		title: "OUTPUT — write it back.",
-		text: "o_proj collects everything attention gathered across all its heads and writes it into the stream, sized to fit the hidden width.",
-		addr: "layer.17.attention.o_proj",
-	},
-};
+// A projection, not a copy: the words are the graph entities' own —
+// the same records Ask's definitions and the Explorer's DESCRIBE
+// answer from, so the three surfaces cannot drift apart.
+const ATTN_WORDS: Record<string, string> = { q: "QUERY", k: "KEY", v: "VALUE", o: "OUTPUT" };
+const ATTN: Record<string, { title: string; text: string; addr: string }> = Object.fromEntries(
+	(["q", "k", "v", "o"] as const).map((id) => {
+		const ent = entity(id)!;
+		return [
+			id,
+			{
+				title: `${ATTN_WORDS[id]} — ${ent.five}${ent.five.endsWith("?") || id === "o" ? "" : "?"}`,
+				text: `${ent.role} ${ent.detail}`,
+				addr: `layer.17.attention.${id}_proj`,
+			},
+		];
+	})
+);
 
 export function AttentionFigure() {
 	const { ref, inView } = useInView();
@@ -290,7 +286,7 @@ export function FfnFigure() {
 				{
 					chip: "UP",
 					title: "Make the space bigger.",
-					text: "up_proj expands 2,048 numbers into 6,144 — a wider space with more room to transform information than the stream itself allows.",
+					text: entity("up")!.role,
 					payoff: "layer.17.mlp.up_proj — readable now",
 					width: "wide",
 					label: "6,144 values",
@@ -298,7 +294,7 @@ export function FfnFigure() {
 				{
 					chip: "GATE",
 					title: "Decide what gets through.",
-					text: "gate_proj builds a second wide vector whose job is judgement: it scores every one of those 6,144 channels for how much it should matter right now.",
+					text: entity("gate")!.role,
 					payoff: "layer.17.mlp.gate_proj — readable now",
 					width: "wide",
 					gated: true,
@@ -315,7 +311,7 @@ export function FfnFigure() {
 				{
 					chip: "DOWN",
 					title: "Bring it back home.",
-					text: "down_proj compresses 6,144 back to 2,048, and the result is added to the stream for the next layer.",
+					text: entity("down")!.role,
 					payoff: "layer.17.mlp.down_proj — readable now",
 					width: "narrow",
 					label: "2,048 values — back in the stream",
