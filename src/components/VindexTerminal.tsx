@@ -180,29 +180,8 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 		case "describe": {
 			if (!model) return { lines: need() };
 			const a = cmd.address;
-			const sem = semanticEntity(a);
-			if (sem) {
-				const physical =
-					sem.id === "gate" || sem.id === "up"
-						? "stored with its pair as routed.gate_up — consumed together, stored together"
-						: sem.id === "down"
-							? "stored as routed.down — consumed apart, stored apart"
-							: sem.id === "router"
-								? "32 × 2048 · f32 · preserved at source precision"
-								: undefined;
-				return {
-					lines: [],
-					panel: {
-						designed: <EntityCard ent={sem} address={a} physical={physical} />,
-						raw: {
-							address: a,
-							entity: { id: sem.id, five: sem.five, role: sem.role, group: sem.group, relations: sem.relations },
-							physical: physical ?? null,
-							authority: "the VINDEX knowledge graph — one vocabulary, linked authorities",
-						},
-					},
-				};
-			}
+			const semantic = semanticPanel(a);
+			if (semantic) return semantic;
 			if (/^layer\.12\.routed\.gate_up$/i.test(a))
 				return {
 					lines: [
@@ -427,6 +406,34 @@ function WalkPanel({ prompt, rows }: { prompt: string; rows: { l: number; f: str
 	);
 }
 
+/** A semantic address answered as a designed panel — knowledge-graph
+ *  content (what the part IS), so it renders identically on either
+ *  transport; container-level facts stay with the container. */
+function semanticPanel(a: string): { lines: Line[]; panel: TerminalPanel } | null {
+	const sem = semanticEntity(a);
+	if (!sem) return null;
+	const physical =
+		sem.id === "gate" || sem.id === "up"
+			? "stored with its pair as routed.gate_up — consumed together, stored together"
+			: sem.id === "down"
+				? "stored as routed.down — consumed apart, stored apart"
+				: sem.id === "router"
+					? "32 × 2048 · f32 · preserved at source precision"
+					: undefined;
+	return {
+		lines: [],
+		panel: {
+			designed: <EntityCard ent={sem} address={a} physical={physical} />,
+			raw: {
+				address: a,
+				entity: { id: sem.id, five: sem.five, role: sem.role, group: sem.group, relations: sem.relations },
+				physical: physical ?? null,
+				authority: "the VINDEX knowledge graph — one vocabulary, linked authorities",
+			},
+		},
+	};
+}
+
 /** Route a semantic address to its graph entity — the same records
  *  Ask's definitions and the Anatomy chapter answer from. */
 function semanticEntity(address: string): Entity | undefined {
@@ -583,6 +590,11 @@ export function VindexTerminal() {
 		const up = trimmed.toUpperCase();
 		if (up === "CLEAR") return { lines: [], clear: true };
 		if (up === "HELP" || up === "?") return { lines: LIVE_HELP };
+		const dm = trimmed.match(/^DESCRIBE\s+(\S+)$/i);
+		if (dm) {
+			const semantic = semanticPanel(dm[1]);
+			if (semantic) return semantic;
+		}
 		if (/^TREE\b/i.test(trimmed))
 			return {
 				lines: [
