@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Anatomy } from "@chrishayuk/house/components/forms/Anatomy";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
-import { Compilation } from "@chrishayuk/house/components/forms/Compilation";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { ContainerExplorer } from "@/components/ContainerExplorer";
 
 export const metadata: Metadata = {
@@ -155,7 +155,7 @@ export default function ContainerPage() {
 				]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

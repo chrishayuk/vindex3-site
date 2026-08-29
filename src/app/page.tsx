@@ -1,9 +1,9 @@
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Transformation } from "@chrishayuk/house/components/forms/Transformation";
-import { Unfolding } from "@chrishayuk/house/components/forms/Unfolding";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Transformation } from "@chrishayuk/hause/components/forms/Transformation";
+import { Unfolding } from "@chrishayuk/hause/components/forms/Unfolding";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
 
 /**
@@ -67,7 +67,7 @@ export default function Home() {
 				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
 			/>
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						WHAT YOU DO WITH IT — THE PIPELINE, DELIBERATELY COMPILER-SHAPED

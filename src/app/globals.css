@@ -1,8 +1,8 @@
 @import "tailwindcss";
-@import "@chrishayuk/house/tokens.css";
+@import "@chrishayuk/hause/tokens.css";
 
 /* Tailwind v4 skips node_modules when scanning for class names, so the
-   utilities used only inside HOUSE forms are never generated without
-   this. Keep it pointing at the installed package, not ../house — the
+   utilities used only inside HAUSE forms are never generated without
+   this. Keep it pointing at the installed package, not ../hause — the
    site must build from what it actually depends on. */
-@source "../../node_modules/@chrishayuk/house";
+@source "../../node_modules/@chrishayuk/hause";

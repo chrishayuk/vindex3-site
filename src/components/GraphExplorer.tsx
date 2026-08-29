@@ -139,7 +139,7 @@ export function GraphExplorer() {
 	}
 
 	return (
-		<section className="house-grid py-20 sm:py-28">
+		<section className="hause-grid py-20 sm:py-28">
 			<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 				<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">
 					EXPLORE — A SYSTEM GRAPH YOU CAN TOUCH

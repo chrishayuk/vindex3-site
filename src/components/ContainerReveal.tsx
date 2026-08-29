@@ -7,7 +7,7 @@ import Link from "next/link";
  * The site's opening sequence: a VINDEX3 container as one closed
  * volume that opens into its layers. index.json separates first and
  * holds a beat alone — the one-root rule staged, not captioned — then
- * the remaining layers fan out at the house stagger.
+ * the remaining layers fan out at the hause stagger.
  *
  * Bespoke to this site (it knows the ABI §5 directory layout), built
  * from DOM + CSS transforms only. The server-rendered state is the
@@ -68,7 +68,7 @@ export function ContainerReveal() {
 	return (
 		<section
 			ref={sectionRef}
-			className="house-grid min-h-[92svh] content-center py-20"
+			className="hause-grid min-h-[92svh] content-center py-20"
 			aria-label="A VINDEX3 container, opening into its layers"
 		>
 			<div className="col-span-12 md:col-start-3 md:col-span-8">
@@ -82,7 +82,7 @@ export function ContainerReveal() {
 						// 5px stepped edge per layer, index.json as the sealed top face.
 						const collapseY = (CENTER - i) * (PITCH - 5);
 						// Opening: index.json separates first at --motion-cinematic and
-						// holds alone; the rest follow after the beat, at the house stagger.
+						// holds alone; the rest follow after the beat, at the hause stagger.
 						const delay = layer.root ? 0 : 1400 + (i - 1) * 140;
 						return (
 							<Link
@@ -98,7 +98,7 @@ export function ContainerReveal() {
 									transform: open ? "none" : `translateY(${collapseY}px)`,
 									transition: instant
 										? "none"
-										: `transform var(--motion-cinematic) var(--ease-house) ${delay}ms, border-color var(--motion-considered) var(--ease-house) ${delay + 300}ms`,
+										: `transform var(--motion-cinematic) var(--ease-hause) ${delay}ms, border-color var(--motion-considered) var(--ease-hause) ${delay + 300}ms`,
 								}}
 							>
 								<span
@@ -106,7 +106,7 @@ export function ContainerReveal() {
 									style={{
 										color: layer.root ? "var(--color-accent)" : undefined,
 										opacity: open ? (layer.muted ? 0.5 : 1) : 0,
-										transition: instant ? "none" : `opacity var(--motion-considered) var(--ease-house) ${delay + 300}ms`,
+										transition: instant ? "none" : `opacity var(--motion-considered) var(--ease-hause) ${delay + 300}ms`,
 									}}
 								>
 									{layer.name}
@@ -116,7 +116,7 @@ export function ContainerReveal() {
 									style={{
 										color: layer.root ? "var(--color-accent)" : undefined,
 										opacity: open ? (layer.root ? 1 : 0.5) : 0,
-										transition: instant ? "none" : `opacity var(--motion-considered) var(--ease-house) ${delay + 500}ms`,
+										transition: instant ? "none" : `opacity var(--motion-considered) var(--ease-hause) ${delay + 500}ms`,
 									}}
 								>
 									{layer.note}

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Agreement } from "@chrishayuk/house/components/forms/Agreement";
-import { Derivation } from "@chrishayuk/house/components/forms/Derivation";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Agreement } from "@chrishayuk/hause/components/forms/Agreement";
+import { Derivation } from "@chrishayuk/hause/components/forms/Derivation";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 
 export const metadata: Metadata = {
 	title: "Authority",
@@ -97,7 +97,7 @@ export default function AuthorityPage() {
 				links={[{ href: "/ladder", label: "THE RECORD" }]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

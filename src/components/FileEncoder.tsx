@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
  * layout is computed and drawn live — header, descriptors, schemas,
  * entry table, then the payload to scale, with per-entry ticks so the
  * tensors inside the file are visible. ENCODE replays the file being
- * laid down structure by structure, in write order, at the house
+ * laid down structure by structure, in write order, at the hause
  * stagger. All byte arithmetic is the ABI's own: 24-byte header,
  * 24-byte bank descriptors, 12-byte segment descriptors, 20-byte
  * region schemas, 16-byte entry rows, payload offsets 64-byte aligned.
@@ -129,7 +129,7 @@ export function FileEncoder() {
 	);
 
 	return (
-		<section className="house-grid py-20 sm:py-28">
+		<section className="hause-grid py-20 sm:py-28">
 			<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 				<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">
 					THE ENCODER — LAY OUT A FILE YOURSELF
@@ -171,7 +171,7 @@ export function FileEncoder() {
 								width: `${[10, 10, 8, 12, 24][i]}%`,
 								borderColor: "var(--fg)",
 								opacity: phase > i ? 1 : 0.12,
-								transition: "opacity var(--motion-considered) var(--ease-house)",
+								transition: "opacity var(--motion-considered) var(--ease-hause)",
 							}}
 						>
 							<span className="voice-evidence text-[9px] tracking-[0.06em] uppercase whitespace-nowrap px-1 opacity-60">
@@ -185,7 +185,7 @@ export function FileEncoder() {
 							borderColor: "var(--color-mist)",
 							borderStyle: "dashed",
 							opacity: phase > 4 ? 1 : 0.12,
-							transition: "opacity var(--motion-considered) var(--ease-house)",
+							transition: "opacity var(--motion-considered) var(--ease-hause)",
 						}}
 					>
 						<span className="voice-evidence text-[9px] tracking-[0.06em] uppercase opacity-50">align → 64 B</span>
@@ -205,7 +205,7 @@ export function FileEncoder() {
 								width: `${((r.bytesPerEntry * bank.entries) / payloadBytes) * 100}%`,
 								borderColor: "var(--fg)",
 								opacity: phase > 5 ? 1 : 0.12,
-								transition: `opacity var(--motion-cinematic) var(--ease-house) ${ri * 140}ms`,
+								transition: `opacity var(--motion-cinematic) var(--ease-hause) ${ri * 140}ms`,
 							}}
 						>
 							<div

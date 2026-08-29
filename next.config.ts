@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	// @chrishayuk/house ships raw .tsx/.ts source (no build step of its own),
+	// @chrishayuk/hause ships raw .tsx/.ts source (no build step of its own),
 	// so Next has to compile it itself rather than treating it as pre-built
 	// node_modules. See .npmrc's install-links for why this isn't a symlink.
-	transpilePackages: ["@chrishayuk/house"],
+	transpilePackages: ["@chrishayuk/hause"],
 };
 
 export default nextConfig;

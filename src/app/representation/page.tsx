@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Variants } from "@chrishayuk/house/components/forms/Variants";
-import { Ladder } from "@chrishayuk/house/components/forms/Ladder";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Variants } from "@chrishayuk/hause/components/forms/Variants";
+import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 
 export const metadata: Metadata = {
 	title: "Representation",
@@ -60,7 +60,7 @@ export default function RepresentationPage() {
 				caption="Single-copy forbids storing the same bytes twice — not deliberate alternative encodings. Multiple variants of one region set are the format working as designed."
 			/>
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						THE WIRE SHAPE — A REGION SET IN index.json, VERBATIM FROM ABI §9.1
@@ -116,7 +116,7 @@ export default function RepresentationPage() {
 				links={[{ href: "/authority", label: "WHERE TRUTH COMES FROM" }]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

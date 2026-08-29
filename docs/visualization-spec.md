@@ -1,10 +1,10 @@
 # VINDEX3 Visualization Spec
 
 **The exhibition plan for vindex3.org** — hero experience, section-by-section visual
-forms, the new HOUSE primitives they require, the interaction model, and the exact
+forms, the new HAUSE primitives they require, the interaction model, and the exact
 page architecture. Grounded in the two authoritative spec documents in `larql`
 (`crates/larql-vindex/docs/vindex3-format-spec.md`, the ABI, `3.0-draft-2`; and
-`docs/vindex3-format.md`, the living semantic spec) and in HOUSE as it actually
+`docs/vindex3-format.md`, the living semantic spec) and in HAUSE as it actually
 exists today.
 
 Status: adopted plan. Sections marked **P1/P2/P3** give build order.
@@ -64,7 +64,7 @@ cinematic opening above it.
 monolithic volume — the container as *one coherent artifact* — set in negative
 space, `voice-evidence` kicker: `VINDEX3 · SPEC 3.0-DRAFT-2`. On first scroll (or
 after a beat), the volume opens into its layers at `--motion-cinematic` (1200ms,
-`--ease-house`), each layer labelling itself as it separates:
+`--ease-hause`), each layer labelling itself as it separates:
 
 ```
 index.json          ← SOLE ROOT AUTHORITY
@@ -79,7 +79,7 @@ query/
 
 `index.json` separates *first* and holds a beat alone — the one-root rule ("a
 second root creates competing authorities") is staged, not captioned. Built with
-DOM layers + CSS 3D transforms — **no WebGL, no animation library**. HOUSE ships
+DOM layers + CSS 3D transforms — **no WebGL, no animation library**. HAUSE ships
 zero dependencies and this sequence doesn't need one. This is the first real use
 of `--motion-cinematic`, which has been sitting in tokens.css waiting for exactly
 this.
@@ -90,7 +90,7 @@ cutaway diagram, not a disabled animation.
 **Hero film slot.** Directly under the fold: the first real `Film` (§3.1) — a
 30–60s piece: *extract once → vary what is loaded, where it resides, what
 precision it uses, whether it is executed or queried — without rebuilding the
-index.* Poster frame until in view; plays once; scrubbed by nothing (HOUSE has no
+index.* Poster frame until in view; plays once; scrubbed by nothing (HAUSE has no
 scroll-scrub and shouldn't grow one for this).
 
 Then the existing Statement → Decomposition → Evidence → Timeline flow, plus a
@@ -117,16 +117,16 @@ Each route is an exhibit: conceptual → structural → exact.
 | `/lineage` | GENERATIONS — VINDEX2 ↔ VINDEX3, the four version surfaces, "a note on the number 2" | ABI §12, generation policy | P3 |
 
 Nav stays minimal: wordmark, a small set of these routes, `ModeToggle`. No
-persistent sidebar (HOUSE `NOT_HOUSE` list).
+persistent sidebar (HAUSE `NOT_HOUSE` list).
 
 ---
 
-## 3. New HOUSE primitives
+## 3. New HAUSE primitives
 
-Decision rule, unchanged: a primitive enters HOUSE only as a **semantic form with
+Decision rule, unchanged: a primitive enters HAUSE only as a **semantic form with
 no knowledge of VINDEX3** (plain props); anything that knows the spec's data model
-lives in this site and composes HOUSE forms. All new forms follow house style:
-rooted in `Reveal` + `.house-grid`, three voices, `--ease-house` only, motion
+lives in this site and composes HAUSE forms. All new forms follow hause style:
+rooted in `Reveal` + `.hause-grid`, three voices, `--ease-hause` only, motion
 tokens only, an always-present `voice-evidence` text-fallback sentence, and a
 *designed* `prefers-reduced-motion` state. No new dependencies — everything below
 is DOM + CSS + SVG.
@@ -204,7 +204,7 @@ RefusalProps = { kicker?: string; title: string; lines: string[]; principle: str
 ```
 
 Rendered as an instrument readout: `voice-evidence`, refuted-status color
-(`--color-status-refuted`) rule, the structured fields line by line (140ms house
+(`--color-status-refuted`) rule, the structured fields line by line (140ms hause
 stagger), closing with the governing principle in editorial voice ("Ambiguity is
 refused, never guessed."). Used standalone in exhibits and embedded by `Variants`.
 
@@ -245,7 +245,7 @@ AgreementProps = {
 }
 ```
 
-Columns revealed left→right with the house stagger; equality drawn as a rule
+Columns revealed left→right with the hause stagger; equality drawn as a rule
 connecting the row; verdict in status color. The worked example from the spec is
 the default demo content on `/authority`:
 `layer_rope_theta[3] = 0 → PositionPolicy::None → position = none → position = none  PASS`
@@ -307,7 +307,7 @@ AnatomyProps = {
 }
 ```
 
-Closed ↔ exploded toggle ("OPEN IT / CLOSE IT", text control per house idiom),
+Closed ↔ exploded toggle ("OPEN IT / CLOSE IT", text control per hause idiom),
 layers separating on the y-axis with 140ms stagger, `emphasis` layer (e.g.
 `index.json`) separating first and carrying an accent rule. Hover/focus a layer →
 its annotation; keyboard navigable. Reduced motion: exploded by default.
@@ -336,21 +336,21 @@ facet content for `Prism`.
 
 - **`SpecMap` (zoomable whole-spec map)** — deferred past P3. The route table *is*
   the map at current scale; a zoomable graph is gravity toward generic-diagram
-  tooling HOUSE explicitly resists. Revisit only if the exact layer (`/spec`)
+  tooling HAUSE explicitly resists. Revisit only if the exact layer (`/spec`)
   proves hard to navigate.
 - **`VersionDiff` (morphing spec versions)** — replaced by `/lineage` composed
   from `Timeline`, `Agreement` (the four version surfaces table), and `Anatomy`.
   The spec's real versioning story is *coexistence* (dual-generation, no cross
   loading, no silent conversion), not morphing.
-- **Scroll-scrubbed animation, WebGL, three.js** — HOUSE has one scroll behaviour
+- **Scroll-scrubbed animation, WebGL, three.js** — HAUSE has one scroll behaviour
   (one-shot reveal) and a single easing curve; that restraint *is* the luxury.
-  Cinematic = staged, paced sequences on the house clock, not scroll-jacking.
+  Cinematic = staged, paced sequences on the hause clock, not scroll-jacking.
 
 ---
 
 ## 4. Site-level compositions (VINDEX3-aware, live in `src/components/`)
 
-- **`AskTheContainer`** (P3) — HOUSE `Inquiry` + a resolver speaking the spec's
+- **`AskTheContainer`** (P3) — HAUSE `Inquiry` + a resolver speaking the spec's
   own verbs. Queries like `DESCRIBE layer 12`, `WALK from "capital"`, `EXPLAIN
   WALK` resolve to real forms (`ByteMap`, `Variants`, `Ladder`, lookup) with the
   trace panel showing the resolution path — including §15.4's latent-space hop
@@ -426,7 +426,7 @@ placeholder until its film exists.
 ## 7. Build order
 
 **P1 — the signature (ship first):** `Film`, `Variants`, `Refusal`, `Ladder`,
-`Agreement`, `Derivation` in HOUSE; hero reveal on `/`; `/representation` and
+`Agreement`, `Derivation` in HAUSE; hero reveal on `/`; `/representation` and
 `/authority` exhibits; `/ladder` skeleton. This phase alone makes the site's
 argument.
 
@@ -437,10 +437,10 @@ argument.
 `/query`; `GateBoard` on `/ladder`; `/lineage`; films replacing placeholders as
 they're produced.
 
-**Dev loop:** while co-developing HOUSE primitives, switch the dependency to
-`"file:../house"` and add `.npmrc` with `install-links=true` (Turbopack won't
+**Dev loop:** while co-developing HAUSE primitives, switch the dependency to
+`"file:../hause"` and add `.npmrc` with `install-links=true` (Turbopack won't
 resolve through outside-root symlinks otherwise); return to `github:` + push before any
-deploy. Every new HOUSE form lands with its entry in the house specimen page.
+deploy. Every new HAUSE form lands with its entry in the hause specimen page.
 
 **Content sourcing rule:** every number, error shape, and clause on the site is
 lifted verbatim from the larql repo (specs, `index.rs`, `region_format.rs`,

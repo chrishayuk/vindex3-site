@@ -36,21 +36,29 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={`${fraunces.variable} ${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
 			<head>
-				{/* Same house-mode blocking script as chrishayuk — see that
+				{/* Same hause-mode blocking script as chrishayuk — see that
 				    project's DESIGN.md for why this has to run before paint. */}
 				<script
 					// eslint-disable-next-line react/no-danger
 					dangerouslySetInnerHTML={{
-						__html: `try{var m=localStorage.getItem('house-mode');if(m==='dark')document.documentElement.dataset.mode='dark';}catch(e){}`,
+						__html: `try{var m=localStorage.getItem('hause-mode');if(m==='dark')document.documentElement.dataset.mode='dark';}catch(e){}`,
 					}}
 				/>
 			</head>
 			<body className="antialiased">
 				<Nav />
 				{children}
-				<footer className="house-grid py-16 mt-20 border-t" style={{ borderColor: "var(--color-mist)" }}>
-					<div className="col-span-12">
+				<footer className="hause-grid py-16 mt-20 border-t" style={{ borderColor: "var(--color-mist)" }}>
+					<div className="col-span-12 flex flex-wrap items-baseline justify-between gap-4">
 						<p className="voice-evidence text-xs opacity-50">VINDEX3 · SPEC / 2026</p>
+						<p className="voice-evidence text-xs opacity-50 flex gap-6">
+							<a href="https://hause.design" className="hover:opacity-100">
+								SET IN HAUSE →
+							</a>
+							<a href="https://chrishayuk.com" className="hover:opacity-100">
+								CHRISHAYUK →
+							</a>
+						</p>
 					</div>
 				</footer>
 			</body>

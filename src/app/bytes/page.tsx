@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { ByteMap } from "@chrishayuk/house/components/forms/ByteMap";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { ByteMap } from "@chrishayuk/hause/components/forms/ByteMap";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { FileEncoder } from "@/components/FileEncoder";
 
 export const metadata: Metadata = {
@@ -101,7 +101,7 @@ export default function BytesPage() {
 				caption="Parsing cost is O(schemas), not O(entries × regions): the shape is read once per bank, then the table is pure arithmetic. Physical expert order need not match logical order — the table is the indirection."
 			/>
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						THE NUMBERED VOCABULARIES — WIRE VALUES, VERBATIM
@@ -169,7 +169,7 @@ export default function BytesPage() {
 				]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

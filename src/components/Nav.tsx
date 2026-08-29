@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ModeToggle } from "@chrishayuk/house/components/ModeToggle";
+import { ModeToggle } from "@chrishayuk/hause/components/ModeToggle";
 
 export function Nav() {
 	return (
-		<header className="house-grid items-center py-6">
+		<header className="hause-grid items-center py-6">
 			<div className="col-span-6 md:col-span-3">
 				<Link href="/" className="voice-system text-sm tracking-[0.12em]">
 					VINDEX3

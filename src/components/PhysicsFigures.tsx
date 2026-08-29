@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * The one physics figure that stayed site-local: too small to be a
- * HOUSE form on its own. Its siblings — Procession, Magnitude,
- * Channel, Quantisation — were promoted to HOUSE and are consumed by
+ * HAUSE form on its own. Its siblings — Procession, Magnitude,
+ * Channel, Quantisation — were promoted to HAUSE and are consumed by
  * the Physics page as plain-props forms.
  */
 
@@ -42,7 +42,7 @@ export function TensorFigure() {
 	}, []);
 
 	return (
-		<section className="house-grid py-10 sm:py-14">
+		<section className="hause-grid py-10 sm:py-14">
 			<div ref={ref} className="col-span-12 flex flex-col items-center">
 				<div
 					aria-hidden="true"
@@ -52,7 +52,7 @@ export function TensorFigure() {
 						borderColor: "var(--fg)",
 						background: "var(--bg)",
 						opacity: drawn ? 1 : 0.15,
-						transition: instant ? "none" : "opacity var(--motion-considered) var(--ease-house)",
+						transition: instant ? "none" : "opacity var(--motion-considered) var(--ease-hause)",
 					}}
 				>
 					<div
@@ -64,7 +64,7 @@ export function TensorFigure() {
 							clipPath: drawn ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
 							transition: instant
 								? "none"
-								: "clip-path var(--motion-cinematic) var(--ease-house) 200ms, opacity var(--motion-considered) var(--ease-house) 200ms",
+								: "clip-path var(--motion-cinematic) var(--ease-hause) 200ms, opacity var(--motion-considered) var(--ease-hause) 200ms",
 						}}
 					/>
 				</div>
@@ -72,7 +72,7 @@ export function TensorFigure() {
 					className="voice-evidence text-xs mt-3"
 					style={{
 						opacity: drawn ? 0.6 : 0,
-						transition: instant ? "none" : "opacity var(--motion-considered) var(--ease-house) 1300ms",
+						transition: instant ? "none" : "opacity var(--motion-considered) var(--ease-hause) 1300ms",
 					}}
 				>
 					6,144 × 2,048 — one tensor, of thousands

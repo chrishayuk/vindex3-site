@@ -13,7 +13,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@chrishayuk/house": "github:chrishayuk/house",
+    "@chrishayuk/hause": "github:chrishayuk/hause",
     "@opennextjs/cloudflare": "^1.20.3",
     "next": "16.3.3",
     "react": "^19.1.7",

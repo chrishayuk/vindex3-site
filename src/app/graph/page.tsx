@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Anatomy } from "@chrishayuk/house/components/forms/Anatomy";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { GraphExplorer } from "@/components/GraphExplorer";
 
 export const metadata: Metadata = {
@@ -78,7 +78,7 @@ export default function GraphPage() {
 
 			<Observation text="A projector that implements an edge's consumer side is a separate object, referenced by id. The flow of states and the weights that transform them are distinct facts, never merged. The graph runs on six such distinctions, each load-bearing. An artifact is not a component. A tensor name is not a logical object. An interface is not its implementing tensor. NoPE is not rope with theta zero. A logical object is not its physical representation. And representable means judged — not merely parsed." />
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						G3 — HOW THE GRAPH BECOMES A CONTAINER
@@ -130,7 +130,7 @@ SegmentHeader {
 				]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

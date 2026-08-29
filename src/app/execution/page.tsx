@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Anatomy } from "@chrishayuk/house/components/forms/Anatomy";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 
 export const metadata: Metadata = {
 	title: "Execution",
@@ -85,7 +85,7 @@ export default function ExecutionPage() {
 				caption="The completeness contract: a DecoderStack or PerceptionTower object carries attention + ffn + norm; an Embedding or OutputHead object carries head. Anything less does not execute."
 			/>
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">
 						OPERAND ROLES — THE TYPED VOCABULARY
@@ -177,7 +177,7 @@ LayerScalar`}
 				text="What consumes those operands is a programme built from a closed set of operations: linear, fused linear, activation, clamp, multiply, add, scale, normalise, route, gather, weighted reduction, residual merge, pre and post transforms. There is no general graph interpreter. A new architecture either fits the vocabulary, or extends the registry with a new named programme — in the open."
 			/>
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						THE COMPILER BOUNDARY — WHERE FAMILY KNOWLEDGE IS ALLOWED TO LIVE
@@ -215,7 +215,7 @@ generic kernels
 
 			<Statement text="Removing the original checkpoint, config.json, the HF model type and the architecture name must not change execution." />
 
-			<section className="house-grid py-16 sm:py-24">
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						THE ENGINEERING CONTRACT, COMPLETE
@@ -237,7 +237,7 @@ execution correctness    + causal mutation controls = semantic authority`}
 				]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

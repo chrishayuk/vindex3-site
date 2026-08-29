@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Ladder } from "@chrishayuk/house/components/forms/Ladder";
-import { Question } from "@chrishayuk/house/components/forms/Question";
-import { Evidence } from "@chrishayuk/house/components/forms/Evidence";
-import { Timeline } from "@chrishayuk/house/components/forms/Timeline";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
+import { Question } from "@chrishayuk/hause/components/forms/Question";
+import { Evidence } from "@chrishayuk/hause/components/forms/Evidence";
+import { Timeline } from "@chrishayuk/hause/components/forms/Timeline";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 
 export const metadata: Metadata = {
 	title: "The Record",
@@ -200,7 +200,7 @@ export default function LadderPage() {
 				]}
 			/>
 
-			<section className="house-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
+			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">

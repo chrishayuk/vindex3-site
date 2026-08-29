@@ -9,6 +9,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "vindex3",
+	"routes": [{ "pattern": "vindex3.org", "custom_domain": true }],
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-08-25",
 	"compatibility_flags": [

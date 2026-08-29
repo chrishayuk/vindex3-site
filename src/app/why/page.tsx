@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Hero } from "@chrishayuk/house/components/forms/Hero";
-import { Statement } from "@chrishayuk/house/components/forms/Statement";
-import { Observation } from "@chrishayuk/house/components/forms/Observation";
-import { ExpertField } from "@chrishayuk/house/components/forms/ExpertField";
-import { Connection } from "@chrishayuk/house/components/forms/Connection";
-import { Procession } from "@chrishayuk/house/components/forms/Procession";
-import { Magnitude } from "@chrishayuk/house/components/forms/Magnitude";
-import { Channel } from "@chrishayuk/house/components/forms/Channel";
-import { Quantisation } from "@chrishayuk/house/components/forms/Quantisation";
+import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Statement } from "@chrishayuk/hause/components/forms/Statement";
+import { Observation } from "@chrishayuk/hause/components/forms/Observation";
+import { ExpertField } from "@chrishayuk/hause/components/forms/ExpertField";
+import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Procession } from "@chrishayuk/hause/components/forms/Procession";
+import { Magnitude } from "@chrishayuk/hause/components/forms/Magnitude";
+import { Channel } from "@chrishayuk/hause/components/forms/Channel";
+import { Quantisation } from "@chrishayuk/hause/components/forms/Quantisation";
 import { TensorFigure } from "@/components/PhysicsFigures";
 
 export const metadata: Metadata = {
