@@ -16,7 +16,7 @@ const TRANSPORTS: {
 		status: "LIVE",
 		lines: ["vindex> OPEN vindex3-demo", "vindex> WALK layer.12", "vindex> DESCRIBE layer.12.attention"],
 		caption:
-			"The terminal above — a browser speaking the query surface. Today it walks an immutable snapshot; a hardened public endpoint is in build.",
+			"The terminal above — a browser speaking the query surface against the hardened public endpoint: a real container, the profile enforced in the server. When the endpoint sleeps, an immutable snapshot answers instead.",
 	},
 	{
 		kicker: "THE VINDEX CLI",

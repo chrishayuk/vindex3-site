@@ -36,12 +36,13 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={`${fraunces.variable} ${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
 			<head>
-				{/* Same hause-mode blocking script as chrishayuk — see that
-				    project's DESIGN.md for why this has to run before paint. */}
+				{/* HAUSE-mode blocking script — runs before paint so the page
+				    never flashes the wrong environment. Dark is the default;
+				    the stored preference opts a viewer back into light. */}
 				<script
 					// eslint-disable-next-line react/no-danger
 					dangerouslySetInnerHTML={{
-						__html: `try{var m=localStorage.getItem('hause-mode');if(m==='dark')document.documentElement.dataset.mode='dark';}catch(e){}`,
+						__html: `try{var m=localStorage.getItem('hause-mode');if(m==='light')document.documentElement.dataset.mode='light';}catch(e){}`,
 					}}
 				/>
 			</head>

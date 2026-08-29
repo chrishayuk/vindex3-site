@@ -1,23 +1,29 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { tick, refuse } from "@chrishayuk/hause/sound";
 
 /**
  * ENTER A MODEL — the terminal.
  *
  * psql for a model: a terminal-shaped, read-only VINDEX3 query
- * surface. The browser parses each line into a tiny allowlisted AST —
- * if a capability is not represented there, it cannot happen; shell
- * syntax and mutation verbs simply do not exist in this universe.
+ * surface with two transports and one gate.
  *
- * V1 executes against an immutable demo snapshot compiled into the
- * site (the same worked-example container the Bytes encoder uses),
- * and the banner says so. The transport is designed to swap to a
- * live public VINDEX query endpoint (profile PUBLIC_EXPLORER) without
- * changing the grammar: byte-level READ and INFER already answer
- * honestly that they require the live endpoint.
+ * LIVE: statements go to the hardened public VINDEX query endpoint
+ * (larql-server --public-explorer on fly.io) and execute for real —
+ * the capability profile PUBLIC_EXPLORER is enforced in the server
+ * after parsing, before execution, so a mutation statement parses and
+ * then refuses with the profile's own words. The container is
+ * vindex3-demo: a miniature two-layer system with synthetic weights —
+ * the format, graph, provenance, authority, and execution are real.
+ *
+ * SNAPSHOT (fallback when the endpoint is unreachable): the browser
+ * parses each line into a tiny allowlisted AST over an immutable demo
+ * snapshot compiled into the site (the Bytes encoder's worked
+ * example), and the banner says so.
  */
+
+const LIVE_ENDPOINT = "https://vindex3-explorer.fly.dev";
 
 type Line = { text: string; tone?: "accent" | "dim" | "err" | "ok" };
 
@@ -292,17 +298,151 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 
 const SEED = ["SHOW MODELS", "OPEN vindex3-demo", "WALK layer.12", "DESCRIBE layer.12.routed.gate_up", "SHOW AUTHORITY layer.12", "EXPLAIN EXECUTION layer.12"];
 
+const LIVE_SEED = [
+	"SHOW COMPONENTS;",
+	"SHOW LAYERS;",
+	"SHOW REPRESENTATIONS;",
+	"SHOW PROVENANCE;",
+	"SHOW AUTHORITY;",
+	'EXPLAIN INFER "[3]";',
+	'INFER "[3]" GENERATE 8;',
+];
+
+const LIVE_HELP: Line[] = [
+	{ text: "PUBLIC_EXPLORER grammar — enforced in the server, after parsing, before execution:", tone: "dim" },
+	{ text: "  SHOW MODELS / COMPONENTS / LAYERS       the catalogue, the graph, the plan" },
+	{ text: '  SHOW REPRESENTATIONS ["object"]         the physically present variants' },
+	{ text: '  SHOW PROVENANCE ["object"]              whole hashes and lineage' },
+	{ text: "  SHOW AUTHORITY                          the container's own declaration" },
+	{ text: '  DESCRIBE "entity" · WALK "prompt"       browse the bound system' },
+	{ text: "  SELECT * FROM EDGES LIMIT n             the knowledge surface" },
+	{ text: '  EXPLAIN INFER "prompt"                  the executable plan, rendered' },
+	{ text: '  INFER "prompt" [TOP n] [GENERATE ≤ 32]  execute — really' },
+	{ text: "  STATS · HELP · CLEAR", tone: "dim" },
+	{ text: "every other statement parses — and refuses with the profile's own words", tone: "dim" },
+];
+
+function liveBanner(): Line[] {
+	return [
+		{ text: "Connected — live · " + LIVE_ENDPOINT.replace("https://", "") + " · profile PUBLIC_EXPLORER", tone: "ok" },
+		{ text: "Container: vindex3-demo — a miniature two-layer system, synthetic weights; the format, graph, and execution are real", tone: "dim" },
+		{ text: "Type HELP, or start with SHOW COMPONENTS;", tone: "dim" },
+	];
+}
+
+function snapshotBanner(reason: string): Line[] {
+	return [
+		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
+		{ text: `Profile: PUBLIC_EXPLORER (read-only) · ${reason}`, tone: "dim" },
+		{ text: "Type HELP, or start with SHOW MODELS;", tone: "dim" },
+	];
+}
+
+type Transport = "connecting" | "live" | "snapshot";
+
 export function VindexTerminal() {
 	const [lines, setLines] = useState<Line[]>([
-		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
-		{ text: "Profile: PUBLIC_EXPLORER (read-only) · live endpoint: pending", tone: "dim" },
-		{ text: "Type HELP, or start with SHOW MODELS;", tone: "dim" },
+		{ text: "Waking the live endpoint — the public VINDEX query surface…", tone: "dim" },
 	]);
+	const [transport, setTransport] = useState<Transport>("connecting");
+	const [busy, setBusy] = useState(false);
 	const [input, setInput] = useState("");
 	const [model, setModel] = useState<string | null>(null);
 	const endRef = useRef<HTMLDivElement>(null);
 
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			try {
+				// Generous timeout: the machine auto-stops when idle and a
+				// cold start takes a few seconds.
+				const r = await fetch(`${LIVE_ENDPOINT}/v1/health`, { signal: AbortSignal.timeout(20000) });
+				if (cancelled) return;
+				if (!r.ok) throw new Error(String(r.status));
+				setTransport("live");
+				setLines(liveBanner());
+			} catch {
+				if (cancelled) return;
+				setTransport("snapshot");
+				setLines(snapshotBanner("live endpoint unreachable — walking the compiled snapshot"));
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	function scroll() {
+		requestAnimationFrame(() => endRef.current?.scrollIntoView({ block: "nearest" }));
+	}
+
+	function resetTerminal() {
+		tick();
+		setModel(null);
+		setLines(transport === "live" ? liveBanner() : snapshotBanner("live endpoint unreachable — walking the compiled snapshot"));
+		setInput("");
+		scroll();
+	}
+
+	async function runLive(raw: string) {
+		const trimmed = raw.trim().replace(/;+$/, "");
+		const up = trimmed.toUpperCase();
+		if (up === "CLEAR") return resetTerminal();
+		if (up === "HELP" || up === "?") {
+			tick();
+			setLines((prev) => [...prev, { text: `vindex> ${raw}`, tone: "accent" }, ...LIVE_HELP]);
+			setInput("");
+			scroll();
+			return;
+		}
+		if (FORBIDDEN.test(trimmed)) {
+			refuse();
+			setLines((prev) => [
+				...prev,
+				{ text: `vindex> ${raw}`, tone: "accent" },
+				{ text: `${trimmed.split(/\s+/)[0].toUpperCase()}: no such operation in this universe`, tone: "err" },
+			]);
+			setInput("");
+			scroll();
+			return;
+		}
+		tick();
+		setBusy(true);
+		setLines((prev) => [...prev, { text: `vindex> ${raw}`, tone: "accent" }]);
+		setInput("");
+		scroll();
+		try {
+			const r = await fetch(`${LIVE_ENDPOINT}/v1/query`, {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ statement: trimmed + ";" }),
+				signal: AbortSignal.timeout(30000),
+			});
+			const body = (await r.json().catch(() => null)) as { lines?: string[]; error?: string } | null;
+			const outLines = body?.lines;
+			if (r.ok && outLines) {
+				setLines((prev) => [...prev, ...outLines.map((text) => ({ text }))]);
+			} else {
+				refuse();
+				const msg = body?.error ?? `the endpoint answered ${r.status}`;
+				setLines((prev) => [...prev, { text: msg, tone: "err" }]);
+				if (r.status === 403)
+					setLines((prev) => [...prev, { text: "refused in the server, after parsing, before execution — nothing began", tone: "dim" }]);
+			}
+		} catch {
+			refuse();
+			setLines((prev) => [...prev, { text: "the live endpoint did not answer — try again, or reload for the snapshot", tone: "err" }]);
+		} finally {
+			setBusy(false);
+			scroll();
+		}
+	}
+
 	function run(raw: string) {
+		if (transport === "live") {
+			void runLive(raw);
+			return;
+		}
 		const cmd = parse(raw);
 		if (cmd.kind === "forbidden" || (cmd.kind === "unknown" && cmd.input)) refuse();
 		else tick();
@@ -311,7 +451,7 @@ export function VindexTerminal() {
 		setLines((prev) => (out.clear ? [] : [...prev, { text: `${prompt} ${raw}`, tone: "accent" }, ...out.lines]));
 		if (out.model !== undefined) setModel(out.model);
 		setInput("");
-		requestAnimationFrame(() => endRef.current?.scrollIntoView({ block: "nearest" }));
+		scroll();
 	}
 
 	return (
@@ -351,7 +491,7 @@ export function VindexTerminal() {
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
-							if (input.trim()) run(input);
+							if (input.trim() && !busy) run(input);
 						}}
 						className="flex gap-2 mt-2"
 					>
@@ -373,21 +513,35 @@ export function VindexTerminal() {
 				</div>
 
 				<div className="flex flex-wrap gap-2 mt-4">
-					{SEED.map((s) => (
-						<button key={s} onClick={() => run(s)} className="voice-evidence text-[11px] px-3 py-1.5 border opacity-70 hover:opacity-100" style={{ borderColor: "var(--color-mist)" }}>
+					{(transport === "live" ? LIVE_SEED : SEED).map((s) => (
+						<button
+							key={s}
+							onClick={() => run(s)}
+							disabled={busy}
+							className="voice-evidence text-[11px] px-3 py-1.5 border opacity-70 hover:opacity-100 disabled:opacity-30"
+							style={{ borderColor: "var(--color-mist)" }}
+						>
 							{s}
 						</button>
 					))}
+					<button
+						onClick={resetTerminal}
+						className="voice-evidence text-[11px] px-3 py-1.5 border opacity-70 hover:opacity-100 ml-auto"
+						style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
+						aria-label="Clear the terminal"
+					>
+						CLEAR
+					</button>
 				</div>
 
 				<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-					Every line is parsed into a tiny allowlisted command set before anything executes — mutation verbs are
-					not represented, so they cannot happen. The universe is an immutable snapshot compiled into this site;
-					when the live VINDEX query endpoint lands, the same grammar walks a real container, and READ and INFER stop
-					refusing.
+					When live, every statement is sent to the hardened public VINDEX query endpoint and executes for real —
+					the capability profile is enforced in the server after parsing, before execution, so a mutation verb
+					parses and then refuses with the profile&apos;s own words. When the endpoint is unreachable, the terminal
+					falls back to an immutable snapshot compiled into this site, and the banner says which universe you are in.
 				</p>
 				<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-3">
-					The model is the database — as an interaction, not a metaphor. Read-only · rate-free · nothing to drop.
+					The model is the database — as an interaction, not a metaphor. Read-only · rate-limited · nothing to drop.
 				</p>
 			</div>
 		</section>
