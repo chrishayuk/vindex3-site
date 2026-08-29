@@ -6,6 +6,7 @@ import { Unfolding } from "@chrishayuk/hause/components/forms/Unfolding";
 import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
+import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 /**
  * The thesis exhibit, with an on-ramp: what VINDEX3 is and does comes
@@ -54,6 +55,13 @@ export default function Home() {
 						"Run it, query it, verify it — the same bytes",
 					],
 				}}
+			/>
+
+			<Film
+				title="Extract once"
+				description="A checkpoint compiles down into a container, is proven byte-faithful — and the checkpoint ghosts away, no longer needed. Thirty seconds, from the format's own performance."
+				src="/films/extract-once.mp4"
+				poster="/films/extract-once-poster.jpg"
 			/>
 
 			<Statement text="VINDEX3 does not add a query index next to the weights. It keeps the weights queryable." />

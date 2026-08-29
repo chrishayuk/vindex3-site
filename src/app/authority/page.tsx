@@ -5,6 +5,7 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Agreement } from "@chrishayuk/hause/components/forms/Agreement";
 import { Derivation } from "@chrishayuk/hause/components/forms/Derivation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 export const metadata: Metadata = {
 	title: "Authority",
@@ -95,6 +96,13 @@ export default function AuthorityPage() {
 			<Observation
 				label="AND YET — CONSISTENCY IS NOT SUFFICIENCY"
 				text="Four honest witnesses can still tell an incomplete story: all four authorities can faithfully agree on an under-specified system. That is why agreement is only half the proof. The other half is closure — every stored tensor accounted for by an operation, every operation by judged semantics — and it lives in the execution chapter, where the two halves finally lock."
+			/>
+
+			<Film
+				title="The fold"
+				description="Fidelity pushed down the lattice, one judged cap at a time, until the level a profile may claim is derived — never asserted."
+				src="/films/the-fold.mp4"
+				poster="/films/the-fold-poster.jpg"
 			/>
 
 			<Connection

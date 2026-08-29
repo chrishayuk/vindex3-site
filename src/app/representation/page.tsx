@@ -5,6 +5,7 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Variants } from "@chrishayuk/hause/components/forms/Variants";
 import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 export const metadata: Metadata = {
 	title: "Representation",
@@ -115,6 +116,13 @@ export default function RepresentationPage() {
 				caption="A backend supporting a format is capability, never authority. Promotion requires measured evidence against a versioned quality gate — and routing evidence is deliberately kept apart from logit evidence. Refusals on this ladder are typed, from QualityUnproven to ConflictingCandidates."
 			/>
 
+
+			<Film
+				title="Selection, not conversion"
+				description="One identity, three prints: the baseline holds, a variant is chosen, the choice returns — and then the absent print is asked for, and the refusal lands, before any byte is read."
+				src="/films/selection-not-conversion.mp4"
+				poster="/films/selection-not-conversion-poster.jpg"
+			/>
 
 			<Connection
 				text="Fidelity names what a variant is worth. What a whole profile may claim is derived from it — by a fold, not a declaration."
