@@ -3,6 +3,7 @@ import { Fraunces, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { SiteFooter } from "@chrishayuk/hause/components/SiteFooter";
+import { Analytics } from "@chrishayuk/hause/components/Analytics";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { webSiteLd } from "@chrishayuk/hause/seo";
 
@@ -61,6 +62,7 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className="antialiased">
+				<Analytics id="G-YTRGXVYVLH" />
 				<Nav />
 				{children}
 				<SiteFooter
@@ -103,7 +105,7 @@ export default function RootLayout({
 								{ href: "/ladder", label: "The Record" },
 								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
 								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
-								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.2.0", label: "The release", external: true },
+								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.3.0", label: "The release", external: true },
 							],
 						},
 					]}

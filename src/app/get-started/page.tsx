@@ -30,9 +30,9 @@ export default function GetStartedPage() {
 					description:
 						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json.",
 					url: "https://vindex3.org/get-started",
-					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.2.0",
+					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.3.0",
 					operatingSystem: "macOS, Linux, Windows (build from source)",
-					version: "0.2.0",
+					version: "0.3.0",
 				})}
 			/>
 			<Hero
@@ -46,14 +46,14 @@ export default function GetStartedPage() {
 			<Snippet
 				label="INSTALL — PREBUILT (MACOS ARM64) OR FROM SOURCE, ANY PLATFORM WITH STABLE RUST"
 				code={`$ curl -L https://github.com/chrishayuk/larql/releases/download/\\
-    vindex-v0.2.0/vindex-0.2.0-macos-arm64.tar.gz | tar xz
+    vindex-v0.3.0/vindex-0.3.0-macos-arm64.tar.gz | tar xz
 
 $ cargo install --git https://github.com/chrishayuk/larql vindex-cli
 
 $ vindex --help
 The format-native VINDEX3 tool: inspect, describe,
 representations, diff, represent, precision, verify.`}
-				aside="Every command takes a global --json — one result, three projections: terminal text, structured JSON, and the designed panels this site renders."
+				aside="Every command takes a global --json — one result, three projections: terminal text, structured JSON, and the designed panels this site renders. From 0.3.0, vindex update keeps you current — explicitly: no verb ever checks for updates on its own, and nothing phones home."
 			/>
 
 			<Snippet
