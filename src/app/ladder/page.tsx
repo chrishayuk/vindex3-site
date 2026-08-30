@@ -306,7 +306,7 @@ export default function LadderPage() {
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, and the last pre-registered bank-ABI rows. Until those gates pass, candidate it stays."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift, pinned in the spec: completeness from the declared operation program rather than object kinds, and continuation state generalising KV, drilled on paper against four deliberately awkward architectures before anything freezes. Until those gates pass, candidate it stays."
 			/>
 
 			<Observation

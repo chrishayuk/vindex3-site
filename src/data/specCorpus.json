@@ -159,73 +159,80 @@
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.0 The execution surface (5a — implemented)",
-   "text": "`Component` answers *what part of the system this is*; its\n`ExecutionSurface` (`graph/surface.rs`, graph schema v2) answers *what\nthe generic operations need to run it* — grouped by op (`attention`,\n`ffn`, `norm`, optional `head`), every value **fully resolved** at\nbuild/judgment time: an absent `hidden_act`, a shared post-norm epsilon\nand canonical 1/√d scaling are decided once, by the same detection\nsurface the serving path runs, and persisted. An executor reads; it\nnever defaults.\n\nThe **completeness contract** derives from the operations a component's\nobjects imply, never from what any architecture declares:\n\n```text\nDecoderStack / PerceptionTower object  →  attention + ffn + norm surface\nEmbedding / OutputHead object          →  head surface\n```\n\nIt is enforced twice: at plan time an incomplete surface is a blocking\nfinding (encode refuses — a missing `intermediate_size` is a schema\nrefusal, not a mid-forward-pass discovery), and on the container\n`larql vindex3 inspect --execution-complete` re-answers the question\nfrom the persisted graph alone. Perception surfaces are derived from the\nnested config reading plus **tensor evidence** (FFN gating from the\npresence of gate weights under the tower — whoever ships them), and a\nper-layer head-geometry variation is refused as a schema gap, never\naveraged away. G4 covers the surface automatically: link 2 re-derives it\nfrom today's source, link 3 compares it element-wise against the\npersisted graph."
+   "text": "`Component` answers *what part of the system this is*; its\n`ExecutionSurface` (`graph/surface.rs`, graph schema v2) answers *what\nthe generic operations need to run it* — grouped by op (`attention`,\n`ffn`, `norm`, optional `head`), every value **fully resolved** at\nbuild/judgment time: an absent `hidden_act`, a shared post-norm epsilon\nand canonical 1/√d scaling are decided once, by the same detection\nsurface the serving path runs, and persisted. An executor reads; it\nnever defaults.\n\nThe **completeness contract** derives from the operations a component's\nobjects imply, never from what any architecture declares:\n\n```text\nDecoderStack / PerceptionTower object  →  attention + ffn + norm surface\nEmbedding / OutputHead object          →  head surface\n```\n\n> Pinned for Final (candidate spec §17.4): completeness moves from\n> kind-implied surfaces to the component's declared operation program —\n> object kinds keep identity and stop implying operation sets, so a\n> stack with no attention admits by declaring what it does have."
   },
   {
    "id": "vindex3-format.md#23",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.0 The execution surface (5a — implemented) (2)",
-   "text": "Two facts were moved out of family defaults by the first real\nfour-norm stack (whose generic fallback claimed `post_norms = false`\nwhile shipping four norms per layer):\n\n- **Norm placement is operand evidence** (`graph/roles.rs`): the norm\n  roles present across a stack's layers decide `PreOnly` vs `PrePost`;\n  a mixed estate refuses. When an execution-semantic structural fact can\n  be established from unambiguous operand topology, tensor evidence\n  outranks a family/default assumption. Count is not semantics —\n  placement is: under two norms, `post_attention_layernorm` *is* the\n  pre-FFN norm; under four it normalises the attention output.\n- **Attention output gating is a generic primitive**\n  (`AttentionSurface.output_gate` + `OperandRole::AttnOutputGate`), not\n  a family feature. Its judged semantics stay `None` until a model's\n  gate behaviour is actually judged — a stack shipping the operand\n  meanwhile fails operand closure with the primitive named."
+   "text": "It is enforced twice: at plan time an incomplete surface is a blocking\nfinding (encode refuses — a missing `intermediate_size` is a schema\nrefusal, not a mid-forward-pass discovery), and on the container\n`larql vindex3 inspect --execution-complete` re-answers the question\nfrom the persisted graph alone. Perception surfaces are derived from the\nnested config reading plus **tensor evidence** (FFN gating from the\npresence of gate weights under the tower — whoever ships them), and a\nper-layer head-geometry variation is refused as a schema gap, never\naveraged away. G4 covers the surface automatically: link 2 re-derives it\nfrom today's source, link 3 compares it element-wise against the\npersisted graph.\n\nTwo facts were moved out of family defaults by the first real\nfour-norm stack (whose generic fallback claimed `post_norms = false`\nwhile shipping four norms per layer):"
   },
   {
    "id": "vindex3-format.md#24",
+   "source": "the living spec",
+   "doc": "vindex3-format.md",
+   "heading": "8.0 The execution surface (5a — implemented) (3)",
+   "text": "- **Norm placement is operand evidence** (`graph/roles.rs`): the norm\n  roles present across a stack's layers decide `PreOnly` vs `PrePost`;\n  a mixed estate refuses. When an execution-semantic structural fact can\n  be established from unambiguous operand topology, tensor evidence\n  outranks a family/default assumption. Count is not semantics —\n  placement is: under two norms, `post_attention_layernorm` *is* the\n  pre-FFN norm; under four it normalises the attention output.\n- **Attention output gating is a generic primitive**\n  (`AttentionSurface.output_gate` + `OperandRole::AttnOutputGate`), not\n  a family feature. Its judged semantics stay `None` until a model's\n  gate behaviour is actually judged — a stack shipping the operand\n  meanwhile fails operand closure with the primitive named."
+  },
+  {
+   "id": "vindex3-format.md#25",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.1 The G5 gate — five proofs",
    "text": "1. **Text forward from graph semantics** — the target component executes\n   from the container, output-identical to the checkpoint-driven path.\n2. **Position/span behaviour exclusively from `AttentionLayerPolicy`** —\n   NoPE/global vs RoPE/sliding per layer is a table read; mutating one\n   row of the persisted table provably changes execution (the positive\n   control), and no other source of that fact exists to consult.\n3. **Perception from the component, not family wiring** — the vision\n   tower and adapter run because a `perception` component with its\n   objects is present, not because the runtime knows Glimmer has one.\n4. **Drafter capture exclusively from the `HiddenStateEdge`** — which\n   hidden states are tapped, and the block protocol, are edge reads;\n   editing the edge redirects the capture.\n5. **Lookup by logical object id only** — operand resolution goes\n   `object id → representation → segment`; no original HF tensor name\n   appears anywhere on the execution path (they were already stripped at\n   encode).\n\nWhen the five hold, an architecture is an **instance** the container\ndescribes, not an implementation the executor contains: an architecture\nis *supported* when its execution semantics can be expressed in the\nmodel-system IR — not when its name has been added to the runtime."
   },
   {
-   "id": "vindex3-format.md#25",
+   "id": "vindex3-format.md#26",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.2 Operand closure and the operation plan (5b-1 — implemented)",
    "text": "G4 proves *consistency* across the four authorities; it cannot prove\n*sufficiency* — all four can faithfully agree on an under-specified\nexecution model. The physical operand estate is the independent\nstructural witness that closes that hole:\n\n```text\nconsistency  (Declared ≡ Resolved ≡ Graph ≡ Encoded)\n+ operand closure  (every executable tensor ↔ a generic op)\n= execution sufficiency\n```\n\n`larql vindex3 ops <container> --component <id>` (`format/vindex3/opplan/`)\nemits the component's **generic operation program** solely from the\ncontainer — per-layer norm sites, attention geometry/scale/span/position\n(from the policy table, never an index pattern), FFN shape, embedding\nand head ops, every operand a logical-object id plus segment-relative\ntensor. The closure gate requires, before any plan exists:\n\n- every stack tensor classifies into an [`OperandRole`] — an\n  unclassified operand blocks;\n- every operand's op is declared by the surface — an operand implying an\n  absent op blocks **naming the required primitive** (before its gate\n  was judged, the real Glimmer target refused on exactly\n  `self_attn.gate_proj` × 52 layers: `required primitive: attention\n  output gate` — the discovery that forced the primitive into the IR);\n- every op the surface implies has its operands, with the stored shapes\n  the surface's geometry states;\n- per-layer accounting is total (`N/N operands accounted`) — counts or\n  family defaults are not sufficient."
   },
   {
-   "id": "vindex3-format.md#26",
+   "id": "vindex3-format.md#27",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.2 Operand closure and the operation plan (5b-1 — implemented) (2)",
    "text": "**Sealed on the real pair**: the target closes at 52 layers × 12/12\nwith zero defects once its gate semantics were judged from the upstream\nreference implementation (`sigmoid(gate_proj(attention_input))`\nmultiplied into the aggregated head output before `o_proj`), and the\nassistant closes at 5 × 11/11 (two-norm placement, per-head QK-norms,\ngated FFN). The NoPE interleave reads directly off the persisted table\n— layers 3, 7, … 51 emit `Full / position None` with no layer\narithmetic anywhere.\n\nTwo judged facts arrived with the gate, both preserved unfolded because\nstrict parity is next:\n\n- **Query and score scales are separate ops** — the declared\n  `qk_scale_factor` multiplies the normalised query before position\n  encoding; the canonical `head_dim^-0.5` is a score-time multiply.\n  Folding them is algebra-equivalent but not fp-equivalent, and moving a\n  multiply across RoPE/matmul is exactly the silent normalisation 5b-2\n  would otherwise surface as a parity mystery.\n- **Parameter-free QK normalisation** is a judged semantic no tensor\n  evidence can reveal: the reference normalises Q and K while the stack\n  ships no norm weights. It lives on the surface as\n  `parameter_free_qk_norm`, distinct from weighted QK-norm."
   },
   {
-   "id": "vindex3-format.md#27",
+   "id": "vindex3-format.md#28",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.3 The staged proof (Stages A–C implemented)",
    "text": "**5b-2 Stage A — implemented** (`opplan/exec/`): a reference executor\nthat consumes a `ComponentOpPlan` and nothing else — naive f32 loops\n(deliberately sharing no arithmetic with `larql-compute`), operands\nloaded only through the closure-verified\n`object → representation → segment` path, every judged enum matched\nexhaustively. Gate: on a dense F32 fixture, container-driven execution\nmatches the checkpoint-driven production forward **layer by layer**\n(observed reassociation-only margins ~7e-8 hidden / ~2.4e-7 logits,\nasserted at 100× the noise floor), with a corrupted-operand negative\ncontrol and a non-degeneracy check (independent arithmetic must not\nagree bit-for-bit). The judged Glimmer program shape — gate, weighted +\nparameter-free QK norm, four norms, hybrid span, both softcaps —\nexecutes finite end to end; its numerical reference is Stage B."
   },
   {
-   "id": "vindex3-format.md#28",
+   "id": "vindex3-format.md#29",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.3 The staged proof (Stages A–C implemented) (2)",
    "text": "**5b-2 Stage B — implemented.** The judged semantics against an\nindependent golden implementation (`exec/tests/golden.rs`): a\ndeliberately literal oracle sharing *nothing* with the execution stack —\nits own safetensors byte reader, plain hardcoded arithmetic, no plan, no\nsurface, no shared enums — over a miniature Glimmer anatomy with\ndeliberately awkward dimensions (hidden 12, 3q/1kv, head_dim 4, ffn 20,\nvocab 29, seq 5; layer 0 Sliding+RoPE+gated, layer 1 Full+NoPE+gated).\nExecutor matches at ~5e-8 on logits; the trace checkpoints every novel\nboundary (post-pf-norm Q, post-scale Q, post-position Q, gate sigmoid,\npre/post-gate attention) and self-checks its own semantics (NoPE is\nbit-identically a positional no-op; the gate strictly gates).\n\n**5b-2 Stage C — implemented.** The three causal controls\n(`exec/tests/controls.rs`), each mutating **only the persisted graph**:\n\n```text\nC1  query_scale 3.87 → 3.5   diverges from layer 0     scalar authority\nC2  layer 1 None → Rope      layer 0 identical,        layer-policy\n                             layer 1 diverges           authority\nC3  gate judgment removed    refuses, names primitive  op-semantic\n                                                        authority\n```\n\nA hidden default is precisely a fact whose mutation changes nothing;\nthese controls are the search for hidden defaults, and they found none.\nThe ladder's engineering contract, complete:"
   },
   {
-   "id": "vindex3-format.md#29",
+   "id": "vindex3-format.md#30",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.3 The staged proof (Stages A–C implemented) (3)",
    "text": "```text\nfour-authority consistency + operand closure   = execution sufficiency\nexecution sufficiency + independent parity     = execution correctness\nexecution correctness + causal mutation controls = semantic authority\n```\n\nClosure proves the program is complete; parity proves the program is\ncorrect; the controls prove the IR is in charge.\n\n**5b-3 — implemented** (surfaced as `larql vindex3 exec`, rung G5b-3c).\nParity (hidden-state and logit, not argmax) against the checkpoint-driven\nfixture path, and three positive controls proving three independent\nsemantic pathways drive computation — a container fact must not merely\nsurvive serialization:\n\n```text\nscalar execution fact      mutate persisted attention scale   → output changes\nlayer policy fact          mutate one layer's None → RoPE     → output changes\noperand/op semantic fact   mutate/remove judged gate semantics → diverge or refuse\n```\n\nThe third exists because of the gate discovery: the two pieces the\ngeneric fallback failed to capture (NoPE layers, attention gating) are\nexactly the two that make the strongest controls."
   },
   {
-   "id": "vindex3-format.md#30",
+   "id": "vindex3-format.md#31",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.3 The staged proof (Stages A–C implemented) (4)",
    "text": "Parity runs **layer by layer**, not final-logit-only: per layer\n`max_abs` / `mean_abs` / cosine on the hidden-state trace, then\nexact/near-exact logits per what the kernels actually promise. A\ndivergence at layer N localises immediately to norm ordering, QK\nnormalisation, scale placement, RoPE/NoPE, gate placement, residual or\nFFN ordering — and because `vindex3 ops` spells the generic program\nout, the debug object and the execution object are the same semantic\nrepresentation. The bar 5b-2 enforces: **the operation plan is not\ndocumentation of execution; it is execution.**\n\n**The compiler boundary.** Some execution semantics cannot be inferred\nfrom bytes — a gate's activation, a parameter-free QK normalisation\n(there are no weights to find), the exact application point of a scale.\nSome authority must tell the *compiler* what they mean, and that\nauthority is legitimately architecture-aware. The boundary is where\nfamily knowledge is allowed to live:\n\n```text\nSOURCE COMPILER / FRONT END          EXECUTION / BACK END\nHF model_type, upstream reference    VINDEX3 IR\n        ↓                                ↓\narchitecture-specific judgment OK    generic op plan\n        ↓                                ↓\ngeneric VINDEX3 IR                   generic kernels\n                                     — no family knowledge here\n```"
   },
   {
-   "id": "vindex3-format.md#31",
+   "id": "vindex3-format.md#32",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "8.3 The staged proof (Stages A–C implemented) (5)",
    "text": "A `muse_glimmer` source decoder is fine; `if family == muse_glimmer`\nafter the vindex is produced is the violation. VINDEX3 permits\n**architecture-aware ingestion** and produces an\n**architecture-independent executable IR** — like language front ends\ncompiling to one IR for one backend, it does not need every upstream\ncheckpoint to be self-describing; it needs to *compile their semantics\naway*.\n\n**The naming-convention trap.** Dispatching on object-id *strings*\n(`if object_id.contains(\"perception_tower\")`) technically avoids a\nfamily branch but is the same defect laundered through a name: the\nconvention becomes an undeclared schema. Object ids identify; they never\nencode execution rules. Dispatch reads typed semantics only —\n`ObjectKind`, `ComponentRole`, `AttentionLayerPolicy`, `HiddenStateEdge`\nfields — so a renamed id changes nothing and a new architecture whose\ngraph carries the same kinds executes with zero runtime edits.\n\n---"
   },
   {
-   "id": "vindex3-format.md#32",
+   "id": "vindex3-format.md#33",
    "source": "the living spec",
    "doc": "vindex3-format.md",
    "heading": "9. Relationship to existing formats",
@@ -530,210 +537,252 @@
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "9.3 Omission semantics (\"dropping down\")",
-   "text": "The manifest distinguishes the materially different meanings:\n\n| Mode | Authority | Notes |\n| ---- | --------- | ----- |\n| Client omission (FFN remote) | inherits selection (up to source-exact) | The whole routed branch moves; the K3 latent boundary makes whole-branch RPC ~14 KB/layer f16 vs ~100 KB for projection-split — never split gate/up local from down remote absent contrary measurement |\n| Analysis/router slice | analysis-only | Retains routers, gate vectors, metadata; no decode claim |\n| Cheaper down representation | numerically-approximate | The production interpretation of \"cheap down\" |\n| Down replaced by compact approximation | structurally-approximate | Must name `replacement` |\n| Routed branch skipped (shared-only) | structurally-approximate | Dropping an expert's `w2` alone yields **no** expert output — the honest mode is skipping the expert/branch, not a half-expert |\n\n---"
+   "text": "The manifest distinguishes the materially different meanings:\n\n| Mode | Authority | Notes |\n| ---- | --------- | ----- |\n| Client omission (FFN remote) | inherits selection (up to source-exact) | The whole routed branch moves; the K3 latent boundary makes whole-branch RPC ~14 KB/layer f16 vs ~100 KB for projection-split — never split gate/up local from down remote absent contrary measurement |\n| Analysis/router slice | analysis-only | Retains routers, gate vectors, metadata; no decode claim |\n| Cheaper down representation | numerically-approximate | The production interpretation of \"cheap down\" |\n| Down replaced by compact approximation | structurally-approximate | Must name `replacement` |\n| Routed branch skipped (shared-only) | structurally-approximate | Dropping an expert's `w2` alone yields **no** expert output — the honest mode is skipping the expert/branch, not a half-expert |"
   },
   {
    "id": "vindex3-format-spec.md#44",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.4 Residency — contract vs plan (pinned direction)",
+   "text": "Residency is the third axis of the container model: semantic identity\nsays what an object *is* (§5.1), a representation says which bytes\nimplement it (§9.1), residency says where those bytes — and execution\nstate — live at this moment of execution. The vocabulary is not yet\nstandardised; the division of responsibility is fixed now, so the wrong\nkind of fact never enters the format:"
+  },
+  {
+   "id": "vindex3-format-spec.md#45",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "9.4 Residency — contract vs plan (pinned direction) (2)",
+   "text": "- **The residency contract is persisted facts** — model- and\n  representation-derived properties: access class (required-every-token\n  vs demand-driven/routed), zero-copy mmap capability, an encoding's\n  direct-execution capability, evictability, co-use grouping (the\n  segment/extent granularity of §7), and state lifetimes (§17.3). All\n  additive: under §5.7 an older reader ignores them.\n- **The residency plan is runtime-derived and never persisted in the\n  container** — which representation resides where, prefetch and\n  eviction decisions, device placement. A `device = GPU0`-shaped fact\n  in the format is a defect: placement ages with the machine, never\n  with the model.\n- **Residency never changes model meaning.** The same container means\n  the same thing mmap-cold on NVMe, resident in unified memory, or\n  split across devices; the plan changes efficiency, the graph changes\n  nothing. Artifact size, resident-set size and bytes-touched-per-token\n  are three independent quantities, and the container carries enough\n  semantics to describe each.\n- **Residency is measured, not assumed.** Routing locality in real MoEs\n  is poor enough that \"sparse\" does not imply \"small resident set\" —\n  the contract describes what is possible; the plan adapts to observed\n  traffic.\n\nBecause the contract vocabulary is additive, standardising it is 3.x\nwork under the compatibility rules, not a gate for Final (§21).\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#46",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "10. Kernel capability registry",
    "text": "Kernels advertise what they can execute:\n\n```\nprogramme_id · region roles · formats per role · grouping widths ·\ninput layout · maturity\n```\n\nMaturity ladder, matching the serving-format ledger: **Representable → Reference → Grouped → Dispatched → Production.** The loader reports, per (programme, format, grouping) combination, which rung it sits on. Mixed per-region formats are either supported by a kernel or **explicitly refused** — never silently repacked at decode time.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#45",
+   "id": "vindex3-format-spec.md#47",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "11. Capability checking",
    "text": "The loader does not hard-code \"down weights present\" tests. It traverses the layer's MoE programme (bank shape) or the component's operand closure (graph shape, §17) and reports which required operands are absent, then:\n\n- refuses execution profiles whose authority claim exceeds what the present operands support;\n- names the missing role, bank, layer and segment precisely (`VindexError::MissingRequiredRegion { layer, bank, role, .. }`);\n- distinguishes *representable-but-no-kernel* (falls back to reference executor, flagged) from *operand-absent* (hard refusal).\n\nProgramme-derived checks give the right per-architecture answers for free: routed removal on Inkling leaves shared experts contributing; on GPT-OSS it leaves no FFN contribution; on K3, a missing `routed_output` transform invalidates even completed expert computation.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#46",
+   "id": "vindex3-format-spec.md#48",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "12. Versioning and coexistence",
    "text": "The version surfaces, precisely:\n\n| Contract | VINDEX2 value | VINDEX3 value |\n| -------- | -------- | -------- |\n| LYRW `format_version` | 1 (VINDEX2-internal) | **2** (self-description only; no cross-reading, §6.6) — trails the container generation by one, permanently |\n| `index.json` `version` | 2 | **3–4** — the container-generation discriminator; 4 is current (the `RegionLayout` claim of §6.4's former reserved u16 — wire size unchanged, which is precisely why the bump is needed) |\n| `vindex_spec_version` | 1 | **2** (programme manifest + profiles enter the validated public contract) |\n| MoE manifest schema | — | **1** |\n| SystemGraph schema | — | **2** (v2 added the execution surface) |\n\n**On the numbering.** The container generation *is named for* `index.json.version` — VINDEX2 writes `version: 2`, VINDEX3 currently writes `version: 4` within the 3-generation's schema span. The generation is a **schema span, not a single number**: additive-but-load-bearing changes (like `RegionLayout`) bump the schema within the generation; readers accept the span. The FP4 additive-extension precedent is retained: new region formats, roles and programme ids are enum additions, not schema bumps — a schema bump is reserved for a reinterpretation of existing bytes or fields."
   },
   {
-   "id": "vindex3-format-spec.md#47",
+   "id": "vindex3-format-spec.md#49",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "12.1 Dual-generation support in larql — the real compatibility contract",
    "text": "The binding obligation is not between the two on-disk formats (there is none — §6.6). It is that **one larql binary supports both vindex generations, indefinitely for reading and serving**:\n\n- **Detection.** `index.json.version` is the sole **schema** discriminator, and the loader maps supported schema revisions to their owning container generation. No filename sniffing, no directory-shape heuristics. A missing or unknown version fails naming the version found and the schema sets this binary supports.\n\n  The mapping is **many-to-one, not an identity**:\n\n  | `index.json.version` | generation | note |\n  | -------------------- | ---------- | ---- |\n  | 1 | VINDEX2 | legacy schema; absent fields load with defaults |\n  | 2 | VINDEX2 | what a fresh VINDEX2 extraction writes |\n  | 3 | VINDEX3 | pre-`RegionLayout` schema; still read |\n  | 4 | VINDEX3 | what a fresh VINDEX3 encode writes |"
   },
   {
-   "id": "vindex3-format-spec.md#48",
+   "id": "vindex3-format-spec.md#50",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "12.1 Dual-generation support in larql — the real compatibility contract (2)",
    "text": "A generation is *named* for the schema family it writes, not for the only schema it can read. Treating the version as a generation identifier rather than a generation floor refuses every legacy-schema index in existence — which E0 caught in practice, not in review. Unified dispatch routes schema 1 to the VINDEX2 loader; the VINDEX3 loader still refuses it by name.\n- **One entry point.** `Vindex::open(path)` returns the generation-appropriate handle behind a common trait; `larql run / serve / verify / slice / publish / pull` all accept either generation or refuse naming the generation. Generation-specific verbs error precisely on the wrong generation rather than silently no-op.\n- **No cross-loading, no silent conversion.** The VINDEX2 loader path is frozen-but-maintained: it never opens VINDEX3 directories, never gains VINDEX3 features, and VINDEX3 code never re-implements VINDEX2 parsing. Conversion is only ever an explicit importer or re-encode.\n- **Hub and distribution.** `larql publish` stamps the container generation into the hub artifact metadata; `larql pull` selects the reader from that stamp and refuses a generation the installed binary lacks — before downloading terabytes, not after.\n- **Wire protocols are generation-agnostic.** The expert-RPC and FFN-dispatch wire contracts carry activations and results, not container bytes; a grid may therefore mix generations. A shard's container generation is a local concern of that shard's loader.\n- **Support policy.** VINDEX2 remains fully supported for read/verify/serve. The default-extraction generation is governed by `docs"
   },
   {
-   "id": "vindex3-format-spec.md#49",
+   "id": "vindex3-format-spec.md#51",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "12.1 Dual-generation support in larql — the real compatibility contract (3)",
    "text": "/vindex-generation-policy.md`: one named constant (`DEFAULT_EXTRACTION_GENERATION`), one pinned test, flipped in one commit (the M4 rung — M1–M3 are done). Explicit requests are never downgraded; a surface that cannot produce the requested generation refuses by name. After the flip, V2 becomes the explicitly-requested compatibility generation and receives no architectural expansion.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#50",
+   "id": "vindex3-format-spec.md#52",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "13. Conformance envelope",
    "text": "The MoE bank machinery freezes only after the envelope fixtures pass the generic reference executor (fixtures defined in the experiments document):\n\n| Capability | Direct | GPT-OSS | IS-276B | KL-48B | K3 |\n| ---------- | :----: | :-----: | :-----: | :----: | :-: |\n| Variable expert count / top-K | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Routed experts | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Shared experts | – | – | ✓ (2) | ✓ (1) | ✓ |\n| Shared-sink router (shared experts scored) | – | – | ✓ | – | – |\n| Residual-space experts | ✓ | ✓ | ✓ | ✓ | – |\n| Latent-space experts | – | – | – | – | ✓ |\n| Hybrid dense+MoE stack | – | – | ✓ (mid-stack, idx 2) | ✓ (layer 0) | ✓* |\n| Non-softmax router (sigmoid + scaling) | – | – | ✓ (+ gate bias, norm_after_topk) | ✓ | – |\n| Custom expert programme | – | ✓ | – | – | ✓ |\n| Native low-bit regions | ✓ | MXFP4 | NVFP4/MXFP8 (real releases) | – (BF16) | MXFP4 |\n| Mixed per-role format | ✓ | ✓ | ✓ (release convention: routed low-bit, rest BF16) | ✓ | ✓ |\n| Fused/decomposed tensors | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Grouped dispatch | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Auxiliary optional components (MTP, towers) | – | – | ✓ | – | ✓ (multimodal) |\n| Single-segment routed layer | ✓ | ✓ | ✓ (~4.9 GiB/layer Q6_K) | ✓ (~1.4 GiB/layer Q6_K) | ✓ |\n| Segmented logical layer | – | – | – | – | ✓ |\n| Exceeds-RAM residency (partial/remote non-optional) | – | – | ✓ | – | ✓ |\n| WALK/DESCRIBE (residual-space browse) | ✓ | ✓ | ✓ | ✓ | – |\n| WALK via latent transform (§15.4) | – | – | – | – | ✓ |"
   },
   {
-   "id": "vindex3-format-spec.md#51",
+   "id": "vindex3-format-spec.md#53",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "13. Conformance envelope (2)",
    "text": "\\* K3's dense/MoE layer schedule is confirmed at adapter time; KL-48B's `first_k_dense_replace=1` is confirmed from the released config.\n\nReal-model progress against the planned order **Gemma MoE → GPT-OSS → Kimi-Linear-48B-A3B → Inkling-Small → K3**: Gemma-family (Muse-Glimmer) and GPT-OSS encode, verify and execute end to end; Kimi-Linear's KDA/MLA/MoE execution operators are implemented in the reference executor (§1.1) — the adapter dress rehearsal is underway, not upcoming; Inkling-Small remains open (its admission surfaced a silent-interleave defect class the plan gate now names); K3 is extracted **once**, last, into the frozen bank ABI. Fixture C is retained purely as the tiny deterministic conformance fixture.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#52",
+   "id": "vindex3-format-spec.md#54",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "14. What the experiments must decide",
    "text": "Only these decisions genuinely belong in the on-disk bank ABI; everything else stays runtime policy:\n\n| Decision | Experiment | Why it matters |\n| -------- | ---------- | -------------- |\n| Region granularity (fused vs split roles) | E1, E4 | mmap count, rewriting, read amplification |\n| Expert-group / segment width | E2, E3 | couples SSD reads to grouped kernels; K3 20 GiB cap |\n| Fused vs decomposed FC1 storage | E1, E7, V2-1 | checkpoint import cost, mixed precision, **and gate-only browse reads** — the serving and query answers must be reconciled here, not assumed |\n| Per-region format tags | structural (E4 gates *promotion* only) | representation is justified by native values/scales, v1's existing mixed precision, and format-neutral banks; E4 decides only whether a mixed-format **profile** reaches Production |\n| Physical expert ordering | E2, E6 | possible locality gain vs model-specific assumption risk |\n| Profile/variant-selection mechanism | E5, V2-0 | avoids reslicing per deployment; selection-not-request semantics (§9.1) |\n| Capability/authority metadata | V2-0 | approximate slices must never present as exact |"
   },
   {
-   "id": "vindex3-format-spec.md#53",
+   "id": "vindex3-format-spec.md#55",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "14. What the experiments must decide (2)",
    "text": "Registered prior (falsifiable): one file-set per routed layer (two segments for K3 Q6_K), one entry per expert, down independently addressable, locality as runtime metadata, omission = skip-the-branch, remote = whole-routed-branch RPC. Per-region format tags are in the ABI **structurally** (not gated on E4); the registered prior is that no mixed-format *profile* reaches Production before real-K3-layer evidence (E4 stage 3). Gate/up fusion is **no longer a prior** — it is a per-index extraction choice decided by E1/E7 (§15.2).\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#54",
+   "id": "vindex3-format-spec.md#56",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15. Query contract — the model IS the database",
    "text": "The LQL browse surface (WALK, DESCRIBE, SELECT, EXPLAIN WALK) is a first-class consumer of VINDEX3, with the same single-copy contract as v1: **no query index is stored beside the weights; the weights are the query index.** The format-native `vindex` reader (§18.3) is the second first-class consumer: inspect, describe, representations, diff, precision, verify — every answer derived from the artifact alone."
   },
   {
-   "id": "vindex3-format-spec.md#55",
+   "id": "vindex3-format-spec.md#57",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.1 What replaces `gate_vectors.bin`",
    "text": "There is no `gate_vectors.bin` in VINDEX3. The gate rows live where the split rule puts them — as `gate` (or the gate half of `gate_up_fused`) regions inside LYRW banks, or as the gate tensors of an FFN object's representation on the graph shape. Gate KNN mmaps the segment files and walks gate regions in place:\n\n- **f16/f32 regions:** zero-copy reinterpret, exactly the v1 fast path.\n- **Block-quantised regions (FP4/FP8/Q-K):** lazy per-feature dequantisation at walk time via the existing block codecs. The v1 caveat carries over verbatim: 4-bit gate KNN is noisy; inference compensates, isolated dot products do not.\n- Untouched `up`/`down` pages cost nothing under mmap, so browse over a full-fat index reads only gate bytes even when nothing was sliced.\n\nMoE browse semantics are unchanged from v1: gate KNN selects features **across all experts, no router needed** — a bank with `num_entries = E` contributes `E × intermediate_dim` walkable features per layer. Feature numbering stays v1-flattened (`layer:feature`, experts contiguous within the layer) so `feature_labels.json` keys survive migration untouched."
   },
   {
-   "id": "vindex3-format-spec.md#56",
+   "id": "vindex3-format-spec.md#58",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.2 The gate-addressability rule (resolves the fusion collision)",
    "text": "A browse-enabled index requires gate rows to be readable without decoding up. Two legal ways to satisfy that:\n\n1. **Decomposed storage** (`gate` + `up` regions): clean gate-only reads; the E1/V2-1 fused-vs-decomposed parity requirement already guarantees kernels accept it.\n2. **Fused storage with strided browse** (`gate_up_fused`): legal only when the packing permits striding into the gate half without decoding up rows (row-major f16 yes; interleaved quantised blocks generally no — the §6.4 `layout` tag declares which).\n\nThe choice is recorded per bank at extraction time (a `browse: none | direct | strided` tag in the bank descriptor's flags, §6.2). **Serving-only indexes may fuse freely.** A browse-enabled index defaults to decomposed unless E1/E7 shows the fused serving advantage exceeds its own promotion bar."
   },
   {
-   "id": "vindex3-format-spec.md#57",
+   "id": "vindex3-format-spec.md#59",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.3 Query metadata",
    "text": "`down_meta.bin` (DMET, unchanged), `feature_labels.json` and `relation_clusters.json` are **derived metadata, not weight copies** — single-copy is not violated. Two notes:\n\n- For latent MoE banks, `down_meta` is computed at extraction through the full output path — expert `w2` → `routed_output` transform → unembed — so its top-token claims describe residual-space effect, not raw latent columns.\n- Query metadata is optional per profile; its absence downgrades DESCRIBE/SELECT label richness, never WALK correctness."
   },
   {
-   "id": "vindex3-format-spec.md#58",
+   "id": "vindex3-format-spec.md#60",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.4 Browsing latent-space banks (the genuinely new problem)",
    "text": "K3's gate rows live in the 3584-dim latent space; WALK queries originate in residual space. The programme manifest already carries what browse needs: `routed_input` names the residual→latent transform. WALK against a latent bank projects the query vector through that transform **once per query**, then dot-products against latent gate rows unchanged. `EXPLAIN WALK` reports the space hop. Residual-space banks walk exactly as v1."
   },
   {
-   "id": "vindex3-format-spec.md#59",
+   "id": "vindex3-format-spec.md#61",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.5 Browse profiles and slices",
    "text": "- **Profile:** `browse` is a standard profile at authority `analysis-only` — requires gate regions (decodable), embeddings, tokenizer; query metadata and routers optional. Capability checking (§11) derives this; no filename tests.\n- **Slice:** a published browse slice is produced by copying **only gate regions** into gate-only LYRW files (absent roles are legal, §6.5) plus embeddings + query metadata. The v1 ~3 GB browse economics are preserved; the loader reports the slice as `analysis-only` automatically because the programme's required inference operands are missing."
   },
   {
-   "id": "vindex3-format-spec.md#60",
+   "id": "vindex3-format-spec.md#62",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "15.6 Extract-level mapping",
    "text": "| v1 extract level | VINDEX3 equivalent |\n| ---------------- | ------------- |\n| Browse | `browse` profile / gate-only slice (§15.5) |\n| Inference | `exact` profile over classes 1–5 |\n| All / COMPILE | full container — `COMPILE … INTO VINDEX` materialises effective state today (§20); `COMPILE INTO MODEL` (container → checkpoint export) is specified but **not yet implemented** on V3 |\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#61",
+   "id": "vindex3-format-spec.md#63",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "16. Success criteria — \"done\" is defined here, in advance",
    "text": "VINDEX3 is a successful successor when all seven hold. Each is bound to the gate or experiment that proves it, so the bar cannot drift after the fact:\n\n| # | Criterion | Proven by |\n| - | --------- | --------- |\n| 1 | An existing VINDEX2 model loads, verifies, serves and publishes through the dual-generation binary with zero behavioural regression | E0 (continuous, CI) |\n| 2 | Gemma and GPT-OSS run through the same LYRW2 bank machinery and the same production dispatch interface | V2-3, V2-4 rungs 1–2 |\n| 3 | Routed **and** shared banks are genuinely generic — proven on a shared-expert model or fixture, not asserted | Fixture C + **KL-48B (1 shared) and Inkling-Small (2 shared, sink router)** — real, V2-4 rungs 3–4 |\n| 4 | K3 is extracted once and served with no K3-specific physical layout — only a manifest and an adapter | V2-4 rung 4 |\n| 5 | A new representation or placement is introduced via variants, profiles and kernel capabilities, without rebuilding unrelated weights | §9.1 mechanism + V2-0 profile-resolution acceptance |\n| 6 | Unsupported or approximate configurations fail closed and report exactly why — operand, bank, role, layer, segment, variant | V2-0, §11 |\n| 7 | Onboarding the **next** conventional MoE requires an importer and a programme adapter — zero format changes, zero new region roles, zero kernel-interface changes | **E8 held-out architecture** |"
   },
   {
-   "id": "vindex3-format-spec.md#62",
+   "id": "vindex3-format-spec.md#64",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "16. Success criteria — \"done\" is defined here, in advance (2)",
    "text": "Criterion 7 deserves emphasis: the conformance fixtures cannot prove it, because the ABI was designed against them. Only a held-out architecture, onboarded after freeze under a no-format-changes rule, tests generalisation rather than fit. If E8 fails, the \"portable sparse-serving substrate\" claim is downgraded honestly, in this section.\n\nThe maturity ladder governs claims throughout: **Representable → Reference → Grouped → Dispatched → Production.** No criterion is met by a representable-only demonstration.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#63",
+   "id": "vindex3-format-spec.md#65",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "17. Execution contract",
    "text": "Normative home: living spec §8 (`docs/vindex3-format.md`) and the runtime\ndocument. The format-level obligations, stated here because an\nindependent implementation must honour them:"
   },
   {
-   "id": "vindex3-format-spec.md#64",
+   "id": "vindex3-format-spec.md#66",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "17.1 The container binds as a program",
    "text": "A VINDEX3 binding is a closed, operand-verified **operation plan**\n(`ComponentOpPlan`) plus its operand bytes — never tensors to reassemble\ninto an engine's own architecture type. Binding requires **operand\nclosure**: every executable tensor classifies into a declared operand\nrole; every operand's operation is declared by the component's execution\nsurface; every operation's operands are present with the stored shapes\nthe surface states. An unclosed program **refuses to open**, naming the\ndefects — it is never best-effort executed.\n\n```text\nfour-authority consistency + operand closure     = execution sufficiency\nexecution sufficiency + independent parity       = execution correctness\nexecution correctness + causal mutation controls = semantic authority\n```"
   },
   {
-   "id": "vindex3-format-spec.md#65",
+   "id": "vindex3-format-spec.md#67",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "17.2 The deletion invariant and the compiler boundary",
    "text": "Removing the original checkpoint, `config.json`, HF model type and\narchitecture name must not change execution. The runtime sees\n`container → system graph → operation plan → generic kernels`, nothing\nelse — no family branches, no layer-pattern arithmetic, no hardcoded tap\nconstants, no dispatch on object-id strings. Architecture-aware judgment\nis legal only in the **source compiler** (front end), which compiles\nfamily semantics away into the generic IR; after the container exists,\nfamily knowledge is a contract violation.\n\nThe execution surface carries every judged semantic execution needs,\nfully resolved — including the facts no tensor evidence can reveal\n(parameter-free QK normalisation, query-scale vs score-scale application\npoints, attention output gating). Attention families — softmax,\nlinear/Gated-DeltaNet, KDA, MLA — are first-class surfaces, present only\nwhen the model uses them, never inferred from a model name."
   },
   {
-   "id": "vindex3-format-spec.md#66",
+   "id": "vindex3-format-spec.md#68",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "17.3 State",
-   "text": "Continuation state crosses the runtime as a caller-side provider whose\ngeometry derives from the plan (`KvState`, per-layer row width and\nspan/window), never from architecture inference. Recurrent-state layers\n(linear attention, KDA) carry their state through the same\nplan-declared discipline. Sessions, batch prefill, resume and the\nserving stack are specified in the runtime document; their contract\npoint here is single: **state geometry is a container fact.**\n\n---"
+   "text": "Continuation state crosses the runtime as a caller-side provider whose\ngeometry derives from the plan (`KvState`, per-layer row width and\nspan/window), never from architecture inference. Recurrent-state layers\n(linear attention, KDA) carry their state through the same\nplan-declared discipline. Sessions, batch prefill, resume and the\nserving stack are specified in the runtime document; their contract\npoint here is single: **state geometry is a container fact.**"
   },
   {
-   "id": "vindex3-format-spec.md#67",
+   "id": "vindex3-format-spec.md#69",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "17.4 Pinned generalisations — design for Final, not yet normative",
+   "text": "Two abstraction lifts are pinned for 3.0 Final. They are recorded here\nso the freeze does not fossilise the one Transformer-shaped remnant of\nthe execution ontology; neither is implemented as stated below, and\nthis subsection is design, not description."
+  },
+  {
+   "id": "vindex3-format-spec.md#70",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "17.4 Pinned generalisations — design for Final, not yet normative (2)",
+   "text": "- **The operation program replaces kind-implied completeness.** Today\n  the completeness contract derives required surfaces from object kinds\n  (a `DecoderStack` or `PerceptionTower` implies attention + ffn +\n  norm; an `Embedding` or `OutputHead` implies head). The lift: a\n  component carries an **ordered program of typed operations** —\n  attention, linear-attention, KDA, MLA, SSM/convolution, MoE, norm,\n  projection, gating, future kinds — and completeness means every\n  declared operation closes over its operands. Object kinds keep\n  identity; they stop implying operation sets. A pure-SSM decoder then\n  admits by declaring its program, not by resembling attention. The\n  implementation is already most of the way there — a binding *is* a\n  `ComponentOpPlan`, and the attention families are surfaces present\n  only when a model uses them — so the lift is normative, not\n  mechanical: stop deriving the program from the kind.\n- **ContinuationState replaces KV as the base state abstraction.**\n  Today the documented runtime contract is `KvState`, while recurrent\n  state (KDA) already exists in the executor de facto. The lift: the\n  plan declares a **state schema** — typed regions with role\n  (`kv | latent-kv | recurrent | convolution | future`), geometry,\n  lifetime and update semantics — and KV becomes one region kind.\n  Softmax attention declares KV rows; MLA declares latent-compressed\n  KV; KDA declares recurrent state; a stateless operation declares\n  none. §17.3's rule is unchanged and becomes fully general: state\n  geometry is a container fact."
+  },
+  {
+   "id": "vindex3-format-spec.md#71",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "17.4 Pinned generalisations — design for Final, not yet normative (3)",
+   "text": "**Acceptance drill (paper, before freeze).** Four deliberately awkward\narchitectures must be describable using extension points, without\nchanging the meaning of any existing field:\n\n1. a pure SSM decoder — no attention anywhere;\n2. a KDA + MLA + softmax hybrid carrying three continuation-state\n   kinds — not hypothetical: this is Kimi-Linear-48B, already\n   executing (§1.1);\n3. an audio → perception → projector → text system with a drafter —\n   components and hidden-state edges under load;\n4. an unknown low-bit sparse-MoE representation with permuted\n   experts — §5.7 preservation under a codec nothing yet reads.\n\nA failure names the field whose meaning would have to change; that\nfield is exactly what Final must fix.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#72",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.1 The operations surface",
    "text": "LQL operates on V3 containers with full V2 parity: `USE` (bind),\n`INFER`/`GENERATE` (execute), `WALK`/`DESCRIBE`/`SELECT` (query),\n`TRACE` (observe — on V3 bindings the observational trace runs without\nperturbing execution), overlay/patch statements (mutate), `DIFF`\n(compare), `COMPILE` (persist), `COMPACT` (maintain). Statements that a\nV3 binding cannot serve refuse explicitly, naming the generation — the\nwhole-language sweep guarantees no statement falls into an accidental\nbackend path."
   },
   {
-   "id": "vindex3-format-spec.md#68",
+   "id": "vindex3-format-spec.md#73",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.2 Serving",
    "text": "A served V3 container answers `/v1/completions`, `/v1/chat/completions`\n(including tools/structured output) and `/v1/responses`, sharing every\nwire shape with the V2 path so the two runtimes cannot drift in what a\nclient sees. See the runtime document §5."
   },
   {
-   "id": "vindex3-format-spec.md#69",
+   "id": "vindex3-format-spec.md#74",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.3 The `vindex` reader",
    "text": "The format-native tool (`crates/vindex-cli`, binary `vindex`) answers\n**from the artifact alone** — `index.json`, the system graph, the\nsegment headers — with no inference runtime attached:\n\n```\nvindex inspect          the container, reconstructed from itself\nvindex describe         one logical object, in full\nvindex representations  the physical directory, with recorded fidelity\nvindex diff             one object under two representations, value by value\nvindex represent        compile a representation beside the original\nvindex precision        bits per weight — derived, never asserted\nvindex verify           the container against its own recorded hashes\n```\n\nEvery command speaks `--json`. The doctrine: VINDEX3 is defined by its\ndocuments, not by any tool, and an artifact must not require an engine to\nbe understood. Recorded honestly: this binary is the canonical *reader*,\nnot yet an independent *implementation* — it links the `larql-vindex`\ntree; carving out a dependency-light `vindex-core` is a named gate for\nFinal (§21), because the independent-reader test only counts when the\nreader cannot inherit the writer's assumptions.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#70",
+   "id": "vindex3-format-spec.md#75",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "19. Mutation contract",
    "text": "Mutation is **overlay, never rewrite**. Patch and overlay statements\nchange *effective* operands; the base container's files are not modified.\nEffective state is:\n\n- **observable** — TRACE and the query surface see the model as mutated;\n- **comparable** — logical DIFF operates over effective model state, not\n  file bytes (§20);\n- **durable only by COMPILE** — `COMPILE CURRENT INTO VINDEX` materialises\n  effective operands into a new standalone container, stamped\n  `authority: derived` with `derived_from_model` provenance (§5.2, §9.2).\n\nNothing is destroyed: the base container remains bit-identical, and a\ncompiled container is a sibling artifact, never an in-place upgrade.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#71",
+   "id": "vindex3-format-spec.md#76",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "20. Equivalence contract",
    "text": "The guarantees that make transformations provable rather than asserted:\n\n- **Verification (encode-time).** `larql vindex3 verify` compares four\n  explicit authorities — Declared (HF), Resolved (detection), Graph,\n  Encoded — structurally and semantically, plus byte-payload equivalence\n  with both ends re-hashed at verify time, so a drifted checkpoint fails\n  differently (`source ≠ recorded`) from a corrupted container\n  (`encoded ≠ recorded`). \"Tensor count before == after\" is not\n  verification and does not appear in this format.\n- **Logical DIFF.** `DIFF` compares effective model state — objects,\n  representations, values — between two containers or a container and\n  `CURRENT`, deriving error rather than asserting it. `vindex diff` is\n  the artifact-only projection of the same guarantee.\n- **COMPILE equivalence.** A compiled container must answer\n  `INFER / GENERATE / TRACE / WALK` equivalently to the effective state\n  it materialised — equivalence is gated, not presumed, and the result\n  is stamped `derived`, never `canonical`.\n- **COMPACT identity.** `COMPACT` reorganises physical storage and MUST\n  preserve semantic identity — same graph, same effective values, same\n  answers; it MUST NOT discard container contents it does not understand\n  (§5.7).\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#72",
+   "id": "vindex3-format-spec.md#77",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "21. Toward 3.0 Final",
-   "text": "What the candidate settles: one canonical container model (§5), the\ncontract stack (§0), compatibility rules (§5.7), the schema span (§12).\nWhat remains before this specification drops \"candidate\" — each a named\ngate, none of them drift:\n\n| # | Gate | Today |\n| - | ---- | ----- |\n| 1 | **Shape convergence executed** (§5.6): LYRW banks producible as a graph-container representation's segments, or the bank writer retired to importer-only status with its output re-encodable to the graph shape | two disjoint writers |\n| 2 | **Required/optional freeze**: an RFC-2119 pass over §5–§9 separating normative requirements from extensions | this document's tables are the input |\n| 3 | **Independent reader**: `vindex-core` carved out so the reader stops linking the writer's tree; a minimal conformance harness over published fixtures | reader exists, boundary impure (§18.3) |\n| 4 | **E8 held-out architecture** (§16 criterion 7) | not yet run |\n| 5 | **The M4 flip**: `DEFAULT_EXTRACTION_GENERATION = V3` per the generation policy | M1–M3 done, M4 open |\n| 6 | **Bank-ABI pre-freeze rows**: the remaining V2-0..V2-4 experiment gates (profile-authority derivation, variant-selection refusal, fixtures B–D, WALK/DESCRIBE parity) | open |\n\nFeature growth is not a gate: GENERATE, TRACE, overlays, logical DIFF,\nCOMPILE and COMPACT are operations over V3 containers and do not add\nbytes to the format unless they persist state another implementation\nmust understand (§0's test) — which is exactly why the candidate can be\nstable while the engine keeps moving.\n\n---"
+   "text": "What the candidate settles: one canonical container model (§5), the\ncontract stack (§0), compatibility rules (§5.7), the schema span (§12).\nWhat remains before this specification drops \"candidate\" — each a named\ngate, none of them drift:\n\n| # | Gate | Today |\n| - | ---- | ----- |\n| 1 | **Shape convergence executed** (§5.6): LYRW banks producible as a graph-container representation's segments, or the bank writer retired to importer-only status with its output re-encodable to the graph shape | two disjoint writers |\n| 2 | **Required/optional freeze**: an RFC-2119 pass over §5–§9 separating normative requirements from extensions | this document's tables are the input |\n| 3 | **Independent reader**: `vindex-core` carved out so the reader stops linking the writer's tree; a minimal conformance harness over published fixtures | reader exists, boundary impure (§18.3) |\n| 4 | **E8 held-out architecture** (§16 criterion 7) | not yet run |\n| 5 | **The M4 flip**: `DEFAULT_EXTRACTION_GENERATION = V3` per the generation policy | M1–M3 done, M4 open |\n| 6 | **Bank-ABI pre-freeze rows**: the remaining V2-0..V2-4 experiment gates (profile-authority derivation, variant-selection refusal, fixtures B–D, WALK/DESCRIBE parity) | open |\n| 7 | **The ontology lift** (§17.4): completeness from the declared operation program rather than object kinds, and ContinuationState generalising KV — accepted by the four-architecture paper drill | pinned design |"
+  },
+  {
+   "id": "vindex3-format-spec.md#78",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "21. Toward 3.0 Final (2)",
+   "text": "Feature growth is not a gate: GENERATE, TRACE, overlays, logical DIFF,\nCOMPILE and COMPACT are operations over V3 containers and do not add\nbytes to the format unless they persist state another implementation\nmust understand (§0's test) — which is exactly why the candidate can be\nstable while the engine keeps moving.\n\n---"
   },
   {
    "id": "vindex3-experiments.md#1",
