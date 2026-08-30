@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { hatch, reducedMotion, useInView } from "@chrishayuk/hause/figure";
 import { tick } from "@chrishayuk/hause/sound";
 
 /**
@@ -12,37 +13,6 @@ import { tick } from "@chrishayuk/hause/sound";
  * they scored, including the one that almost worked.
  */
 
-const hatch = (color: string, pitch = 4) =>
-	`repeating-linear-gradient(45deg, ${color} 0, ${color} 1px, transparent 1px, transparent ${pitch}px)`;
-
-function reducedMotion() {
-	return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function useInView(threshold = 0.3) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		if (reducedMotion()) {
-			setInView(true);
-			return;
-		}
-		const el = ref.current;
-		if (!el) return;
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					observer.disconnect();
-					setInView(true);
-				}
-			},
-			{ threshold }
-		);
-		observer.observe(el);
-		return () => observer.disconnect();
-	}, [threshold]);
-	return { ref, inView };
-}
 
 /* ------------------------------------------------------------------
    THE BAR — frozen before any score existed.

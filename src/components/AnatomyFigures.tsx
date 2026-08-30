@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { hatch, reducedMotion, useInView } from "@chrishayuk/hause/figure";
 import { tick } from "@chrishayuk/hause/sound";
 import { Gating } from "@chrishayuk/hause/components/forms/Gating";
 import { entity } from "@/data/vindexGraph";
@@ -17,38 +18,7 @@ import { entity } from "@/data/vindexGraph";
  * 2,048 · intermediate 6,144 · 32 experts · 24 layers.
  */
 
-const hatch = (color: string, pitch = 6) =>
-	`repeating-linear-gradient(45deg, ${color} 0, ${color} 1px, transparent 1px, transparent ${pitch}px)`;
-
-function reducedMotion() {
-	return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 /** True once the element has been ~a third in view. */
-function useInView(threshold = 0.35) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		if (reducedMotion()) {
-			setInView(true);
-			return;
-		}
-		const el = ref.current;
-		if (!el) return;
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					observer.disconnect();
-					setInView(true);
-				}
-			},
-			{ threshold }
-		);
-		observer.observe(el);
-		return () => observer.disconnect();
-	}, [threshold]);
-	return { ref, inView };
-}
 
 /** Cycle through n states until the reader takes over. */
 function useAutoCycle(n: number, active: boolean, periodMs: number, onTickState: (i: number) => void) {
