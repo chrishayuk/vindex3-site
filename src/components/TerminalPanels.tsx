@@ -414,4 +414,48 @@ export function diffPanel(address: string): TerminalPanel {
 	};
 }
 
+/* ── VERIFY — the demo container against its own record ── */
+
+export function verifyPanel(): TerminalPanel {
+	const entries = [
+		"target.decoder_stack@F32",
+		"target.embedding@F32",
+		"target.final_norm@F32",
+		"target.output_head@F32",
+	];
+	return {
+		designed: (
+			<div>
+				<Kicker>VERIFY · recorded — vindex verify, vindex3-demo · 2026-08-30</Kicker>
+				{entries.map((e) => (
+					<div key={e} className="flex items-baseline justify-between py-0.5 border-t" style={{ borderColor: "var(--color-mist)" }}>
+						<span className="voice-evidence text-[11px]">{e}</span>
+						<span className="voice-evidence text-[11px]" style={{ color: "var(--color-status-supported)" }}>
+							ok
+						</span>
+					</div>
+				))}
+				<p className="voice-evidence text-[11px] mt-3 mb-0" style={{ color: "var(--color-status-supported)" }}>
+					verified yes — the artifact agrees with its own record
+				</p>
+				<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+					scope: self — recorded hashes re-derived from the artifact alone; source faithfulness is the reference
+					implementation&apos;s G4
+				</p>
+			</div>
+		),
+		raw: {
+			entries: entries.map((id) => ({ id, segment_ok: true, payload_ok: true })),
+			failures: 0,
+			verified: true,
+			scope: "self — recorded hashes re-derived from the artifact alone",
+		},
+		graph: [
+			{ from: "every segment", rel: "re-hashed against", to: "segment_sha256, recorded at encode" },
+			{ from: "every payload region", rel: "re-hashed against", to: "payload_sha256" },
+			{ from: "source faithfulness", rel: "remains", to: "G4 — needs the source, lives with the reference implementation" },
+		],
+	};
+}
+
 export type { GraphRow };

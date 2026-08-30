@@ -32,9 +32,32 @@ export const metadata: Metadata = {
  * quality records — the same runs the quantization film performs.
  * Model-specific results are labelled as exactly that.
  */
-export default function QuantizationPage() {
+export default async function QuantizationPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ model?: string }>;
+}) {
+	const { model } = await searchParams;
+	const unknownModel = model && model !== "granite-4.1-3b" ? model : null;
 	return (
 		<main>
+			{unknownModel && (
+				<section className="hause-grid pt-6">
+					<div
+						className="col-span-12 md:col-start-2 md:col-span-9 border p-4"
+						style={{ borderColor: "var(--color-status-refuted)" }}
+					>
+						<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-status-refuted)" }}>
+							NO RECORDED RUNS FOR “{unknownModel}” YET
+						</p>
+						<p className="voice-system text-sm opacity-80 m-0 mt-2 leading-relaxed">
+							This chapter refuses to dress another model&apos;s numbers in that name. Every figure below is a
+							recorded run against granite-4.1-3b, and is labelled as exactly that. When {unknownModel}&apos;s
+							runs are banked, this page will speak them.
+						</p>
+					</div>
+				</section>
+			)}
 			<JsonLd
 				data={techArticleLd({
 					headline: "LLM Quantization Explained: 4-Bit, NVFP4 & Precision Maps",
