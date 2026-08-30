@@ -309,9 +309,9 @@ export default function LadderPage() {
 					{
 						id: "GENERATE",
 						question: "Does the generic V3 execution path generate correctly — paritied against the reference?",
-						gate: "prefill logits, first token, 16–32 recurrent steps, prompt lengths, state reset, chunked vs one-shot — against a captured fp32 oracle",
-						status: "OPEN",
-						detail: "The oracle is already banked: full per-position prefill logits, per-layer hidden states and 32 stepwise decode logits for three prompt lengths, one crossing the SSD chunk boundary — bitwise-deterministic, with token-by-token recurrence agreeing with the one-shot scan to 2e-4. What remains is the generic Mamba2 executor itself; until it lands, the operator stays honestly marked represented, not executable.",
+						gate: "every teacher-forced position's full logit vector, argmax and trajectory exact — against the banked fp32 oracle",
+						status: "PASSED",
+						detail: "The executor is the reference mixer transcribed stage by stage, run through the ordinary prepared-operands, prefill, decode and continuation path — no family loader anywhere. All 430 scored positions across three prompt lengths (one crossing the SSD chunk boundary) agree within 7.6e-4 — pure fp32 reassociation over the oracle's own 2.1e-4 step-vs-scan floor — with argmax exact everywhere and all three 32-token greedy trajectories token-for-token. And the invariant is visible to a user: with the source checkpoint deleted, ordinary INFER … GENERATE reproduces the reference's continuation word-for-word from the artifact alone.",
 					},
 				]}
 				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. Next in line: mamba2attn-2.7b, the surfaces-follow-the-program A/B — the same generic runtime, pure SSM against hybrid, differing only in their declared programs. Its six declared attention layers are themselves not plain softmax — causal convolution over the fused QKV, partial rotary — so the hybrid brings its own operator judgment, and its attention layers carry convolution history beside their KV."

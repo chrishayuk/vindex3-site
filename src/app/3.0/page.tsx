@@ -66,7 +66,7 @@ export default function VersionPage() {
 						question: "The source checkpoint is not required for execution.",
 						gate: "the deletion invariant: remove the checkpoint, config, model type and architecture name — execution must not change",
 						status: "PASSED",
-						detail: "Held live twice over: production models execute from the container alone, and the pure-SSM witness opened through ordinary LQL with its source checkpoint deleted — structure, state story and refusals all from the artifact.",
+						detail: "Held live twice over: production models execute from the container alone, and the pure-SSM witness generated through ordinary LQL with its source checkpoint deleted — reproducing the reference's greedy continuation word-for-word from the artifact, structure and state story included.",
 					},
 					{
 						id: "PROGRAMMABLE",

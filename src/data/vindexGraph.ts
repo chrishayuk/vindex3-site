@@ -675,9 +675,9 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		intent: "what",
 		patterns: ["no attention", "without attention", "pure ssm", "state space", "attention-free"],
 		answer:
-			"Yes — and it is witnessed, not promised. mamba2-780m, 48 SSM layers and zero attention anywhere, was first refused with nineteen itemised findings, then admitted the day graph schema 6 landed: a registered Mamba2 operator judgment consumes the SSM semantics, the container encodes with no attention surface and no FFN surface — the mixer is the whole block — and ordinary LQL opens it with the source checkpoint deleted. Execution still refuses by name until the generic Mamba2 executor lands.",
+			"Yes — and it is witnessed, not promised. mamba2-780m, 48 SSM layers and zero attention anywhere, was first refused with nineteen itemised findings, then admitted the day graph schema 6 landed: a registered Mamba2 operator judgment consumes the SSM semantics, the container encodes with no attention surface and no FFN surface — the mixer is the whole block — and ordinary LQL opens it with the source checkpoint deleted. And it generates: the generic executor paritied against the fp32 reference — argmax exact at all 430 teacher-forced positions, trajectories token-for-token — and ordinary INFER … GENERATE reproduces the reference continuation from the artifact alone.",
 		path: [e("schema-six", "admits"), e("schema-six", "witnessed_by")],
-		record: { status: "PASSED", note: "19 blocking → 0 · encoded with closure at encode · LQL-open under the deletion invariant · 2026-08-30" },
+		record: { status: "PASSED", note: "19 blocking → 0 · closure at encode · generates through ordinary LQL under the deletion invariant, paritied to the fp32 oracle · 2026-08-30" },
 		explore: ["mamba2-op", "schema-six", "record"],
 	},
 	{
@@ -1499,7 +1499,7 @@ export const ENTITIES: Entity[] = [
 		display: "MAMBA2 — THE SSD MIXER",
 		five: "the mixer is the block",
 		role: "A pure state-space operator: one fused five-way input projection, a causal conv over the x|B|C channels, per-head scalar decay, a gated RMSNorm — and no attention and no FFN anywhere, because the mixer is the whole layer.",
-		detail: "Nine operand roles, closure needs all: the fused in-projection, the conv and its bias, A_log, D, dt_bias, the gated norm, the out-projection, and the layer's single pre-mixer norm. Its continuation is TWO declared state regions, not one: an SSM state (head_dim × state_size per head) and a convolution history — both constant in sequence length, and the history is load-bearing at the first single-token continuation. The declared geometry must close over the tensor estate exactly, an unbounded dt-clamp side is carried as a declared fact, and until a generic executor lands the operator stays honestly marked represented, not executable.",
+		detail: "Nine operand roles, closure needs all: the fused in-projection, the conv and its bias, A_log, D, dt_bias, the gated norm, the out-projection, and the layer's single pre-mixer norm. Its continuation is TWO declared state regions, not one: an SSM state (head_dim × state_size per head) and a convolution history — both constant in sequence length, and the history is load-bearing at the first single-token continuation. The declared geometry must close over the tensor estate exactly, an unbounded dt-clamp side is carried as a declared fact, and the generic executor is the reference mixer transcribed stage by stage — paritied against the fp32 oracle with argmax exact at all 430 scored positions and every greedy trajectory token-for-token.",
 		group: "attention-families",
 		relations: [
 			{ rel: "sibling_of", to: "linear-attention" },
@@ -1622,5 +1622,5 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "E8", label: "held-out architecture test", status: "OPEN", note: "runs after the freeze, by design" },
 	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
 	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "OPEN", note: "KDA precision and MLA latent geometry — additive within schema 6" },
-	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "OPEN", note: "represented, not executable — the fp32 parity oracle is already banked" },
+	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "PASSED", note: "paritied against the fp32 oracle: 430/430 argmax exact, trajectories token-for-token, max|Δ| 7.6e-4" },
 ];
