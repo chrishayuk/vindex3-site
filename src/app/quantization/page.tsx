@@ -96,6 +96,12 @@ export default function QuantizationPage() {
 
 			<CollapseFigure />
 
+			<Answer
+				id="quantization-format-taxonomy"
+				question="What's the difference between a numeric format, a scheme, a method, and a container?"
+				answer="They are four different decisions the phrase “quantization format” routinely blurs. A numeric format is the alphabet a weight is written in — BF16, NVFP4, NF4. A scheme is how weights share metadata — Q4_K's blocks and superblocks, group sizes, zero points. A method is how the codes are chosen — GPTQ and AWQ live here. A container is where representations live and what is recorded about them. And execution is the kernels that finally run the chosen bytes. The exhibit below names each layer in place."
+			/>
+
 			<Decomposition
 				kicker="ONE WORD, FIVE LAYERS — WHAT “QUANTIZATION FORMAT” CONFLATES"
 				source={{ label: "“a 4-bit model”", detail: "One phrase, carrying five different decisions that the ecosystem routinely blurs together." }}

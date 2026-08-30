@@ -374,7 +374,7 @@ export function CollapseFigure() {
 				</button>
 				<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-6">
 					Three different numbers go in. All three come out as −0.002106 — they landed in the same slot, and
-					nothing anywhere can tell them apart again. That is not compression: compression gives your bytes back.
+					nothing anywhere can tell them apart again. That is not lossless compression: ZIP gives your bytes back.
 					This information is gone — deliberately, permanently — and the format&apos;s job is to keep the choice
 					honest: the lossy copy lives beside the canonical bytes as a named variant with recorded fidelity, never
 					in their place.
