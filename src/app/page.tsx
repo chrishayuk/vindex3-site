@@ -218,10 +218,11 @@ export default function Home() {
 			</section>
 
 			<Connection
-				text="Or skip the reading and put your hands on it — the two surfaces answer from the same knowledge the chapters teach."
+				text="Or skip the reading and put your hands on it — the surfaces answer from the same knowledge the chapters teach, and the CLI runs it all on your own machine."
 				links={[
 					{ href: "/ask", label: "ASK VINDEX3 — ANY ANSWERABLE QUESTION" },
 					{ href: "/explorer", label: "THE EXPLORER — ENTER A MODEL" },
+					{ href: "/get-started", label: "GET STARTED — INSTALL THE VINDEX CLI" },
 				]}
 			/>
 		</main>

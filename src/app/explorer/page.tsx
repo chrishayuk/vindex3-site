@@ -77,6 +77,13 @@ function Transports() {
 				>
 					THE CLI · crates/vindex-cli →
 				</a>
+				<a
+					href="/get-started"
+					className="voice-evidence text-[11px] tracking-[0.1em] uppercase border-b pb-0.5 opacity-70 hover:opacity-100"
+					style={{ borderColor: "var(--color-accent)" }}
+				>
+					GET STARTED · INSTALL &amp; RUN IT LOCALLY →
+				</a>
 			</div>
 		</section>
 	);

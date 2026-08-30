@@ -66,6 +66,8 @@ const cases: Case[] = [
 	{ q: "why is NVFP4 4.5 bits per weight?", expect: "canonical", mustMention: "four bits" },
 	{ q: "why did protecting down_proj make things worse?", expect: "canonical", mustMention: "worse" },
 	{ q: "how do I install the vindex cli?", expect: "canonical", mustMention: "install" },
+	{ q: "why can't quantization be automated?", expect: "canonical", mustMention: "map" },
+	{ q: "who writes the precision map?", expect: "canonical", mustMention: "map" },
 
 	// ── The richer graph: the reviewer's question list, answerable ──
 	{ q: "does quantisation change the answers a model gives?", expect: "canonical", mustMention: "changed numbers" },

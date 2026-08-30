@@ -181,6 +181,48 @@ export default function LadderPage() {
 				]}
 			/>
 
+			<Ladder
+				kicker="OPEN RESEARCH — AUTOMATIC PRECISION-MAP DISCOVERY · RECORDED · GRANITE-4.1-3B"
+				rungs={[
+					{
+						id: "1A",
+						question: "Weight error alone.",
+						gate: "identifies late-FFN as highest-return AND rejects v/k/down as low-value",
+						status: "DISPROVED",
+						detail: "Spearman −0.313 against the banked ground truth. A fixed relative grid gives every tensor nearly the same relative error, so a per-byte score collapses into ranking by inverse size — the frozen negatives came first and second.",
+					},
+					{
+						id: "1B",
+						question: "Activation-weighted relative error.",
+						gate: "the same frozen bar",
+						status: "DISPROVED",
+						detail: "Spearman −0.524 — worse. The normalising denominator rewards operands whose output is small, removing exactly the factor the activations supplied.",
+					},
+					{
+						id: "1B′",
+						question: "Absolute local consequence, pre-registered.",
+						gate: "the same frozen bar, one shot, no revisions",
+						status: "DISPROVED",
+						detail: "Spearman +0.595, late5-ffn rank one, the knee recovered — and one structural counterexample: down_proj carries the largest local consequence in the model by twenty times, yet protecting it measurably worsens the tail. A local score cannot see where an error lands in the computation.",
+					},
+					{
+						id: "1C",
+						question: "Replay the error through the remaining layers.",
+						gate: "cheaper than measuring the truth, or it is not a screen",
+						status: "DISPROVED",
+						detail: "Rejected on cost: 80.8 candidate-equivalents against 15 for the entire ground-truth sweep, and the executor's row axis is the causal position axis, so directions cannot be batched. Mathematically correct, wrong algorithm.",
+					},
+					{
+						id: "FISHER",
+						question: "Second-order KL curvature via a reverse-mode sketch.",
+						gate: "reverse-mode execution — a research programme, not a feature",
+						status: "OPEN",
+						detail: "First-order sensitivity against KL is identically zero, so the leading term is curvature — and the curvature matrix factors exactly, giving every layer's sensitivity in one backward pass. Candidate, not built: the reference implementation has no reverse mode.",
+					},
+				]}
+				caption="Four screens, four recorded deaths, one candidate — the full argument is the Discovering the Map exhibit."
+			/>
+
 			<Question
 				status="OPEN"
 				text="If production models already round-trip through VINDEX3 byte-identical, why does the default extractor still write VINDEX2?"

@@ -618,9 +618,21 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		intent: "why",
 		patterns: ["protecting down", "down-proj protection", "down proj protection", "protection fail", "why did protecting", "protect the obvious"],
 		answer:
-			"Recorded, and worth sitting with: keeping every down_proj at BF16 — the intuitive protection — cost over a gigabyte and moved granite's tail from 4.6224 to 4.8010. Worse. Keeping the last five FFN layers instead cost 431 MiB and moved it to 1.2826 — three and a half times better. Intuition is not evidence; the precision map is compiled from measurements, which is the whole reason it is an artifact rather than a preset.",
+			"Recorded, and worth sitting with: keeping every down_proj at BF16 — the intuitive protection — cost over a gigabyte and moved granite's tail from 4.6224 to 4.8010. Worse. Keeping the last five FFN layers instead cost 431 MiB and moved it to 1.2826 — three and a half times better. Measurements can justify a map; VINDEX3 can express, compile and execute it; automatically discovering the right one remains open — four cheap screens have been tried against ground truth, and all four failed.",
 		path: [e("representation", "compiled_by"), e("vindex3", "answers_to")],
 		record: { status: "SUPPORTED", note: "recorded — granite-4.1-3b: all-down_proj 4.8010 · late-5 FFN 1.2826" },
+		explore: ["precision-map", "record"],
+	},
+	{
+		id: "q-who-writes-the-map",
+		summary: "nothing can discover the map yet",
+		entities: ["discover", "sensitivity", "screen", "automatic"],
+		intent: "why",
+		patterns: ["who writes the map", "who writes the precision", "discover the map", "automatic quantization", "automatically quantize", "be automated", "automated", "sensitivity screen", "auto-discover", "automatic precision"],
+		answer:
+			"Four cheap screens have been measured against ground truth, and all four failed. Weight error alone carries no semantic signal (ρ −0.313). Activation-weighted relative error is worse (−0.524) — the denominator rewards small outputs. Absolute local consequence almost works (+0.595) but confidently protects down_proj, the one tensor where protection measurably worsens the tail, because a local score cannot see where an error lands in the computation. Replaying errors downstream costs five times more than measuring the truth. Measurements can justify a map; VINDEX3 can express, compile and execute it; discovering it automatically remains open on the Record.",
+		path: [e("quantisation", "held_to"), e("vindex3", "answers_to")],
+		record: { status: "SUPPORTED", note: "recorded — SENSITIVITY-1A/1B/1B′/1C vs the banked granite sweep · FISHER open" },
 		explore: ["precision-map", "record"],
 	},
 	{

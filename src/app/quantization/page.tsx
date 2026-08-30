@@ -142,7 +142,7 @@ export default function QuantizationPage() {
 						label: "Protecting the obvious tensor can make things worse — RECORDED · GRANITE 4.1 3B",
 						status: "SUPPORTED",
 						detail:
-							"Keeping every down_proj at BF16 costs over a gigabyte and moves the tail from 4.6224 to 4.8010 — worse. Keeping the last five FFN layers costs 431 MiB and moves it to 1.2826 — 3.5× better. Intuition is not evidence; the map is compiled from measurements.",
+							"Keeping every down_proj at BF16 costs over a gigabyte and moves the tail from 4.6224 to 4.8010 — worse. Keeping the last five FFN layers costs 431 MiB and moves it to 1.2826 — 3.5× better. Measurements can justify a precision map, and VINDEX3 can express, compile and execute it. Automatically discovering the right map remains open — see Discovering the Map.",
 					},
 					{
 						label: "The file's precision map wins over the backend's request — RECORDED · GRANITE 4.1 3B",
@@ -175,11 +175,13 @@ export default function QuantizationPage() {
 
 			<Statement text="Quantization is not a model-wide label. It is a representation decision over semantic components, supported by evidence." />
 
+			<Statement text="One question remains under all of it: we can store a precision map — but who writes it?" />
+
 			<Connection
 				text="What keeps those decisions honest for the life of the artifact — variants beside their original, fidelity recorded, selection failing closed — is the representation model. And whether the decisions were good answers to the Record."
 				links={[
+					{ href: "/discovery", label: "DISCOVERING THE MAP — WHO WRITES IT?" },
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
-					{ href: "/authority", label: "WHERE TRUTH COMES FROM" },
 					{ href: "/ladder", label: "THE RECORD" },
 				]}
 			/>
