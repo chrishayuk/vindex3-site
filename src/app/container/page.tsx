@@ -10,7 +10,8 @@ import { ClassTraffic } from "@/components/StoryFigures";
 import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 
 export const metadata: Metadata = {
-	title: "The Container",
+	title: "Inside an AI Model Container: Objects, Segments & the Index",
+	alternates: { canonical: "/container" },
 	description: "Every layer of a VINDEX3 container, explained — one directory, one root, five durable weight classes.",
 };
 

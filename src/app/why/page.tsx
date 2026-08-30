@@ -11,7 +11,8 @@ import { Quantisation } from "@chrishayuk/hause/components/forms/Quantisation";
 import { TensorFigure } from "@/components/PhysicsFigures";
 
 export const metadata: Metadata = {
-	title: "The Physics",
+	title: "Why LLM Inference Is Bandwidth-Bound: The Physics",
+	alternates: { canonical: "/why" },
 	description: "What a model is made of, why it is hard to move, and why the file format is where the battle is actually fought.",
 };
 

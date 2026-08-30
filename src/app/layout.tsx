@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { webSiteLd } from "@chrishayuk/hause/seo";
 
 const fraunces = Fraunces({
 	variable: "--font-fraunces",
@@ -20,11 +22,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+	metadataBase: new URL("https://vindex3.org"),
 	title: {
-		default: "VINDEX3",
+		default: "VINDEX3 — A Queryable AI Model Container",
 		template: "%s — VINDEX3",
 	},
-	description: "The VINDEX3 specification, as an exhibition.",
+	description:
+		"VINDEX3 is a model container that preserves semantic structure, physical representations, provenance and queryability alongside the weights — the model is the database.",
+	alternates: { canonical: "/" },
 	icons: { icon: "/favicon.svg" },
 };
 
@@ -36,6 +41,14 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={`${fraunces.variable} ${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
 			<head>
+				<JsonLd
+					data={webSiteLd({
+						name: "VINDEX3",
+						url: "https://vindex3.org",
+						description:
+							"VINDEX3 is a model container that preserves semantic structure, physical representations, provenance and queryability alongside the weights.",
+					})}
+				/>
 				{/* HAUSE-mode blocking script — runs before paint so the page
 				    never flashes the wrong environment. Dark is the default;
 				    the stored preference opts a viewer back into light. */}

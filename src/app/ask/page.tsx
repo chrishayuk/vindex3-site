@@ -4,8 +4,10 @@ import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { QueryVindex } from "@/components/QueryVindex";
 
 export const metadata: Metadata = {
-	title: "Ask",
-	description: "Ask VINDEX3 — a deterministic query engine over the site's versioned knowledge graph: question → canonical form → graph path → evidence → answer.",
+	title: "Ask About LLMs & Quantization: Graph-Grounded Answers",
+	alternates: { canonical: "/ask" },
+	description:
+		"Ask natural-language questions about LLM internals, quantization and the VINDEX3 format — every answer resolved from a knowledge graph, cited or refused, never improvised.",
 };
 
 export default function AskPage() {

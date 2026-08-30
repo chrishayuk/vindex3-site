@@ -25,3 +25,26 @@ jobs:
       - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      # Tell participating search engines the site changed. The key file
+      # lives in public/; IndexNow accepts the sitemap's URL list.
+      - name: IndexNow ping
+        run: |
+          sleep 30
+          curl -s "https://vindex3.org/sitemap.xml" -o sitemap.xml || exit 0
+          python3 - <<'PY'
+          import json, re, urllib.request
+          urls = re.findall(r"<loc>(.*?)</loc>", open("sitemap.xml").read())[:500]
+          body = json.dumps({
+              "host": "vindex3.org",
+              "key": "3b26ce728d64a831e8eb01b94288dc60",
+              "keyLocation": "https://vindex3.org/3b26ce728d64a831e8eb01b94288dc60.txt",
+              "urlList": urls,
+          }).encode()
+          req = urllib.request.Request(
+              "https://api.indexnow.org/indexnow", data=body,
+              headers={"Content-Type": "application/json; charset=utf-8"})
+          try:
+              print("indexnow:", urllib.request.urlopen(req, timeout=30).status, len(urls), "urls")
+          except Exception as e:
+              print("indexnow skipped:", e)
+          PY

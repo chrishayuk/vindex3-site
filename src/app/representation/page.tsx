@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Variants } from "@chrishayuk/hause/components/forms/Variants";
@@ -8,7 +9,8 @@ import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 export const metadata: Metadata = {
-	title: "Representation",
+	title: "LLM Weight Representations & Mixed Precision Explained",
+	alternates: { canonical: "/representation" },
 	description: "Region-set variants, the eligibility policy, and the promotion ladder — selection, not conversion.",
 };
 
@@ -25,6 +27,12 @@ export default function RepresentationPage() {
 				kicker="REPRESENTATION · VINDEX3 ABI §9.1–9.2"
 				title="SELECTION, NOT CONVERSION"
 				dek="A region set may carry multiple physically present variants. A profile selects a present variant. That is the only legal representation model — a profile saying a format cannot conjure bytes into it."
+			/>
+
+			<Answer
+				id="what-is-mixed-precision"
+				question="What is mixed-precision quantization?"
+				answer="Mixed precision keeps different parts of a model at different numerical precisions — sensitive tensors at BF16, tolerant ones at four-bit — instead of forcing one width on everything. In VINDEX3 that decision is a compiled precision map carried by the artifact: each semantic component is bound to a physically present representation, selection fails closed if the bytes are absent, and the choices answer to recorded quality evidence."
 			/>
 
 			<Statement text="No runtime conversion, ever. The bytes executed are the bytes stored." />

@@ -6,6 +6,9 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Decomposition } from "@chrishayuk/hause/components/forms/Decomposition";
 import { Evidence } from "@chrishayuk/hause/components/forms/Evidence";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import {
 	TensorOpen,
 	RepresentationSwitcher,
@@ -16,9 +19,10 @@ import {
 } from "@/components/QuantizationFigures";
 
 export const metadata: Metadata = {
-	title: "Quantization",
+	title: "LLM Quantization Explained: 4-Bit, NVFP4 & Precision Maps",
+	alternates: { canonical: "/quantization" },
 	description:
-		"How many bits does a model need? One real tensor, the snap onto a smaller grid, why four bits is never four bits, and the precision map — representation decisions over components, held to evidence.",
+		"Understand how LLM quantization actually works: BF16, NVFP4, shared scales, effective bits per weight, mixed precision, precision maps and measured quality — on one real tensor.",
 };
 
 /**
@@ -31,10 +35,34 @@ export const metadata: Metadata = {
 export default function QuantizationPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "LLM Quantization Explained: 4-Bit, NVFP4 & Precision Maps",
+					description:
+						"How LLM quantization actually works: BF16, NVFP4, shared scales, effective bits per weight, mixed precision, precision maps and measured quality — on one real tensor.",
+					url: "https://vindex3.org/quantization",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["LLM quantization", "NVFP4", "mixed precision", "precision map", "BF16"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "Quantization", url: "https://vindex3.org/quantization" },
+				])}
+			/>
 			<Hero
 				kicker="QUANTIZATION · RECORDED RUNS · GRANITE-4.1-3B"
 				title="HOW MANY BITS DOES A MODEL NEED?"
 				dek="Everyone says four. The honest answers are four and a half, five point six five, and it depends which tensor you are asking about — because precision is a property of components, not a label attached to a model."
+			/>
+
+			<Answer
+				id="what-is-llm-quantization"
+				question="What is LLM quantization?"
+				answer="LLM quantization reduces the precision used to store model weights, trading model size and memory bandwidth for numerical error. A “4-bit model” does not necessarily use exactly four bits per weight: formats such as NVFP4 also store scales, and mixed-precision models preserve selected tensors at higher precision. The rest of this chapter walks those mechanics on one real tensor."
 			/>
 
 			<Statement text="“This is a 4-bit model” is an incomplete sentence." />
@@ -54,6 +82,13 @@ export default function QuantizationPage() {
 			<RepresentationSwitcher />
 
 			<Statement text="“Four bits” is the width of the code, not the cost of the weight." />
+
+			<Answer
+				id="why-4-bit-is-not-4-bits"
+				question="Why isn't a 4-bit model always 4 bits?"
+				answer="Because the metadata is never free. In NVFP4, sixteen weights share one eight-bit scale and each weight spends four bits choosing a slot on it: 64 code bits plus 8 scale bits is 72 bits per sixteen weights — 4.5 effective bits each. Schemes with zero points or block minima pay similar costs. “Four bits” names the code width; the storage cost is always higher."
+				cite="derived — 16 × 4-bit codes + one 8-bit E4M3 scale"
+			/>
 
 			<BitsArithmetic />
 
@@ -78,6 +113,13 @@ export default function QuantizationPage() {
 			/>
 
 			<Statement text="The object that replaces the dial: the precision map." />
+
+			<Answer
+				id="what-is-a-precision-map"
+				question="What is a precision map?"
+				answer="A precision map is a compiled policy that assigns a physical representation to each semantic component of a model — this tensor at NVFP4, that layer's projections at BF16 — chosen from measurements rather than intuition, and carried by the artifact itself. It replaces the single model-wide dial with a program: precision becomes a property of components, held to recorded evidence."
+				cite="recorded — granite-4.1-3b · uniform 4.5 ↔ mixed 5.65 effective bits/weight"
+			/>
 
 			<PrecisionMapFigure />
 

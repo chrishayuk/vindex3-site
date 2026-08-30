@@ -4,9 +4,12 @@ import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { softwareApplicationLd } from "@chrishayuk/hause/seo";
 
 export const metadata: Metadata = {
-	title: "Get started",
+	title: "Install the vindex CLI: Inspect, Diff & Verify Model Containers",
+	alternates: { canonical: "/get-started" },
 	description:
 		"Install the vindex CLI and interrogate a VINDEX3 container on your own machine — inspect, describe, diff, represent, precision, verify, every command speaking --json.",
 };
@@ -50,6 +53,17 @@ function Step({ n, title, children }: { n: string; title: string; children: Reac
 export default function GetStartedPage() {
 	return (
 		<main>
+			<JsonLd
+				data={softwareApplicationLd({
+					name: "vindex",
+					description:
+						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json.",
+					url: "https://vindex3.org/get-started",
+					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.2.0",
+					operatingSystem: "macOS, Linux, Windows (build from source)",
+					version: "0.2.0",
+				})}
+			/>
 			<Hero
 				kicker="GET STARTED · THE VINDEX CLI · RECORDED RUNS · 2026-08-30"
 				title="AN ARTIFACT, UNDERSTOOD WITHOUT AN ENGINE"

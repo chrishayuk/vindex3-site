@@ -8,7 +8,8 @@ import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Film } from "@chrishayuk/hause/components/forms/Film";
 
 export const metadata: Metadata = {
-	title: "Authority",
+	title: "Model Provenance & Authority: Where AI Model Truth Comes From",
+	alternates: { canonical: "/authority" },
 	description: "The four-authority invariant and the derived-authority fold — where truth comes from in a VINDEX3 container.",
 };
 

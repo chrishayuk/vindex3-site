@@ -8,7 +8,8 @@ import { GraphExplorer } from "@/components/GraphExplorer";
 import { EdgeResolution } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
-	title: "The System Graph",
+	title: "The Model System Graph: Semantic Identity for AI Models",
+	alternates: { canonical: "/graph" },
 	description: "Components, logical objects, and edges — the semantic IR a VINDEX3 container carries, and how it is materialised.",
 };
 

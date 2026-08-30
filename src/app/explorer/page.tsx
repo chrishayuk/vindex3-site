@@ -83,7 +83,8 @@ function Transports() {
 }
 
 export const metadata: Metadata = {
-	title: "The Explorer",
+	title: "Explore & Query an AI Model Artifact Like a Database",
+	alternates: { canonical: "/explorer" },
 	description: "Enter a model — a read-only VINDEX3 query surface: walk components, representations, provenance, and execution plans.",
 };
 

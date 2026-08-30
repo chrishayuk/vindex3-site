@@ -8,7 +8,8 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 
 export const metadata: Metadata = {
-	title: "The Record",
+	title: "VINDEX3 Conformance, Benchmarks & Evidence",
+	alternates: { canonical: "/ladder" },
 	description: "The status instrument — gate ladders, measured evidence, the history, and the open questions, kept honestly in one place.",
 };
 

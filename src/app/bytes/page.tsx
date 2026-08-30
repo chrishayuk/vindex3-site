@@ -8,7 +8,8 @@ import { FileEncoder } from "@/components/FileEncoder";
 import { SegmentationFigure } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
-	title: "The Bytes",
+	title: "The VINDEX3 Binary Layout: How Model Bytes Are Framed",
+	alternates: { canonical: "/bytes" },
 	description: "LYRW v2, the layer-weight binary format, explained to the byte — header, banks, segments, region schemas, entry table.",
 };
 
