@@ -105,7 +105,7 @@ export default function RootLayout({
 								{ href: "/ladder", label: "The Record" },
 								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
 								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
-								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.4.0", label: "The release", external: true },
+								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.5.0", label: "The release", external: true },
 							],
 						},
 					]}

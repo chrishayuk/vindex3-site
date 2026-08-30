@@ -129,7 +129,7 @@ export function ScreenLadder() {
 					);
 				})}
 				<p className="voice-evidence text-[10px] opacity-45 m-0 mt-1">
-					recorded — granite-4.1-3b · SENSITIVITY-1A/1B/1B′/1C vs the banked Q-BANK sweep · tap a screen
+					recorded — granite-4.1-3b · SENSITIVITY-1A/1B/1B′/1C vs the banked Q-BANK sweep · applicability to other models unestablished · tap a screen
 				</p>
 			</div>
 		</section>

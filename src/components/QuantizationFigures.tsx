@@ -233,6 +233,7 @@ export function BitsArithmetic() {
 		{ label: "16 × 4-bit codes", value: "64 bits" },
 		{ label: "+ one E4M3 scale", value: "8 bits" },
 		{ label: "= 72 bits / 16 weights", value: "4.5 bits per weight", accent: true },
+		{ label: "+ one FP32 scale per tensor", value: "amortised to ≈0.000…", dim: true },
 	];
 	return (
 		<section className="hause-grid py-12 sm:py-16">
@@ -254,8 +255,9 @@ export function BitsArithmetic() {
 					))}
 				</div>
 				<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-6">
-					A four-bit model is never four bits, because the scales are not free. Sixteen weights share one scale,
-					each picks one of sixteen slots on it — and the honest rate is four and a half.
+					Four-bit describes the code width, not the storage cost. Sixteen weights share one eight-bit scale,
+					each picks one of sixteen slots on it, and one FP32 scale covers the whole tensor — two-level scaling,
+					fully counted. Derived from the recorded 3B container&apos;s bytes, not asserted: 4.5008 bits per weight.
 				</p>
 			</div>
 		</section>
