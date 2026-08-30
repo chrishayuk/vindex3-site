@@ -207,6 +207,41 @@ export default function LadderPage() {
 				caption="The flip is a named decision, made in exactly one place — never a side effect of a CLI default or a recipe template. After it, VINDEX2 receives no architectural expansion: compatibility, indefinitely; expansion, never."
 			/>
 
+			<Ladder
+				kicker="THE ONTOLOGY DRILL — FOUR ARCHITECTURES vs THE SCHEMA · RUN 2026-08-30"
+				rungs={[
+					{
+						id: "SSM",
+						question: "A pure SSM decoder — no attention anywhere.",
+						gate: "zero attention surfaces can be valid; stateful operations need no fake attention or KV",
+						status: "DISPROVED",
+						detail: "The schema flinched, exactly where the lift predicted: the attention surface is mandatory and fabricated — a pure-recurrent stack already in the tree passes completeness carrying a softmax surface zero layers read — and a checkpoint declaring no layer types slips the census and encodes before closure can refuse. Confirmed: lift one, plus a fail-closed census and closure at encode time.",
+					},
+					{
+						id: "HYBRID",
+						question: "KDA + MLA + softmax — three continuation-state kinds in one program.",
+						gate: "one program declares heterogeneous state; no family owns continuation globally",
+						status: "DISPROVED",
+						detail: "Not hypothetical — this is Kimi-Linear, executing in-tree. The state schema cannot yet declare KDA precision or MLA latent-KV geometry, and one judged fact the container cannot carry at all was found. The confirmation came with a gift: in the code, KvState is already an alias of ContinuationProvider, retiring at a named consolidation point — lift two is underway under its own name.",
+					},
+					{
+						id: "SYSTEM",
+						question: "Audio → perception → projector → text, plus a drafter.",
+						gate: "components and interfaces compose without special multimodal topology rules",
+						status: "PASSED",
+						detail: "As stated, it composes today — roles, objects and the hidden-state edge cover it. The ceiling sits just past it and is named as a scope decision: three roles, one edge species, and refusals — never guesses — at every boundary beyond.",
+					},
+					{
+						id: "CODEC",
+						question: "An unknown low-bit sparse-MoE representation, permuted experts.",
+						gate: "new codec vocabulary is additive; an older reader degrades, never lies",
+						status: "PASSED",
+						detail: "The additive claim is real: unknown encodings inspect clean, every execution fallthrough refuses by name, and COMPACT carries what it cannot decode byte-identically. The drill still earned its keep — two preservation defects against the spec's own compatibility rules were found and named.",
+					},
+				]}
+				caption="Hostile schema review against the real types, findings recorded before verdicts — sixteen findings, and every schema gap landed inside the two pinned lifts, nowhere else. The ontology question itself did not flinch. The full ledger is docs/vindex3-ontology-drill.md."
+			/>
+
 			<Evidence
 				items={[
 					{
@@ -306,7 +341,7 @@ export default function LadderPage() {
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift, pinned in the spec: completeness from the declared operation program rather than object kinds, and continuation state generalising KV, drilled on paper against four deliberately awkward architectures before anything freezes. Until those gates pass, candidate it stays."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift — no longer merely pinned: the four-architecture drill ran on 30 August, produced sixteen findings, and every schema gap landed inside the two lifts, nowhere else. Until those gates pass, candidate it stays."
 			/>
 
 			<Observation
