@@ -7,7 +7,7 @@ import { VindexTerminal } from "@/components/VindexTerminal";
 
 const TRANSPORTS: {
 	kicker: string;
-	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0 · IN THE REPO";
+	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0.5.0 · RELEASED";
 	lines: string[];
 	caption: string;
 }[] = [
@@ -20,7 +20,7 @@ const TRANSPORTS: {
 	},
 	{
 		kicker: "THE VINDEX CLI",
-		status: "V0 · IN THE REPO",
+		status: "V0.5.0 · RELEASED",
 		lines: ["$ vindex inspect model.vindex", "$ vindex diff model.vindex BF16 NVFP4 mlp.down", "$ vindex verify model.vindex --json"],
 		caption:
 			"On your machine, against a local container: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json. No inference runtime attached: an artifact should not require an engine to be understood.",

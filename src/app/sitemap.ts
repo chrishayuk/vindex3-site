@@ -5,7 +5,7 @@ import { askSlug, conceptSlug } from "@/data/legibility";
 const BASE = "https://vindex3.org";
 
 /**
- * Every route the graph knows about: the ten chapters, the two
+ * Every route the graph knows about: the eleven chapters, the two
  * interactive surfaces, the on-ramp — and the graph's own projections,
  * one URL per canonical answer and per concept entity.
  */
@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		"/execution",
 		"/representation",
 		"/authority",
+		"/lifecycle",
 		"/ladder",
 		"/ask",
 		"/explorer",

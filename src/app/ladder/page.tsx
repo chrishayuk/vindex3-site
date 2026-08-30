@@ -10,32 +10,96 @@ import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 export const metadata: Metadata = {
 	title: "VINDEX3 Conformance, Benchmarks & Evidence",
 	alternates: { canonical: "/ladder" },
-	description: "The status instrument — gate ladders, measured evidence, the history, and the open questions, kept honestly in one place.",
+	description: "The status instrument — the guarantees ladder, the gate ladders, measured evidence, the history, and the open questions, kept honestly in one place.",
 };
 
 /**
- * Rung statuses reflect the living spec as of 2026-08-11 (§1–§7
- * implemented and gated; §8 pins the design for the rung currently
- * being built, G5) and the ABI spec's own draft-status note. When the
- * gates move in the source documents, this page moves — a status instrument,
- * not a description.
+ * Rung statuses reflect the 3.0 Candidate Specification and the living
+ * spec as of 2026-08-30: the execution contract is implemented through
+ * 5b-3, the LQL semantic catch-up closed 2026-08-22 (execution,
+ * inference, browse, mutation, patching, compose, COMPILE, logical
+ * DIFF, COMPACT), and the candidate names one canonical container
+ * model. When the gates move in the source documents, this page moves —
+ * a status instrument, not a description.
  */
 export default function LadderPage() {
 	return (
 		<main>
 			<Hero
-				kicker="CONFORMANCE · LIVING SPEC §2 · ABI §13, §16"
+				kicker="CONFORMANCE · CANDIDATE SPEC §0, §13–§21 · LIVING SPEC §2"
 				title="THE RECORD"
-				dek="Where this site keeps its honesty: the gate ladders, the measured evidence, the history, and the questions still open. Every claim on every other page answers to something here."
+				dek="Where this site keeps its honesty: what a VINDEX3 implementation guarantees, the gate ladders behind those guarantees, the measured evidence, the history, and the questions still open. Every claim on every other page answers to something here."
 			/>
 
 			<Observation
-				label="THREE LADDERS, ONE KEY"
-				text="G0 through G8 belong to the living spec: the semantic rungs, from reading a source to alternate physical plans. The V2-0 through V2-4 gates named below belong to the ABI's pre-registered experiments: what must pass before a byte freezes. M1 through M4 belong to the generation policy: the migration to VINDEX3 by default. And the maturity ladder is the kernel ledger's vocabulary for how real an implementation claim is. Four instruments, one habit: nothing advances without its gate."
+				label="THE REFRAME"
+				text="The early ladder tracked one question: can we make VINDEX3 work? That question is answered. The ladder that matters now is a different one — what guarantees does a VINDEX3 implementation provide? — and it is the first instrument below. Behind it, the older instruments keep their jobs: the pipeline ladder (G0–G8, living spec) tracks the compiler-shaped build; the V2-0…V2-4 gates are the ABI's pre-registered experiments; M1–M4 is the migration to VINDEX3 by default; and the kernel maturity ladder grades how real an implementation claim is. Nothing advances without its gate."
 			/>
 
 			<Ladder
-				kicker="THE LADDER — STATUS FROM THE LIVING SPEC, 2026-08-12"
+				kicker="THE GUARANTEES — WHAT A VINDEX3 IMPLEMENTATION PROVIDES · 2026-08-30"
+				rungs={[
+					{
+						id: "DESCRIBE",
+						question: "The model can be represented: components, logical objects, representations, hidden-state edges.",
+						gate: "inventory → plan → graph; admissible ⇔ blocking = 0 — unjudged is not admissible",
+						status: "PASSED",
+					},
+					{
+						id: "RECONSTRUCT",
+						question: "The logical architecture is recoverable from the container alone.",
+						gate: "inspect rebuilds the system with no source access; four-authority verify with both ends re-hashed",
+						status: "PASSED",
+					},
+					{
+						id: "EXECUTE",
+						question: "The model executes from declared structure — zero architecture branches.",
+						gate: "operand closure + independent golden parity + causal mutation controls",
+						status: "PASSED",
+						detail: "Closure proves the program is complete; parity proves it is correct; the controls prove the IR is in charge. Five model families execute end to end, including recurrent (KDA) and latent (MLA) attention.",
+					},
+					{
+						id: "GENERATE",
+						question: "Stateful autoregressive inference, served.",
+						gate: "the KV seam's bit-identity chain; /v1 completions, chat completions, and responses share V2's wire shapes",
+						status: "PASSED",
+					},
+					{
+						id: "INSPECT",
+						question: "The model is queryable as structured data.",
+						gate: "WALK / DESCRIBE / SELECT in the whole-language sweep; the vindex reader answers from the artifact alone",
+						status: "PASSED",
+					},
+					{
+						id: "OBSERVE",
+						question: "Execution can be traced without changing its result.",
+						gate: "TRACE on a V3 binding runs observationally, in the same parity sweep",
+						status: "PASSED",
+					},
+					{
+						id: "MODIFY",
+						question: "Effective model state changes through overlays; the base bytes never move.",
+						gate: "mutation and patching parity; the base container stays bit-identical",
+						status: "PASSED",
+					},
+					{
+						id: "MATERIALISE",
+						question: "Changes compile into a new standalone artifact.",
+						gate: "COMPILE CURRENT INTO VINDEX — stamped derived, never canonical; equivalence gated through INFER, GENERATE, TRACE and WALK; real-model compose smoke green",
+						status: "PASSED",
+					},
+					{
+						id: "PROVE",
+						question: "Transformations are provable: semantic diff, and maintenance that preserves identity.",
+						gate: "logical DIFF operates over effective model state, not file bytes; COMPACT must preserve semantic identity",
+						status: "PASSED",
+					},
+				]}
+				caption="Every rung is held by the reference implementation's own gates today — the LQL semantic catch-up closed 2026-08-22, gated cross-platform. What no rung yet has is an independent conformance suite another implementation could run; promoting these from implementation gates to specification guarantees is a named gate on the road from Candidate to 3.0 Final."
+			/>
+
+			<Ladder
+				kicker="THE PIPELINE — STATUS FROM THE LIVING SPEC, 2026-08-30"
 				rungs={[
 					{
 						id: "G0",
@@ -72,21 +136,23 @@ export default function LadderPage() {
 					{
 						id: "G5",
 						question: "Execute from the encoded description.",
-						gate: "forward pass aimed at zero architecture branches — proven when the held-out architecture test lands",
-						status: "BUILDING",
-						detail: "Half sealed already: the execution surface and operand closure are implemented, and the reference executor matches its source exactly on the first stage. The gate itself is five proofs. Text generation driven by the graph's own semantics. Position handling read only from the per-layer attention policy. Perception wired through the component, never the model family. Drafter capture discovered only from the hidden-state edge. Lookup only by logical object id.",
+						gate: "the five proofs: graph-driven generation, policy-table positions, component-wired perception, edge-discovered drafting, object-id-only lookup",
+						status: "PASSED",
+						detail: "The staged proof landed whole: the execution surface and operand closure, a reference executor sharing no arithmetic with production, parity against a deliberately literal golden oracle, three causal controls that mutate only the persisted graph — and container-driven execution surfaced as a CLI verb. The controls searched for hidden defaults and found none.",
 					},
 					{
 						id: "G6",
 						question: "Drafter parity.",
 						gate: "speculative execution discovered from the HiddenStateEdge",
-						status: "OPEN",
+						status: "BUILDING",
+						detail: "G6d — the plan lowered onto GPU-resident execution — has landed; full drafter parity is the remaining half.",
 					},
 					{
 						id: "G7",
 						question: "Performance baseline.",
 						gate: "reference numbers on the target hardware class",
-						status: "OPEN",
+						status: "PASSED",
+						detail: "Recorded — see the evidence below: 106 tokens per second, gpt-oss-20b on one M3 Max, greedy ids held on every arm.",
 					},
 					{
 						id: "G8",
@@ -178,6 +244,14 @@ export default function LadderPage() {
 						date: "2026-08-04",
 						text: "The c8 gate closes: a real Gemma 4 26B-A4B layer reopens and verifies clean, 256 of 256 regions byte-identical.",
 					},
+					{
+						date: "2026-08-22",
+						text: "The semantic catch-up closes: VINDEX3 reaches full LQL parity with VINDEX2 — execution, inference, browse, mutation, patching, compose, COMPILE, logical DIFF, COMPACT — gated cross-platform, with a real-model compose smoke green. The chat-completions and responses serving arms land the same week. VINDEX3 becomes the named candidate primary generation.",
+					},
+					{
+						date: "2026-08-30",
+						text: "3.0-candidate published — the promotion from draft. One canonical container model: the graph shape is normative, the bank-import shape is named, ranked and given a convergence rule; the contract stack is the spec's own structure; compatibility rules say what a conforming reader must understand, ignore, refuse and preserve.",
+					},
 				]}
 			/>
 
@@ -226,13 +300,13 @@ export default function LadderPage() {
 			<Question
 				status="OPEN"
 				text="If production models already round-trip through VINDEX3 byte-identical, why does the default extractor still write VINDEX2?"
-				detail="Because the flip is a decision, not a drift. VINDEX3 is the named candidate to become the primary generation, and the migration to it is nearly complete. But making it the default is a single, deliberate change, made in exactly one place — and it has not been made yet. The format works. It just isn't yet what you get without asking."
+				detail="Because the flip is a decision, not a drift. VINDEX3 is the named candidate to become the primary generation, and the migration to it is nearly complete — M1 through M3 have passed. But making it the default is a single, deliberate change, made in exactly one place — and it has not been made yet. The format works. It just isn't yet what you get without asking."
 			/>
 
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Nothing freezes until the pre-registered gates pass. The format already works: five production models encode, verify, and execute byte-identically to their sources, and containers serve real inference today. What remains is proof, not function. Some pre-freeze rows have already closed — selecting an absent variant now refuses correctly, before any byte is read. Others stay open — browse parity, and steering: no writer produces a multi-variant container yet, so a selection cannot yet change which bytes load. Until every gate passes, the default extractor keeps writing VINDEX2."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, and the last pre-registered bank-ABI rows. Until those gates pass, candidate it stays."
 			/>
 
 			<Observation
@@ -242,12 +316,12 @@ export default function LadderPage() {
 
 			<Observation
 				label="AN OPEN SPECIFICATION"
-				text="VINDEX3 is an independent container specification. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
+				text="VINDEX3 is an independent container specification — since 2026-08-30, a Candidate Specification: a self-describing, executable and queryable model container. Reference tooling exists — an inventory, a planner, an encoder, a verifier, a server, a format-native reader — but the format is defined by its documents, not by any tool. This site is that specification, seen: what a container holds, who decides what is true about it, and what it takes to prove it faithful to its source."
 			/>
 
 			<Observation
 				label="SCOPE"
-				text="VINDEX3 is specified by two companion documents, and this site draws on both. The ABI spec governs the bytes on disk — behind the Container, Bytes, and Representation exhibits. The living spec governs the semantics — behind the Graph, Execution, Authority, and G-Ladder exhibits. Where the two describe different physical shapes, the exhibits say which is which."
+				text="VINDEX3 is specified by companion documents, and this site draws on them all. The Candidate Specification owns the container model and the contract stack — one canonical layering, in which the graph shape is normative and the earlier bank-import shape is named, ranked, and given a convergence rule. The living spec tracks what is implemented and gated; the runtime document owns state and serving; the generation policy owns the migration. Where an exhibit shows the bank layout, it is showing a named transitional shape, not a rival definition."
 			/>
 
 			<Connection
@@ -263,13 +337,18 @@ export default function LadderPage() {
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
 						<li>
+							<a href="https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex3-format-spec.md — the 3.0 Candidate Specification →
+							</a>
+						</li>
+						<li>
 							<a href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
 								vindex3-format.md — the living spec →
 							</a>
 						</li>
 						<li>
-							<a href="https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
-								vindex3-format-spec.md — the ABI, 3.0-draft-2 →
+							<a href="https://github.com/chrishayuk/larql/blob/main/docs/vindex3-runtime.md" className="border-b pb-0.5" style={{ borderColor: "var(--color-accent)" }}>
+								vindex3-runtime.md — the state and serving contract →
 							</a>
 						</li>
 						<li>

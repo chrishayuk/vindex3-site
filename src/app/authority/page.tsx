@@ -119,7 +119,7 @@ export default function AuthorityPage() {
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
 						<li>vindex3-format.md §1.2, §7–8 (the living spec)</li>
-						<li>vindex3-format-spec.md §9.2 (the ABI, 3.0-draft-2)</li>
+						<li>vindex3-format-spec.md §9.2 (the 3.0 Candidate)</li>
 						<li>reference implementation — capability/authority.rs</li>
 					</ul>
 				</div>

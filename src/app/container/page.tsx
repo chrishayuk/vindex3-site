@@ -12,19 +12,20 @@ import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 export const metadata: Metadata = {
 	title: "Inside an AI Model Container: Objects, Segments & the Index",
 	alternates: { canonical: "/container" },
-	description: "Every layer of a VINDEX3 container, explained — one directory, one root, five durable weight classes.",
+	description: "Every layer of a VINDEX3 container, explained — one directory, one root, the canonical graph shape and the five durable weight classes.",
 };
 
 /**
  * The anatomy exhibit: what each file and directory in model.vindex/
- * actually is. Layer notes and details are grounded in ABI §4–5, §8–9,
- * §15 and the Vindex3Index struct (format/vindex3/index.rs).
+ * actually is. Grounded in the 3.0 Candidate §4–5 (the container model:
+ * canonical graph shape, transitional bank shape, the class vocabulary),
+ * §8–9, §15, and the Vindex3Index struct (format/vindex3/index.rs).
  */
 export default function ContainerPage() {
 	return (
 		<main>
 			<Hero
-				kicker="THE CONTAINER · VINDEX3 ABI §4–5"
+				kicker="THE CONTAINER · CANDIDATE SPEC §4–5"
 				title="ONE DIRECTORY, ONE ROOT"
 				dek="A VINDEX3 container is not a single blob. It is a directory whose every part is named, addressable, and explained — this page walks all of them."
 			/>
@@ -62,10 +63,9 @@ export default function ContainerPage() {
 				]}
 				resultLabel="model.vindex/ — written, then proven"
 				results={[
-					{ name: "control/ · dense/ · shared/" },
-					{ name: "routed/" },
-					{ name: "query/ · profiles/" },
-					{ name: "moe_manifest.json" },
+					{ name: "system_graph.json" },
+					{ name: "segments/ — one per logical object" },
+					{ name: "tokenizer.json + capability snapshot" },
 					{ name: "index.json", emphasis: true, note: "the root, written last" },
 				]}
 				verifiedLabel="verified — byte-faithful to its source"
@@ -78,88 +78,89 @@ export default function ContainerPage() {
 			<ContainerExplorer />
 
 			<Anatomy
-				kicker="model.vindex/ — THE ANATOMY"
-				objectLabel="Nine parts. One is in charge."
+				kicker="model.vindex/ — THE CANONICAL SHAPE"
+				objectLabel="Four parts. One is in charge."
 				layers={[
 					{
 						label: "index.json",
 						note: "SOLE ROOT AUTHORITY",
 						emphasis: true,
 						detail:
-							"The one file every reader opens first, and the only place the container speaks for itself. It names the model, declares the container generation (version 3), and carries the maps that make everything else findable and checkable. If a fact matters to loading the container, it is here or reachable from here.",
+							"The one file every reader opens first, and the only place the container speaks for itself. It names the model, declares the container generation, and carries the maps that make everything else findable and checkable. If a fact matters to loading the container, it is here or reachable from here.",
 						children: [
-							{ label: "version", detail: "the container generation — 3 means VINDEX3; detection uses this field only, never filename sniffing" },
+							{ label: "version", detail: "the container generation — VINDEX3 spans schemas 3–4, and a fresh encode stamps 4; detection uses this field only, never filename sniffing" },
 							{ label: "model · family", detail: "identity: which model this is, and its architecture family" },
 							{ label: "hidden_size · num_layers", detail: "the geometry every consumer needs before touching a weight" },
-							{ label: "representations", detail: "which physical encodings exist for which objects" },
-							{ label: "profiles · variants", detail: "the execution profiles, and each region set's physically present variants with its baseline" },
-							{ label: "segments", detail: "which files hold which layers — the loader never globs the directory" },
-							{ label: "authority", detail: "Canonical or Derived — a derived image cannot recompile itself, and says so" },
+							{ label: "system_graph · moe_manifest", detail: "which shape this container is: the canonical graph shape carries a graph and no manifest; the transitional bank shape carries the reverse. Absence of a manifest is not evidence a model is dense" },
+							{ label: "representations", detail: "which physical encodings exist for which objects, with recorded fidelity" },
+							{ label: "profiles · variants", detail: "the execution profiles — inline in the index, not a directory — and each region set's physically present variants with its baseline" },
+							{ label: "segments", detail: "which files hold which payloads — the loader never globs the directory" },
+							{ label: "authority", detail: "Canonical or Derived — a derived image cannot recompile itself, and says so; derived_from_model keeps the provenance link" },
 							{ label: "precision_map", detail: "when present, the compiled policy saying what encoding each tensor is in" },
 						],
 					},
 					{
-						label: "moe_manifest.json",
-						note: "PROGRAMME",
+						label: "system_graph.json",
+						note: "THE SEMANTIC AUTHORITY",
 						detail:
-							"The meaning layer. Weight files describe storage only; this manifest says what the stored banks are for — it binds each bank to a programme, the small recipe of operations that consumes it. Storage holds regions; the manifest gives them meaning, and it is the single authority for that fact.",
-						children: [
-							{ label: "programme registry", detail: "gated-mlp-v1 · gated-mlp-fused-fc1-v1 · gpt-oss-expert-v1 · shared-routed-mlp-v1 · latent-moe-v1" },
-							{ label: "bank_id → programme", detail: "the binding — the binary carries no programme identity of its own" },
-						],
+							"The SystemGraph, verbatim: components, logical objects, hidden-state edges, per-layer attention policies. Built once from source evidence when the container is made; from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint. The Graph chapter walks it in full.",
 					},
 					{
-						label: "profiles/",
-						note: "EXECUTION",
+						label: "segments/",
+						note: "THE PAYLOAD",
 						detail:
-							"Ways of running the same container. A profile selects which variants to load, what stays resident, and how much of the model participates — it never converts anything, and it cannot claim a fidelity above what its choices derive. The container ships standard profiles; a deployment adds its own.",
-						children: [
-							{ label: "standard names", detail: "exact · native-lowbit · mixed-precision · attn-local-ffn-remote · partial-residency · reduced-top-k · shared-only · router-browse · compact-approximate" },
-						],
+							"One file per logical-object representation — target.decoder_stack.bin, target.embedding.bin — each carrying its own tensor table (name, dtype, shape, offset, length) and hashed twice in a single writing pass: the payload, and the whole file. Names inside a segment are object-relative, never artifact-global. The write order is deliberate — segments first, index.json last — so a crash midway leaves a directory that never claimed to be a container.",
 					},
 					{
-						label: "control/",
-						note: "CLASS 1 — CONTROL & ROUTER",
+						label: "tokenizer.json + capability snapshot",
+						muted: true,
 						detail:
-							"The small, decisive weights: token embeddings, normalisation weights, the LM head, and the routers that decide which experts see each token. Small, and routing errors compound — so this class is preserved at source precision, never approximated.",
+							"The supporting cast: the tokenizer, tokenizer_config, special_tokens_map, generation_config, chat template. The encoder proper writes only what execution needs; this snapshot is what keeps a fresh container servable — without it, a container binds with token-id capability only and refuses text inference.",
+					},
+				]}
+				caption="The canonical shape — what every mainline producer writes: encode, extract with an explicit V3 request, and the LQL and factory surfaces, all through one shared pipeline."
+			/>
+
+			<Observation
+				label="THE TRANSITIONAL BANK SHAPE"
+				text="One other shape exists, and since the 3.0 Candidate it is named and ranked rather than left ambient: the expert-bank import layout — index.json, a moe_manifest.json binding banks to programmes, and LYRW v2 bank files. It predates the graph authority; readers must accept it, new writers should not extend it, and its future is fixed by the convergence rule: the graph is the format, and a bank layout is an encoding a representation may use. The Bytes page walks its binary layout to the byte."
+			/>
+
+			<Anatomy
+				kicker="THE FIVE DURABLE WEIGHT CLASSES — THE SERVING VOCABULARY"
+				objectLabel="A classification, not a directory tree."
+				layers={[
+					{
+						label: "class 1 — control & router",
+						note: "SMALL, DECISIVE",
+						detail:
+							"Token embeddings, normalisation weights, the LM head, the routers that decide which experts see each token, and the recurrence and control parameters of linear-attention designs. Small, and routing errors compound — so this class is preserved at source precision, never approximated.",
 					},
 					{
-						label: "dense/",
-						note: "CLASS 2 — DENSE SPINE",
+						label: "class 2 — dense spine",
+						note: "EVERY TOKEN",
 						detail:
-							"The backbone every token passes through: the attention projections (softmax attention, and the linear-attention families where a model uses them), one LYRW v2 weight file per layer. A dense-only model is simply a container where this class carries the whole story.",
+							"The backbone every token passes through: the attention projections — softmax attention, and the KDA, MLA and linear-attention families where a model uses them. A dense-only model is simply a container where this class carries the whole story.",
 					},
 					{
-						label: "shared/",
-						note: "CLASS 3 — SHARED FFN",
+						label: "class 3 — shared FFN",
+						note: "ALWAYS RESIDENT",
 						detail:
 							"Feed-forward weights every token uses regardless of routing: shared experts, and the shared pre/post projections of latent-space designs. Kept apart from the routed banks because they are always resident, while routed banks can be paged, trimmed, or left on disk.",
 					},
 					{
-						label: "routed/",
-						note: "CLASSES 4 & 5 — EXPERT BANKS",
+						label: "classes 4 & 5 — routed expert banks",
+						note: "THE BULK",
 						detail:
-							"The bulk of a mixture-of-experts model: the per-layer expert banks — gate/up in one class, down-projections in the other. Stored as group extents, so experts can be fetched in useful units. Split into segment files when a layer outgrows the shard cap — the reason a fifty-gigabyte layer is not a fifty-gigabyte file.",
-					},
-					{
-						label: "query/",
-						note: "THE WEIGHTS ARE THE INDEX",
-						detail:
-							"Metadata sidecars for the query surface — labels and structure that make WALK and DESCRIBE fast. Deliberately never weights: no query index is stored beside the weights, because the weights are the query index. Delete this directory and nothing about execution changes.",
-					},
-					{
-						label: "tokenizer.json · weight_manifest.json",
-						muted: true,
-						detail:
-							"The supporting cast: the tokenizer that maps text to tokens, and the per-file manifest of weight payloads with their checksums — the receipts verification reads when proving the container faithful to its source.",
+							"The bulk of a mixture-of-experts model: the per-layer expert banks — gate/up in one class, down-projections in the other. Stored as group extents, so experts can be fetched in useful units, and split into segment files when a layer outgrows the shard cap — the reason a fifty-gigabyte layer is not a fifty-gigabyte file.",
 					},
 				]}
-				caption="Classes 1–5 are the five durable weight classes the serving ABI freezes. There is no sixth class: hot sets, expert retention, cache sizing, and prefetch order are profile and runtime metadata, never new storage classes."
+				caption="Classes are the boundaries serving policy can decide about independently — fetch, place, quantise, omit, query. Draft-era layouts mandated one directory per class; the Candidate keeps the classes and withdraws the directory tree: storage references are container-relative paths, and there is no sixth class — hot sets, expert retention, cache sizing, and prefetch order are profile and runtime metadata, never new storage classes."
 			/>
 
 			<Observation
 				label="WHY CLASSES AT ALL"
-				text="A part gets its own physical identity only when the runtime may independently omit it, quantise it, place it, prefetch it, execute it — or query it. That is the split rule. It is why the directory has exactly these parts: each one is something a profile can make a separate decision about."
+				text="A part gets its own physical identity only when the runtime may independently omit it, quantise it, place it, prefetch it, execute it — or query it. That is the split rule. The query clause is real: WALK reads gate rows without up or down, so on a browse-enabled index the gate role has an independent access pattern by construction. Query metadata itself stays derived and optional — its absence downgrades label richness, never correctness — because no query index is stored beside the weights: the weights are the query index."
 			/>
 
 			<ClassTraffic />
@@ -172,6 +173,7 @@ export default function ContainerPage() {
 			<Connection
 				text="Named parts are a promise. The next chapter is whether you can check it — down to the byte."
 				links={[
+					{ href: "/graph", label: "THE SYSTEM GRAPH" },
 					{ href: "/bytes", label: "LYRW, TO THE BYTE" },
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
 				]}
@@ -181,7 +183,7 @@ export default function ContainerPage() {
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
-						<li>vindex3-format-spec.md §4–5, §8–9, §15 (the ABI, 3.0-draft-2)</li>
+						<li>vindex3-format-spec.md §4–5, §8–9, §15 (the 3.0 Candidate)</li>
 						<li>reference implementation — index.rs (Vindex3Index)</li>
 					</ul>
 				</div>

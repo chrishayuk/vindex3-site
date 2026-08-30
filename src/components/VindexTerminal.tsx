@@ -49,7 +49,7 @@ const LIVE_ENDPOINT = "https://vindex3-explorer.fly.dev";
 
 type Line = TerminalLine;
 
-const SNAPSHOT_ID = "vindex3-demo · compiled snapshot · 3.0-draft-2 / 2026-08-29";
+const SNAPSHOT_ID = "vindex3-demo · compiled snapshot · 3.0-candidate / 2026-08-30";
 
 // ---------- the demo universe (matches the Bytes encoder's worked example) ----------
 const MODELS = [

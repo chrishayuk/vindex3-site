@@ -23,9 +23,9 @@ export default function BytesPage() {
 	return (
 		<main>
 			<Hero
-				kicker="THE BYTES · VINDEX3 ABI §6–7 · LYRW v2"
+				kicker="THE BYTES · CANDIDATE SPEC §6–7 · LYRW v2"
 				title="DOWN TO THE BYTE"
-				dek="Every weight file in a VINDEX3 container is a LYRW v2 binary — a format simple enough to read with a ruler. This page is that ruler."
+				dek="LYRW v2 is the expert-bank codec of VINDEX3 — a binary format simple enough to read with a ruler. This page is that ruler."
 			/>
 
 			<Statement text="A blob you cannot check is a promise you cannot keep." />
@@ -35,7 +35,7 @@ export default function BytesPage() {
 				text="Most weight files are a header you must trust, followed by bytes you cannot question. When a reader meets something it does not recognise, it guesses or it dies; when a writer changes a layout, every old reader finds out at parse time, in production. LYRW was shaped so neither ever happens: the file carries its whole description, unknown tags are preserved and reported rather than fatal, and refusal waits for the operation that actually needs the thing a reader cannot do."
 			/>
 
-			<Observation text="LYRW is the layer-weight format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table." />
+			<Observation text="LYRW is the layer-weight bank format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table. Its place in the container model is stated by the Candidate: this is one segment codec — today the layout of the transitional bank shape's expert banks, under the convergence rule an encoding a graph container's representation may use. A graph container's plain tensor-table segments are the other codec, on the Container page." />
 
 			<ByteMap
 				kicker="STRUCTURE 1 — ONCE PER FILE"
@@ -91,7 +91,7 @@ export default function BytesPage() {
 					{ name: "format", type: "u16", bytes: 2, meaning: "the encoding — the numbered vocabulary below" },
 					{ name: "packing", type: "u16", bytes: 2, meaning: "0 = row_major, 1 = blocks_with_scales_inline, 2 = blocks_values, 3 = blocks_scales" },
 					{ name: "pair_id", type: "u16", bytes: 2, meaning: "links a blocks_values schema to its blocks_scales schema; 0xFFFF = unpaired" },
-					{ name: "reserved", type: "u16", bytes: 2, meaning: "padding that keeps the dims 4-byte aligned — and the space a later meaning can claim" },
+					{ name: "layout", type: "u16", bytes: 2, meaning: "the payload's internal order — 0 = unspecified, 1 = contiguous_halves, 2 = interleaved. Draft-2's reserved pad, claimed: the record stayed 20 bytes, which is exactly why the index schema bumped 3 → 4" },
 					{ name: "rows", type: "u32", bytes: 4, meaning: "region height" },
 					{ name: "cols", type: "u32", bytes: 4, meaning: "region width" },
 				]}
@@ -184,7 +184,7 @@ export default function BytesPage() {
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
-						<li>vindex3-format-spec.md §6–7 (the ABI, 3.0-draft-2)</li>
+						<li>vindex3-format-spec.md §6–7 (the 3.0 Candidate)</li>
 						<li>reference implementation — lyrw2/region_format.rs and the format constants</li>
 					</ul>
 				</div>

@@ -258,7 +258,7 @@ execution correctness    + causal mutation controls = semantic authority`}
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
 						<li>vindex3-format.md §8 (the living spec)</li>
-						<li>vindex3-format-spec.md §8.3 (the ABI, 3.0-draft-2)</li>
+						<li>vindex3-format-spec.md §8.3 (the 3.0 Candidate)</li>
 						<li>reference implementation — graph/surface.rs · graph/roles.rs</li>
 					</ul>
 				</div>

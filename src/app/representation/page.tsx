@@ -141,7 +141,7 @@ export default function RepresentationPage() {
 				<div className="col-span-12">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
-						<li>vindex3-format-spec.md §9.1–9.2 (the ABI, 3.0-draft-2)</li>
+						<li>vindex3-format-spec.md §9.1–9.2 (the 3.0 Candidate)</li>
 						<li>reference implementation — represent/map.rs · policy.rs · selection.rs</li>
 					</ul>
 				</div>

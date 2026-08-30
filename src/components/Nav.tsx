@@ -16,6 +16,7 @@ const LINKS: NavLink[] = [
 	{ href: "/execution", label: "Execution", panelOnly: true, group: "THE SPEC" },
 	{ href: "/representation", label: "Representation", panelOnly: true, group: "THE SPEC" },
 	{ href: "/authority", label: "Authority", panelOnly: true, group: "THE SPEC" },
+	{ href: "/lifecycle", label: "Lifecycle", panelOnly: true, group: "THE SPEC" },
 	{ href: "/ladder", label: "Record", hide: "sm", group: "THE RECORD" },
 	{ href: "/ask", label: "Ask", accent: true, group: "ASK & EXPLORE" },
 	{ href: "/explorer", label: "Explorer", group: "ASK & EXPLORE" },

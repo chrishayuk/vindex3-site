@@ -68,7 +68,7 @@ export default function RootLayout({
 				<SiteFooter
 					brand="VINDEX3"
 					tagline="The model is the database — components named, representations catalogued, claims checkable."
-					note="VINDEX3 · 3.0-draft-2 · every metric on this site names its model, hardware and date, and answers to the Record."
+					note="VINDEX3 · 3.0-candidate · every metric on this site names its model, hardware and date, and answers to the Record."
 					groups={[
 						{
 							label: "THE JOURNEY",

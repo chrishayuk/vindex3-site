@@ -22,7 +22,7 @@
  * the open ones.
  */
 
-export const SNAPSHOT = { id: "3.0-draft-2", date: "2026-08-29" };
+export const SNAPSHOT = { id: "3.0-candidate", date: "2026-08-30" };
 
 export type NodeKind = "concept" | "claim" | "model" | "evidence" | "chapter";
 
@@ -270,7 +270,7 @@ export const CANON: CanonEntry[] = [
 		answer:
 			"Consistency cannot prove sufficiency — four authorities can faithfully agree on an under-specified model. Operand closure is the independent witness: every stored tensor must map to a generic operation, every operation must carry judged semantics, and per-layer accounting must be total. The proof is causal: mutate a stored fact and the computation must change; where mutation changes nothing, a default was hiding.",
 		path: [e("four-authorities", "completed_by"), e("closure", "reads")],
-		record: { status: "BUILDING", note: "G5 half sealed — surface and closure implemented, parity staged" },
+		record: { status: "SUPPORTED", note: "G5 sealed — closure, golden parity and causal controls all landed; the controls found no hidden defaults" },
 		explore: ["closure", "execution-surface", "record"],
 	},
 	{
@@ -395,9 +395,9 @@ export const CANON: CanonEntry[] = [
 		intent: "status",
 		patterns: ["is it ready", "abi frozen", "current status", "can i use"],
 		answer:
-			"Five production models already encode, verify, and execute through the format byte-identically, and containers serve real inference. But no byte freezes until the pre-registered gates pass, and the default extractor still writes the previous generation — the flip is a named decision (M4), made in exactly one place, not yet made. The Record keeps the whole ledger, dated.",
+			"Since 2026-08-30 the specification is a Candidate, no longer a draft: production models encode, verify, and execute through the format byte-identically, containers serve real inference, and the LQL surface reached full parity — execution, tracing, mutation, compile, diff, compact. But no byte freezes until the pre-registered gates pass, and the default extractor still writes the previous generation — the flip is a named decision (M4), made in exactly one place, not yet made. The Record keeps the whole ledger, dated.",
 		path: [e("vindex3", "adopted_via"), e("vindex3", "gated_by"), e("vindex3", "verified_by")],
-		record: { status: "BUILDING", note: "M1–M3 passed · M4 (the flip) open · G5 building" },
+		record: { status: "SUPPORTED", note: "3.0-candidate · M1–M3 passed · M4 (the flip) open · G5 sealed" },
 		explore: ["migration", "g-ladder", "record"],
 	},
 	{
@@ -667,7 +667,7 @@ export const SUGGESTIONS = [
    over the graph — a one-sentence role, and its recorded relations.
    ------------------------------------------------------------------ */
 
-export type EntityGroup = "layer" | "attention" | "feed-forward" | "moe" | "format";
+export type EntityGroup = "layer" | "attention" | "attention-families" | "feed-forward" | "moe" | "format";
 
 export type Entity = {
 	id: string;
@@ -1241,6 +1241,153 @@ export const ENTITIES: Entity[] = [
 		href: "/why",
 		explorer: "SHOW REPRESENTATIONS",
 	},
+	{
+		id: "linear-attention",
+		names: ["linear attention", "linear_attention", "linear attn", "recurrent attention"],
+		display: "LINEAR ATTENTION",
+		five: "the past folded into state",
+		role: "An attention family that carries the past as a fixed-size recurrent state instead of a growing cache — constant cost per token, however long the context.",
+		detail: "Carried as a first-class execution surface — key_heads · key_head_dim · value_heads · value_head_dim · conv_kernel · state_dtype — present only when a model uses it, never inferred from a model name. What changes is not the container's discipline but the memory the layer carries forward.",
+		group: "attention-families",
+		relations: [
+			{ rel: "sibling_of", to: "attention" },
+			{ rel: "carries", to: "recurrent-state" },
+			{ rel: "specialised_by", to: "gated-deltanet" },
+			{ rel: "specialised_by", to: "kda" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "gated-deltanet",
+		names: ["gated deltanet", "deltanet", "gated delta", "gated_deltanet", "delta rule"],
+		display: "GATED DELTANET",
+		five: "nine operands, closure needs all",
+		role: "A linear-attention operator whose recurrent state is updated by a gated delta rule — write what changed, forget by gate.",
+		detail: "Its operand vocabulary is nine roles: the fused QKV projection, the A and B in-projections, Z, a short convolution, A_log and dt_bias, the output norm and the out-projection. Operand closure requires every one — a stack shipping eight of nine refuses by name rather than executing a guess.",
+		group: "attention-families",
+		relations: [
+			{ rel: "belongs_to", to: "linear-attention" },
+			{ rel: "carries", to: "recurrent-state" },
+			{ rel: "verified_by", to: "closure-e" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "kda",
+		names: ["kda", "kimi delta attention", "kimi-delta-attention"],
+		display: "KDA — KIMI DELTA ATTENTION",
+		five: "fifteen operands, per-channel forgetting",
+		role: "A delta-attention operator with per-channel gating — a linear-attention family carried as its own execution surface, with its own declared geometry.",
+		detail: "Fifteen operand roles: the Q, K and V projections and their short convolutions, the F-A/F-B and G-A/G-B gate pairs, a B projection, A_log and dt_bias, the output norm and the out-projection — plus kda_gate_lower_bound on the surface. Real stacks interleave it with full attention, and the interleave is read from the per-layer policy table, never from layer arithmetic.",
+		group: "attention-families",
+		relations: [
+			{ rel: "belongs_to", to: "linear-attention" },
+			{ rel: "sibling_of", to: "mla" },
+			{ rel: "carries", to: "recurrent-state" },
+			{ rel: "governed_by", to: "hybrid-attention-policy" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "mla",
+		names: ["mla", "multi-head latent attention", "latent attention", "multihead latent attention"],
+		display: "MLA — MULTI-HEAD LATENT ATTENTION",
+		five: "the cache compressed through latents",
+		role: "An attention family that stores its key/value past through a low-rank latent bottleneck — full-attention memory at a fraction of the cache bytes.",
+		detail: "Its surface declares num_heads · kv_lora_rank · qk_nope_head_dim · qk_rope_head_dim · v_head_dim: the rope and no-rope halves of the key are separate declared facts, and the latent A/B projections with their norm are operands like any others. It keeps true KV state — compressed, not replaced.",
+		group: "attention-families",
+		relations: [
+			{ rel: "sibling_of", to: "attention" },
+			{ rel: "sibling_of", to: "kda" },
+			{ rel: "distinguished_by", to: "kv-vs-recurrent-state" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "recurrent-state",
+		names: ["recurrent state", "recurrent-state", "delta state", "conv state"],
+		display: "RECURRENT STATE",
+		five: "a fixed-size carried memory",
+		role: "The continuation memory of linear-attention families: a fixed-size tensor per layer, updated every token, replacing the growing key/value cache.",
+		detail: "Its geometry is a container fact — state dtype and shape come from the plan, never from architecture inference. A session's recurrent state crosses the runtime the way KV rows do: prepared from the plan's declared geometry, owned by the caller, resumed exactly.",
+		group: "attention-families",
+		relations: [
+			{ rel: "belongs_to", to: "linear-attention" },
+			{ rel: "contrasted_with", to: "kv-vs-recurrent-state" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "hybrid-attention-policy",
+		names: ["hybrid attention", "hybrid attention policy", "attention interleave", "layer interleave", "attention policy"],
+		display: "HYBRID ATTENTION POLICY",
+		five: "each layer declares its family",
+		role: "A stack that mixes attention families — delta then full, sliding then global — declared layer by layer in the persisted policy table, never computed from a layer index.",
+		detail: "The per-layer AttentionLayerPolicy is the single authority: span, window, position, family. No layer-modulo arithmetic exists on the execution path — the interleave is unrolled into the table at compile time, and mutating one row provably changes execution. That is how a 3:1 delta-to-full stack executes with zero architecture branches.",
+		group: "attention-families",
+		relations: [
+			{ rel: "read_by", to: "execution-surface-e" },
+			{ rel: "governs", to: "kda" },
+			{ rel: "governs", to: "attention" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "kv-vs-recurrent-state",
+		names: ["kv state vs recurrent state", "kv state", "kv cache", "kv"],
+		display: "KV STATE vs RECURRENT STATE",
+		five: "growing memory or folded memory",
+		role: "Two kinds of continuation memory: softmax attention keeps every past key and value and grows with context; linear families fold the past into a fixed-size state.",
+		detail: "A hybrid stack carries both at once, layer by layer, and the plan declares which — row geometry and windows for KV layers, state shape for recurrent layers. MLA sits between them: true KV state, stored through a latent bottleneck. The runtime's rule covers all of it: state geometry is a container fact.",
+		group: "attention-families",
+		relations: [
+			{ rel: "distinguishes", to: "recurrent-state" },
+			{ rel: "belongs_to", to: "attention" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "query-score-scale",
+		names: ["query scaling", "score scaling", "query scale", "score scale", "qk scale", "qk_scale_factor"],
+		display: "QUERY SCALE vs SCORE SCALE",
+		five: "two multiplies, two addresses",
+		role: "Query and score scales are separate operations: the declared factor multiplies the normalised query before position encoding; the canonical head_dim^-0.5 is a score-time multiply.",
+		detail: "Folding them into one multiply is algebra-equivalent but not fp-equivalent — moving a multiply across RoPE and a matmul is exactly the silent normalisation that later surfaces as a parity mystery. So the surface keeps them unfolded: query_scale, score_scale, and logit softcapping, each applied at its own declared point.",
+		group: "attention",
+		relations: [
+			{ rel: "belongs_to", to: "execution-surface-e" },
+			{ rel: "belongs_to", to: "attention" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "pf-qk-norm",
+		names: ["parameter-free qk norm", "parameter free qk normalisation", "parameter free qk normalization", "parameter_free_qk_norm", "qk norm without weights"],
+		display: "PARAMETER-FREE QK NORM",
+		five: "a judged fact, no weights",
+		role: "Some models normalise Q and K while shipping no norm weights at all — a semantic no tensor evidence can reveal, judged from the reference implementation and persisted on the surface.",
+		detail: "It lives on the surface as parameter_free_qk_norm, distinct from weighted QK-norm — and it is the standing proof that a container cannot be reconstructed from bytes alone: some execution semantics must be judged at compile time, which is exactly what the compiler boundary exists for.",
+		group: "attention",
+		relations: [
+			{ rel: "belongs_to", to: "execution-surface-e" },
+			{ rel: "belongs_to", to: "attention" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "attn-output-gate",
+		names: ["attention output gate", "attention output gating", "output gate", "output gating", "attn output gate"],
+		display: "ATTENTION OUTPUT GATE",
+		five: "a primitive earned by refusal",
+		role: "A sigmoid gate on the aggregated attention output, multiplied in before the output projection — a generic primitive of the vocabulary, not a family quirk.",
+		detail: "It entered the format by refusal: the first real four-norm model shipped a gate weight in all 52 layers, and the closure gate refused every one, naming the missing primitive. Its semantics were judged from the reference — sigmoid of the gate projection of the attention input, scaling the head output before o_proj — the primitive entered the IR, and the model closed at twelve of twelve operands per layer.",
+		group: "attention",
+		relations: [
+			{ rel: "belongs_to", to: "attention" },
+			{ rel: "discovered_by", to: "closure-e" },
+		],
+		href: "/execution",
+	},
 ];
 
 export function findEntities(queryTokens: string[], queryLower: string): Entity[] {
@@ -1274,9 +1421,9 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "G2", label: "generalise until reality fits", status: "PASSED", note: "blocking = mismatched = unknown = 0" },
 	{ id: "G3", label: "materialise the graph", status: "PASSED", note: "inspect reconstructs the system from the container alone" },
 	{ id: "G4", label: "prove source ≡ encoded", status: "PASSED", note: "four-authority comparison + payload-hash equality" },
-	{ id: "G5", label: "execute from the description", status: "BUILDING", note: "surface and closure implemented; five proofs staged" },
-	{ id: "G6", label: "drafter parity", status: "OPEN", note: "speculative execution from the HiddenStateEdge" },
-	{ id: "G7", label: "performance baseline", status: "OPEN", note: "reference numbers on the target hardware class" },
+	{ id: "G5", label: "execute from the description", status: "PASSED", note: "closure + golden parity + causal controls; exec surfaced as a CLI verb" },
+	{ id: "G6", label: "drafter parity", status: "BUILDING", note: "G6d (GPU-lowered plan) landed; full drafter parity open" },
+	{ id: "G7", label: "performance baseline", status: "PASSED", note: "106 tok/s recorded — gpt-oss-20b, one M3 Max" },
 	{ id: "G8", label: "alternate physical plans", status: "OPEN", note: "must not contaminate G0–G5" },
 	{ id: "M4", label: "the flip to default", status: "OPEN", note: "a named decision, made in one place — not yet made" },
 	{ id: "browse-parity", label: "expert-region browse parity", status: "OPEN", note: "an open pre-freeze row" },

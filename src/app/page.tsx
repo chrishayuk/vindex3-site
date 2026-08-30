@@ -29,7 +29,8 @@ const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
 	{ n: "07", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, aiming at zero architecture branches?" },
 	{ n: "08", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
 	{ n: "09", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
-	{ n: "10", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
+	{ n: "10", href: "/lifecycle", title: "THE LIFECYCLE", hook: "What can you do with a container over its life — run it, watch it, change it, prove it?" },
+	{ n: "11", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
 ];
 
 export default function Home() {
@@ -38,9 +39,9 @@ export default function Home() {
 			<ContainerReveal />
 
 			<Hero
-				kicker="VINDEX3 · SPEC 3.0-DRAFT-2"
+				kicker="VINDEX3 · 3.0 CANDIDATE SPECIFICATION"
 				title="THE MODEL IS THE DATABASE"
-				dek="A way of storing an AI model so the same copy can be run, questioned, and checked — nothing repackaged, nothing thrown away."
+				dek="A self-describing, executable, queryable model container: the same copy can be run, questioned, checked — and changed, with proof. Nothing repackaged, nothing thrown away."
 			/>
 
 			<section className="hause-grid py-8">
@@ -165,9 +166,9 @@ export default function Home() {
 				]}
 				resultLabel="model.vindex/ — written, then proven"
 				results={[
-					{ name: "control/ · dense/ · shared/" },
-					{ name: "routed/" },
-					{ name: "query/ · profiles/" },
+					{ name: "system_graph.json" },
+					{ name: "segments/ — one per logical object" },
+					{ name: "tokenizer.json + capability snapshot" },
 					{ name: "index.json", emphasis: true, note: "the root, written last" },
 				]}
 				verifiedLabel="verified — byte-faithful to its source"
@@ -196,7 +197,7 @@ export default function Home() {
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">THE STORY, IN ORDER</p>
 					<p className="voice-editorial text-2xl sm:text-3xl mb-10 max-w-2xl">
-						Ten chapters. Each opens with what breaks without it, and hands its question to the next.
+						Eleven chapters. Each opens with what breaks without it, and hands its question to the next.
 					</p>
 					<div className="flex flex-col">
 						{JOURNEY.map((c, i) => (

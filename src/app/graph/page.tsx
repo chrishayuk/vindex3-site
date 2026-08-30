@@ -122,8 +122,12 @@ SegmentHeader {
 						that never claimed to be a container, rather than one that claims to be and is missing its banks.
 					</p>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-4">
-						This is the graph-encode layout, written by the encoder; the bank layout on the Bytes page is
-						the LYRW v2 import layout for routed serving. Same root rule, same authorities, two physical shapes.
+						This layout — graph, objects, representations, segments — is the <strong>canonical shape</strong> of a
+						VINDEX3 container: it is what every mainline producer writes. The bank layout on the Bytes page is a
+						named <strong>transitional shape</strong>: the LYRW v2 import layout for routed expert banks, carrying a
+						programme manifest instead of a graph. Same root rule, same authorities — and since the 3.0 Candidate,
+						a stated hierarchy rather than two rival definitions: the graph is the format; a bank layout is an
+						encoding a representation may use. Unifying the two writers is a named gate for 3.0 Final.
 					</p>
 				</div>
 			</section>

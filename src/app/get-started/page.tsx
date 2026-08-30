@@ -18,8 +18,10 @@ export const metadata: Metadata = {
  * The on-ramp, in the on-ramp form: Hero → Snippet walk → Connection,
  * the same shape as hause.design's Use page, because two sites doing
  * one thing differently is what the design system exists to stop.
- * Every output is a recorded run of the real binary against a real 3B
- * container (2026-08-30, M3 Max) — shown because it ran.
+ * Path one's outputs are recorded runs of the real binary against a
+ * real 3B container (2026-08-30, M3 Max) — shown because they ran.
+ * Path two (the engine) shows command shapes only, no invented
+ * transcripts, and says so.
  */
 export default function GetStartedPage() {
 	return (
@@ -36,9 +38,9 @@ export default function GetStartedPage() {
 				})}
 			/>
 			<Hero
-				kicker="GET STARTED · THE VINDEX CLI · RECORDED RUNS · 2026-08-30"
+				kicker="GET STARTED · TWO PATHS · RECORDED RUNS · 2026-08-30"
 				title="AN ARTIFACT, UNDERSTOOD WITHOUT AN ENGINE"
-				dek="Seven commands against a local container — inspect, describe, representations, diff, represent, precision, verify — each answering from the artifact alone, each speaking --json. No inference runtime attached."
+				dek="Path one — inspect a model: seven vindex commands against a local container, each answering from the artifact alone, each speaking --json, no inference runtime attached. Path two — run a model: the reference engine encodes a checkpoint, executes it, and serves it."
 			/>
 
 			<Statement text="The file answers for itself. Here is how to ask." />
@@ -118,18 +120,45 @@ verified   yes — the artifact agrees with its own record`}
 				aside="The scope is stated plainly: self-verification, from the artifact alone. Proving faithfulness to the source additionally needs the source — that gate lives with the reference implementation."
 			/>
 
+			<Statement text="Every command above answers from the artifact alone. That is the test of a format." />
+
 			<Observation
-				label="WHERE CONTAINERS COME FROM"
-				text="The vindex CLI reads containers; it does not create them from checkpoints. Encoding a Hugging Face checkpoint into a VINDEX3 container — and proving source ≡ encoded — is the reference implementation's job: larql vindex3 encode, then larql vindex3 verify. The boundary is deliberate: understanding an artifact must never require the engine, but producing one from a source is where an engine earns its keep."
+				label="PATH TWO — RUN A MODEL"
+				text="The vindex CLI reads containers; it does not create them from checkpoints, and it never runs one. Encoding a Hugging Face checkpoint into a VINDEX3 container — and proving source ≡ encoded — is the reference implementation's job, and so is execution. The boundary is deliberate: understanding an artifact must never require the engine, but producing one from a source, and running it, is where an engine earns its keep. The commands below are the shapes, not recorded transcripts — the recorded numbers live on the Record."
 			/>
 
-			<Statement text="Every command here answers from the artifact alone. That is the test of a format." />
+			<Snippet
+				label="ENCODE — A CHECKPOINT BECOMES A CONTAINER, THEN PROVES IT"
+				code={`$ larql vindex3 encode ./granite-3b --output granite-3b.vindex3/
+$ larql vindex3 verify ./granite-3b --container granite-3b.vindex3/
+
+# or through the extraction surface, explicitly:
+$ larql extract ./granite-3b --generation v3`}
+				aside="One shared pipeline behind every producer surface: inventory, plan (ambiguity refused), graph, encode, verify. The default extraction generation is still VINDEX2 — V3 is what you get by asking, until the flip (M4) is decided. The Record keeps that honestly."
+			/>
+
+			<Snippet
+				label="RUN — EXECUTION AND GENERATION, FROM THE CONTAINER ALONE"
+				code={`$ larql vindex3 exec granite-3b.vindex3 \\
+    --tokens 2,437,9331 --generate 32`}
+				aside="Token ids in, token ids out — a tokenizer is part of the fixture, so only one side of a parity comparison may choose it. Greedy on purpose: generation doubles as a fixture, and a sampler would put randomness between two runs. --backend selects the arithmetic — reference, production, or the Metal arms — while the container's plan owns the meaning."
+			/>
+
+			<Snippet
+				label="SERVE — THE STANDARD SURFACES, FROM THE SAME CONTAINER"
+				code={`$ larql serve granite-3b.vindex3
+
+$ curl localhost:8080/v1/completions -d '{
+    "model": "granite-3b", "prompt": "The capital of France is",
+    "max_tokens": 16 }'`}
+				aside="A served V3 container answers /v1/completions, /v1/chat/completions and /v1/responses, sharing every wire shape with the previous generation — only the token source differs."
+			/>
 
 			<Connection
-				text="The same verbs run in the browser against a hardened public container, and the same grammar reads back as designed panels. Three transports, one meaning."
+				text="The same verbs run in the browser against a hardened public container, and the same grammar reads back as designed panels. Two paths, three transports, one meaning."
 				links={[
 					{ href: "/explorer", label: "THE EXPLORER" },
-					{ href: "/quantization", label: "QUANTIZATION" },
+					{ href: "/lifecycle", label: "THE LIFECYCLE" },
 					{ href: "/ladder", label: "THE RECORD" },
 				]}
 			/>
