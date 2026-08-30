@@ -390,7 +390,7 @@
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "5.7 Compatibility rules — what a conforming reader/writer must do",
-   "text": "For every datum, one of four fates — understood, ignored, refused,\npreserved — decided by these rules:\n\n| Encountering | A conforming implementation |\n|---|---|\n| unknown `index.json` schema (`version` ∉ its supported set) | MUST refuse by name, stating the version found and the versions supported — before reading any byte |\n| unknown fields inside a supported `index.json` schema | MUST ignore for interpretation (additive evolution within a schema number) and MUST NOT drop them when rewriting the index |\n| unknown LYRW role / format / packing / layout tags | MUST preserve at read time; refusal belongs at capability-check time (§6.5, §11): a browse-only reader must not choke on a `down` region in a codec it never touches |\n| unknown files in the container directory | MUST ignore for interpretation; maintenance operations (COMPACT, §20) MUST NOT silently discard them |\n| a required operand absent for a requested operation | MUST refuse naming the operand, object, layer and segment — never best-effort execute (§11, §17) |\n| a cross-generation container (V2 directory to a V3 verb or vice versa) | MUST refuse naming both generations (§12.1) — no cross-loading, no silent conversion |\n\n---"
+   "text": "For every datum, one of four fates — understood, ignored, refused,\npreserved — decided by these rules:\n\n| Encountering | A conforming implementation |\n|---|---|\n| unknown `index.json` schema (`version` ∉ its supported set) | MUST refuse by name, stating the version found and the versions supported — before reading any byte |\n| unknown fields inside a supported `index.json` schema | MUST ignore for interpretation (additive evolution within a schema number) and MUST NOT drop them when rewriting the index |\n| unknown LYRW role / format / packing / layout tags | MUST preserve at read time; refusal belongs at capability-check time (§6.5, §11): a browse-only reader must not choke on a `down` region in a codec it never touches |\n| unknown files in the container directory | MUST ignore for interpretation; maintenance operations (COMPACT, §20) MAY discard files nothing references — but only as named entries in their report, never silently. Registered capability files and every index-referenced segment are always carried |\n| a required operand absent for a requested operation | MUST refuse naming the operand, object, layer and segment — never best-effort execute (§11, §17) |\n| a cross-generation container (V2 directory to a V3 verb or vice versa) | MUST refuse naming both generations (§12.1) — no cross-loading, no silent conversion |\n\n---"
   },
   {
    "id": "vindex3-format-spec.md#23",
@@ -733,52 +733,66 @@
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "17.4 Pinned generalisations — design for Final, not yet normative (3)",
-   "text": "**Acceptance drill (paper, before freeze).** Four deliberately awkward\narchitectures must be describable using extension points, without\nchanging the meaning of any existing field:\n\n1. a pure SSM decoder — no attention anywhere;\n2. a KDA + MLA + softmax hybrid carrying three continuation-state\n   kinds — not hypothetical: this is Kimi-Linear-48B, already\n   executing (§1.1);\n3. an audio → perception → projector → text system with a drafter —\n   components and hidden-state edges under load;\n4. an unknown low-bit sparse-MoE representation with permuted\n   experts — §5.7 preservation under a codec nothing yet reads.\n\nA failure names the field whose meaning would have to change; that\nfield is exactly what Final must fix.\n\n**The drill ran on 2026-08-30** —\n[`docs/vindex3-ontology-drill.md`](../../../docs/vindex3-ontology-drill.md)\nrecords the evidence and the sixteen findings. Summary: every schema gap\nfound lands inside these two lifts (mandatory-and-fabricated attention\nsurfaces, the fail-open census on undeclared families, the\ninexpressible KDA/MLA state, one judged fact the container cannot carry,\none silent serde default), plus two preservation defects against §5.7\nand two scope decisions to state explicitly. Cases 3 and 4 passed —\nthe component algebra holds as scoped, and the additive-evolution claim\nthat carried residency out of these gates is real. The ontology\nquestion itself did not flinch.\n\n---"
+   "text": "**Acceptance drill (paper, before freeze).** Four deliberately awkward\narchitectures must be describable using extension points, without\nchanging the meaning of any existing field:\n\n1. a pure SSM decoder — no attention anywhere;\n2. a KDA + MLA + softmax hybrid carrying three continuation-state\n   kinds — not hypothetical: this is Kimi-Linear-48B, already\n   executing (§1.1);\n3. an audio → perception → projector → text system with a drafter —\n   components and hidden-state edges under load;\n4. an unknown low-bit sparse-MoE representation with permuted\n   experts — §5.7 preservation under a codec nothing yet reads.\n\nA failure names the field whose meaning would have to change; that\nfield is exactly what Final must fix.\n\n**The drill ran on 2026-08-30** —\n[`docs/vindex3-ontology-drill.md`](../../../docs/vindex3-ontology-drill.md)\nrecords the evidence and the sixteen findings. Summary: every schema gap\nfound lands inside these two lifts (mandatory-and-fabricated attention\nsurfaces, the fail-open census on undeclared families, the\ninexpressible KDA/MLA state, one judged fact the container cannot carry,\none silent serde default), plus two preservation defects against §5.7\nand two scope decisions to state explicitly. Cases 3 and 4 passed —\nthe component algebra holds as scoped, and the additive-evolution claim\nthat carried residency out of these gates is real. The ontology\nquestion itself did not flinch."
   },
   {
    "id": "vindex3-format-spec.md#72",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "17.4 Pinned generalisations — design for Final, not yet normative (4)",
+   "text": "**The schema-6 delta, defined once.** Both lifts land in a single\nintentional semantic break — `GRAPH_SCHEMA` 5 → 6, one re-encode of the\ncorpus — never as two migrations discovering each other halfway:\n\n```text\noperation-program-derived surfaces   completeness from the declared\n                                     program; object kinds imply nothing\nattention absent when absent         presence means semantic presence,\n                                     not successful serialization\nContinuationState declaration        per-operation state schema\nKDA state precision                  declared, never chosen by the executor\nMLA latent-KV geometry               declared, never invented\nper-op norm-epsilon override         the MLA kv_a_layernorm fact (F6)\nexplicit per-layer operator          no absent-means-softmax default (F7)\nfail-closed layer census             undeclared families block (F3)\nclosure at encode                    encoding is the proof boundary (F4)\n```\n\nThe schema-6 acceptance test is severe by design: an encoder may not\nemit a v6 graph unless declared operations ↔ required surfaces ↔\ncomplete semantic parameters ↔ required continuation-state schema ↔\nclosed operand estate all reconcile. The Final invariant this buys:\n\n> **The encoded operation programme is the completeness authority, and\n> an encoder may not emit a programme whose required semantics or\n> operands do not close.**"
+  },
+  {
+   "id": "vindex3-format-spec.md#73",
+   "source": "the ABI",
+   "doc": "vindex3-format-spec.md",
+   "heading": "17.4 Pinned generalisations — design for Final, not yet normative (5)",
+   "text": "Validation witnesses (real checkpoints, in order):\n`state-spaces/mamba2-780m` — 48 Mamba2 layers, `attn_layer_idx: []`,\nzero attention: the pure case that must encode with no attention surface\nanywhere; `state-spaces/mamba2attn-2.7b` — six attention layers at\ndeclared indices among Mamba2 blocks: the A/B proving surfaces exist\nonly where the declared program uses them, and that KV and SSM state\ncoexist per-operation; then `tiiuae/Falcon3-Mamba-7B-Instruct` as the\nproduct-scale witness. Kimi-Linear remains the three-state hybrid\nwitness for the ContinuationState half.\n\n---"
+  },
+  {
+   "id": "vindex3-format-spec.md#74",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.1 The operations surface",
    "text": "LQL operates on V3 containers with full V2 parity: `USE` (bind),\n`INFER`/`GENERATE` (execute), `WALK`/`DESCRIBE`/`SELECT` (query),\n`TRACE` (observe — on V3 bindings the observational trace runs without\nperturbing execution), overlay/patch statements (mutate), `DIFF`\n(compare), `COMPILE` (persist), `COMPACT` (maintain). Statements that a\nV3 binding cannot serve refuse explicitly, naming the generation — the\nwhole-language sweep guarantees no statement falls into an accidental\nbackend path."
   },
   {
-   "id": "vindex3-format-spec.md#73",
+   "id": "vindex3-format-spec.md#75",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.2 Serving",
    "text": "A served V3 container answers `/v1/completions`, `/v1/chat/completions`\n(including tools/structured output) and `/v1/responses`, sharing every\nwire shape with the V2 path so the two runtimes cannot drift in what a\nclient sees. See the runtime document §5."
   },
   {
-   "id": "vindex3-format-spec.md#74",
+   "id": "vindex3-format-spec.md#76",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "18.3 The `vindex` reader",
    "text": "The format-native tool (`crates/vindex-cli`, binary `vindex`) answers\n**from the artifact alone** — `index.json`, the system graph, the\nsegment headers — with no inference runtime attached:\n\n```\nvindex inspect          the container, reconstructed from itself\nvindex describe         one logical object, in full\nvindex representations  the physical directory, with recorded fidelity\nvindex diff             one object under two representations, value by value\nvindex represent        compile a representation beside the original\nvindex precision        bits per weight — derived, never asserted\nvindex verify           the container against its own recorded hashes\n```\n\nEvery command speaks `--json`. The doctrine: VINDEX3 is defined by its\ndocuments, not by any tool, and an artifact must not require an engine to\nbe understood. Recorded honestly: this binary is the canonical *reader*,\nnot yet an independent *implementation* — it links the `larql-vindex`\ntree; carving out a dependency-light `vindex-core` is a named gate for\nFinal (§21), because the independent-reader test only counts when the\nreader cannot inherit the writer's assumptions.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#75",
+   "id": "vindex3-format-spec.md#77",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "19. Mutation contract",
    "text": "Mutation is **overlay, never rewrite**. Patch and overlay statements\nchange *effective* operands; the base container's files are not modified.\nEffective state is:\n\n- **observable** — TRACE and the query surface see the model as mutated;\n- **comparable** — logical DIFF operates over effective model state, not\n  file bytes (§20);\n- **durable only by COMPILE** — `COMPILE CURRENT INTO VINDEX` materialises\n  effective operands into a new standalone container, stamped\n  `authority: derived` with `derived_from_model` provenance (§5.2, §9.2).\n\nNothing is destroyed: the base container remains bit-identical, and a\ncompiled container is a sibling artifact, never an in-place upgrade.\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#76",
+   "id": "vindex3-format-spec.md#78",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "20. Equivalence contract",
-   "text": "The guarantees that make transformations provable rather than asserted:\n\n- **Verification (encode-time).** `larql vindex3 verify` compares four\n  explicit authorities — Declared (HF), Resolved (detection), Graph,\n  Encoded — structurally and semantically, plus byte-payload equivalence\n  with both ends re-hashed at verify time, so a drifted checkpoint fails\n  differently (`source ≠ recorded`) from a corrupted container\n  (`encoded ≠ recorded`). \"Tensor count before == after\" is not\n  verification and does not appear in this format.\n- **Logical DIFF.** `DIFF` compares effective model state — objects,\n  representations, values — between two containers or a container and\n  `CURRENT`, deriving error rather than asserting it. `vindex diff` is\n  the artifact-only projection of the same guarantee.\n- **COMPILE equivalence.** A compiled container must answer\n  `INFER / GENERATE / TRACE / WALK` equivalently to the effective state\n  it materialised — equivalence is gated, not presumed, and the result\n  is stamped `derived`, never `canonical`.\n- **COMPACT identity.** `COMPACT` reorganises physical storage and MUST\n  preserve semantic identity — same graph, same effective values, same\n  answers; it MUST NOT discard container contents it does not understand\n  (§5.7).\n\n---"
+   "text": "The guarantees that make transformations provable rather than asserted:\n\n- **Verification (encode-time).** `larql vindex3 verify` compares four\n  explicit authorities — Declared (HF), Resolved (detection), Graph,\n  Encoded — structurally and semantically, plus byte-payload equivalence\n  with both ends re-hashed at verify time, so a drifted checkpoint fails\n  differently (`source ≠ recorded`) from a corrupted container\n  (`encoded ≠ recorded`). \"Tensor count before == after\" is not\n  verification and does not appear in this format.\n- **Logical DIFF.** `DIFF` compares effective model state — objects,\n  representations, values — between two containers or a container and\n  `CURRENT`, deriving error rather than asserting it. `vindex diff` is\n  the artifact-only projection of the same guarantee.\n- **COMPILE equivalence.** A compiled container must answer\n  `INFER / GENERATE / TRACE / WALK` equivalently to the effective state\n  it materialised — equivalence is gated, not presumed, and the result\n  is stamped `derived`, never `canonical`.\n- **COMPACT identity.** `COMPACT` reorganises physical storage and MUST\n  preserve semantic identity — same graph, same effective values, same\n  answers. It carries byte-identically what it cannot decode, and it\n  discards unreferenced files only as named entries in its report —\n  silent discard is forbidden (§5.7).\n\n---"
   },
   {
-   "id": "vindex3-format-spec.md#77",
+   "id": "vindex3-format-spec.md#79",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "21. Toward 3.0 Final",
    "text": "What the candidate settles: one canonical container model (§5), the\ncontract stack (§0), compatibility rules (§5.7), the schema span (§12).\nWhat remains before this specification drops \"candidate\" — each a named\ngate, none of them drift:\n\n| # | Gate | Today |\n| - | ---- | ----- |\n| 1 | **Shape convergence executed** (§5.6): LYRW banks producible as a graph-container representation's segments, or the bank writer retired to importer-only status with its output re-encodable to the graph shape | two disjoint writers |\n| 2 | **Required/optional freeze**: an RFC-2119 pass over §5–§9 separating normative requirements from extensions | this document's tables are the input |\n| 3 | **Independent reader**: `vindex-core` carved out so the reader stops linking the writer's tree; a minimal conformance harness over published fixtures | reader exists, boundary impure (§18.3) |\n| 4 | **E8 held-out architecture** (§16 criterion 7) | not yet run |\n| 5 | **The M4 flip**: `DEFAULT_EXTRACTION_GENERATION = V3` per the generation policy | M1–M3 done, M4 open |\n| 6 | **Bank-ABI pre-freeze rows**: the remaining V2-0..V2-4 experiment gates (profile-authority derivation, variant-selection refusal, fixtures B–D, WALK/DESCRIBE parity) | open |\n| 7 | **The ontology lift** (§17.4): completeness from the declared operation program rather than object kinds, and ContinuationState generalising KV — accepted by the four-architecture paper drill | **drilled 2026-08-30** — confirmed and fully enumerated, findings F1–F16 in [`docs/vindex3-ontology-drill.md`](../../../docs/vindex3-ontology-drill.md) |"
   },
   {
-   "id": "vindex3-format-spec.md#78",
+   "id": "vindex3-format-spec.md#80",
    "source": "the ABI",
    "doc": "vindex3-format-spec.md",
    "heading": "21. Toward 3.0 Final (2)",

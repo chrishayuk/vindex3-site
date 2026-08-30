@@ -236,7 +236,7 @@ export default function LadderPage() {
 						question: "An unknown low-bit sparse-MoE representation, permuted experts.",
 						gate: "new codec vocabulary is additive; an older reader degrades, never lies",
 						status: "PASSED",
-						detail: "The additive claim is real: unknown encodings inspect clean, every execution fallthrough refuses by name, and COMPACT carries what it cannot decode byte-identically. The drill still earned its keep — two preservation defects against the spec's own compatibility rules were found and named.",
+						detail: "The additive claim is real: unknown encodings inspect clean, every execution fallthrough refuses by name, and COMPACT carries what it cannot decode byte-identically. The drill still earned its keep — two preservation defects against the spec's own compatibility rules were found, named, and closed the same day: unknown fields now survive the bake, and discard is sanctioned only when reported.",
 					},
 				]}
 				caption="Hostile schema review against the real types, findings recorded before verdicts — sixteen findings, and every schema gap landed inside the two pinned lifts, nowhere else. The ontology question itself did not flinch. The full ledger is docs/vindex3-ontology-drill.md."
