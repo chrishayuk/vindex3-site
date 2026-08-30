@@ -32,7 +32,7 @@ export default function VersionPage() {
 					url: "https://vindex3.org/3.0",
 					siteUrl: "https://vindex3.org",
 					siteName: "VINDEX3",
-					dateModified: "2026-08-30",
+					dateModified: "2026-08-31",
 					about: ["model container format", "specification lifecycle", "conformance"],
 				})}
 			/>
@@ -52,7 +52,7 @@ export default function VersionPage() {
 			<Answer
 				id="what-is-vindex3-3-0"
 				question="What is VINDEX3 3.0, and what is its current status?"
-				answer="VINDEX3 3.0 is a Candidate Specification for a self-describing, executable, queryable model container, promoted from draft on 2026-08-30 and carrying graph schema 6. The container model is settled: one canonical graph shape, a contract stack, compatibility rules, and a per-layer operator program that surfaces and state follow. Candidate means the model is settled, not that the bytes are frozen — the gates that remain before Final are named below, each with its status."
+				answer="VINDEX3 3.0 is a Candidate Specification for a self-describing, executable, queryable model container, promoted from draft on 2026-08-30 and carrying graph schema 6. The container model is settled: one canonical graph shape, a contract stack, compatibility rules, and a per-layer operator program that surfaces and state follow. Schema 6 has now executed both a pure SSM and a mixed Mamba2 / conv-QKV-attention model through the generic runtime with no family lookup and no further schema change — the hybrid matches its fp32 oracle across 468 positions and reproduces source-hidden LQL generation token-for-token. Candidate means the model is settled, not that the bytes are frozen — the gates that remain before Final are named below, each with its status."
 				cite="derived from the Record — /ladder"
 			/>
 
@@ -66,21 +66,21 @@ export default function VersionPage() {
 						question: "The source checkpoint is not required for execution.",
 						gate: "the deletion invariant: remove the checkpoint, config, model type and architecture name — execution must not change",
 						status: "PASSED",
-						detail: "Held live twice over: production models execute from the container alone, and the pure-SSM witness generated through ordinary LQL with its source checkpoint deleted — reproducing the reference's greedy continuation word-for-word from the artifact, structure and state story included.",
+						detail: "Held live three times over: production models execute from the container alone; the pure-SSM witness generated through ordinary LQL with its source checkpoint deleted, reproducing the reference's greedy continuation word-for-word; and the mixed Mamba2 / conv-QKV-attention hybrid did the same id-for-id — its executor defined entirely by the persisted operator, with no family lookup anywhere in the path.",
 					},
 					{
 						id: "PROGRAMMABLE",
 						question: "Execution follows the encoded operator program.",
 						gate: "closure + golden parity + causal mutation controls; since schema 6, surfaces follow the program",
 						status: "PASSED",
-						detail: "A binding is a closed operand-verified program — softmax, MLA, KDA, gated-delta, Mamba2 are vocabulary, not ontology. The causal controls searched for hidden defaults and found none.",
+						detail: "A binding is a closed operand-verified program — softmax, MLA, KDA, gated-delta, Mamba2, conv-QKV attention are vocabulary, not ontology. Both directions are executed evidence now: an architecture with no attention fabricates none, and one with selected non-standard attention gets that operator exactly where declared. The causal controls searched for hidden defaults and found none.",
 					},
 					{
 						id: "STATE-COMPLETE",
 						question: "Continuation requirements are explicit.",
 						gate: "the program declares what persists between tokens; undeclared precision is refused, never chosen",
 						status: "BUILDING",
-						detail: "The declaration side holds — each operation declares one or more typed state regions (KV, latent KV, or a folded state with its convolution history), witnessed by a three-state hybrid and a pure-SSM container whose layers each carry two. The typed state schema (declared KDA precision, MLA latent geometry) is the ontology lift's second half: additive within schema 6, and honestly open.",
+						detail: "State declaration is now proven across a multi-region hybrid: an operator declares the continuation regions it requires and execution consumes those declarations — including one layer carrying a KV cache AND a convolution history, with a KV-only provider refusing rather than allocating half. Witnessed by a three-state hybrid, a pure-SSM container whose layers each carry two regions, and the Mamba2Attn hybrid at its oracle's floor. The typed state schema (declared KDA precision, MLA latent geometry) is the ontology lift's second half: additive within schema 6, and honestly open.",
 					},
 					{
 						id: "REPRESENTATION-INDEPENDENT",

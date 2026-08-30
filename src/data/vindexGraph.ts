@@ -437,6 +437,32 @@ export const CANON: CanonEntry[] = [
 
 export const CANON_EXTENSION: CanonEntry[] = [
 	{
+		id: "q-multi-region-state",
+		summary: "operation family does not imply state shape",
+		entities: ["multi-region", "two regions", "kv and conv", "state shape", "conv history", "kv", "regions"],
+		intent: "why",
+		patterns: [
+			"more than one state",
+			"multiple state regions",
+			"multi region",
+			"two continuation regions",
+			"kv and conv history",
+			"state shape",
+			"does attention need more than kv",
+			"attention more than kv",
+			"more than kv",
+			"multiple state regions",
+		],
+		answer:
+			"An operator may declare more than one continuation region, and being 'attention' or 'a recurrence' decides nothing about how many. Both recurrence families carry a convolution history beside their folded state — and the hybrid witness's conv-QKV attention, recognisably attention, declares a per-position KV cache AND a convolution history on the same layer. The regions are declared by the operator and consumed by execution; a provider that can hold only KV rows refuses such a layer rather than silently allocating half of it. That refusal is the fail-closed philosophy reaching all the way into runtime API design.",
+		path: [e("vindex3", "declares_state_as"), e("mamba2-op", "carries")],
+		record: {
+			status: "SUPPORTED",
+			note: "witnessed — mamba2attn-250m: KV + conv history on one layer, batch-vs-decode bitwise across the step boundary",
+		},
+		explore: ["continuation-state-e", "conv-qkv-e", "fail-closed-e"],
+	},
+	{
 		id: "q-four-bit-isnt",
 		summary: "a four-bit model is never four bits",
 		entities: ["4-bit", "nvfp4", "scales", "scale", "4.5"],
@@ -1510,12 +1536,29 @@ export const ENTITIES: Entity[] = [
 		href: "/execution",
 	},
 	{
+		id: "conv-qkv-e",
+		names: ["conv-qkv", "conv qkv", "conv-qkv attention", "convqkvattention", "mamba2attn attention", "hybrid attention operator", "convolutional attention"],
+		display: "CONV-QKV ATTENTION",
+		five: "attention is not one shape",
+		role: "The hybrid Mamba2Attn stack's attention operator: one fused QKV projection, a causal depthwise convolution over the FULL fused QKV with no activation, partial rotary on the leading dims of each head, then GQA softmax and an output projection — recognisably attention, and not plain softmax.",
+		detail: "Reading it as generic attention would drop the convolution — a real mixing step with its own continuation state — and rotate the whole head instead of the declared fraction. So it is its own operator, with five operand roles whose spellings collide with the Mamba2 set at different shapes, resolved per layer by the declared program. Its continuation is TWO regions on one layer: a real per-position KV cache AND a convolution history over the pre-conv fused QKV — the first operator to declare both, and the proof that operation family does not imply state shape. A provider that can hold only KV rows refuses the layer rather than allocating half of it. Witnessed live on the 250M hybrid: 468 of 468 teacher-forced positions argmax-exact at the reference's own numerical floor, and source-hidden LQL generation reproducing the oracle id-for-id.",
+		group: "attention-families",
+		relations: [
+			{ rel: "sibling_of", to: "mamba2-e" },
+			{ rel: "carries", to: "continuation-state-e" },
+			{ rel: "declared_by", to: "operator-e" },
+			{ rel: "verified_by", to: "closure-e" },
+			{ rel: "refused_for", to: "fail-closed-e" },
+		],
+		href: "/execution",
+	},
+	{
 		id: "continuation-state-e",
 		names: ["continuation state", "continuation", "state families", "persists between tokens"],
 		display: "CONTINUATION STATE",
 		five: "the program declares its memory",
 		role: "What persists between tokens, declared by the model program rather than assumed: KV rows for softmax attention, a latent-compressed cache for MLA, and one or more regions for each recurrence family — Gated DeltaNet and Mamba2 both carry a convolution history beside their folded state.",
-		detail: "KV is one state family — not the definition of model continuation. Two real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, and a pure-SSM container describes its whole continuation with no KV row anywhere. The typed state schema is the remaining half of the ontology lift, additive within schema 6 — and until an operator's state precision is declared, the planner refuses to choose one.",
+		detail: "KV is one state family — not the definition of model continuation, and an operator may declare more than one region: operation family does not imply state shape. Three real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, a pure-SSM container describes its whole continuation with no KV row anywhere, and the Mamba2Attn hybrid's conv-QKV attention — recognisably attention — declares a KV cache AND a convolution history on the same layer, with a KV-only provider refusing the layer rather than allocating half of it. The typed state schema is the remaining half of the ontology lift, additive within schema 6 — and until an operator's state precision is declared, the planner refuses to choose one.",
 		group: "format",
 		relations: [
 			{ rel: "generalises", to: "kv-vs-recurrent-state" },
@@ -1583,12 +1626,25 @@ export const ENTITIES: Entity[] = [
 ];
 
 export function findEntities(queryTokens: string[], queryLower: string): Entity[] {
-	const hits: Entity[] = [];
+	// Longest match wins: when one entity's matched name contains
+	// another's ("conv-qkv attention" ⊃ "attention"), the specific
+	// entity is what the question names and the generic one yields —
+	// otherwise every operator whose name mentions attention would
+	// resolve to the attention overview instead of itself.
+	const hits: { ent: Entity; name: string }[] = [];
 	for (const ent of ENTITIES) {
-		const hit = ent.names.some((n) => (n.includes(" ") ? queryLower.includes(n) : queryTokens.includes(n)));
-		if (hit) hits.push(ent);
+		let best = "";
+		for (const n of ent.names) {
+			const hit = n.includes(" ") || n.includes("-") ? queryLower.includes(n) : queryTokens.includes(n);
+			if (hit && n.length > best.length) best = n;
+		}
+		if (best) hits.push({ ent, name: best });
 	}
-	return hits;
+	return hits
+		.filter(
+			(h) => !hits.some((other) => other !== h && other.name.length > h.name.length && other.name.includes(h.name))
+		)
+		.map((h) => h.ent);
 }
 
 export function entity(id: string): Entity | undefined {
@@ -1623,4 +1679,5 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
 	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "OPEN", note: "KDA precision and MLA latent geometry — additive within schema 6" },
 	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "PASSED", note: "paritied against the fp32 oracle: 430/430 argmax exact, trajectories token-for-token, max|Δ| 7.6e-4" },
+	{ id: "hybrid-rehearsal", label: "the 250M hybrid rehearsal (Mamba2 + conv-QKV attention)", status: "PASSED", note: "no family lookup, no schema change: 468/468 argmax exact at the oracle's own floor (max|Δ| 6.9e-5), source-hidden LQL generation id-for-id; mamba2attn-2.7b stays OPEN as scale validation" },
 ];

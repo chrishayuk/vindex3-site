@@ -36,7 +36,7 @@ export default function LadderPage() {
 					url: "https://vindex3.org/ladder",
 					siteUrl: "https://vindex3.org",
 					siteName: "VINDEX3",
-					dateModified: "2026-08-30",
+					dateModified: "2026-08-31",
 					about: ["conformance", "benchmarks"],
 				})}
 			/>
@@ -314,7 +314,42 @@ export default function LadderPage() {
 						detail: "The executor is the reference mixer transcribed stage by stage, run through the ordinary prepared-operands, prefill, decode and continuation path — no family loader anywhere. All 430 scored positions across three prompt lengths (one crossing the SSD chunk boundary) agree within 7.6e-4 — pure fp32 reassociation over the oracle's own 2.1e-4 step-vs-scan floor — with argmax exact everywhere and all three 32-token greedy trajectories token-for-token. And the invariant is visible to a user: with the source checkpoint deleted, ordinary INFER … GENERATE reproduces the reference's continuation word-for-word from the artifact alone.",
 					},
 				]}
-				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. Next in line: mamba2attn-2.7b, the surfaces-follow-the-program A/B — the same generic runtime, pure SSM against hybrid, differing only in their declared programs. Its six declared attention layers are themselves not plain softmax — causal convolution over the fused QKV, partial rotary — so the hybrid brings its own operator judgment, and its attention layers carry convolution history beside their KV."
+				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. The hybrid half of the story now has its own witness below: the 250M rehearsal PASSED the next day, and mamba2attn-2.7b remains open as scale validation of the same abstraction."
+			/>
+
+			<Ladder
+				kicker="THE HYBRID REHEARSAL — LITE-OUTE-2-MAMBA2ATTN-250M · MIXED PROGRAM · 2026-08-31"
+				rungs={[
+					{
+						id: "JUDGE",
+						question: "A 32-layer mixed program — 28 Mamba2 mixers, 4 conv-QKV attention blocks — admits with every judgment explicit.",
+						gate: "28 blocking findings collapse to 0, each closed by a recorded judgment, never a silent default",
+						status: "PASSED",
+						detail: "Five judgments, all real: the mamba_ssm key dialect with its two package defaults recorded in provenance rather than silently filled; the attention blocks elevated to their own ConvQkvAttention operator — fused QKV through a causal depthwise convolution with no activation, partial rotary, GQA, fp32 softmax — never flattened to generic attention; MLP absence read as a declared program fact; and an index-set whose base fits both readings settled by tensor evidence, with the settlement in the provenance. The rehearsal also found and closed two fail-open defects on the way in.",
+					},
+					{
+						id: "PARITY",
+						question: "Does the generic path run the hybrid at the reference's own numerical floor?",
+						gate: "teacher-forced full-logit parity against the banked fp32 oracle, argmax and trajectory exact",
+						status: "PASSED",
+						detail: "Encoded at 486 MB over 274 closing operands, then paritied: 468 of 468 scored positions argmax-exact across three prompt lengths, max deviation 6.9e-5 — essentially the oracle's own 4.3e-5 step-vs-scan floor — and every 32-token greedy trajectory token-for-token. The executor reads only the persisted operator: no family lookup exists anywhere in the execution path, and the attention layers carry a KV cache AND a convolution history — one layer, two declared continuation regions, and a KV-only provider refuses rather than allocating half of it.",
+					},
+					{
+						id: "HIDE",
+						question: "Does source-hidden LQL generation reproduce the reference exactly?",
+						gate: "the checkpoint hidden; ordinary INFER … GENERATE from the container alone",
+						status: "PASSED",
+						detail: "With the source checkpoint hidden, ordinary LQL reproduces the oracle's greedy continuation id-for-id — 32 of 32 token ids — and SHOW LAYERS names conv-qkv where the program declares it, never a generic attention row. No schema change was needed at any rung.",
+					},
+					{
+						id: "SCALE",
+						question: "mamba2attn-2.7b — the same abstraction at scale.",
+						gate: "no schema changes permitted: new source judgments and tensor-derived proofs are in-bounds; changing what an existing concept means is a finding",
+						status: "OPEN",
+						detail: "The rehearsal established the semantics: two state families in one model, non-standard attention, an ambiguous interleave, source-family defaults and declared FFN absence — all closed with zero new ontology dimensions. The 2.7B witness is therefore scale validation of a closed abstraction, not architecture research, and it is held to the strictest rule on the Record.",
+					},
+				]}
+				caption="The rehearsal introduced no new ontology dimension. The 2.7B witness is now scale validation of the same abstraction — recorded here before it runs, so the claim cannot move to fit the result."
 			/>
 
 			<Evidence
@@ -365,6 +400,10 @@ export default function LadderPage() {
 					{
 						date: "2026-08-30",
 						text: "The same day: the four-architecture ontology drill runs, and its first half lands. Graph schema 6 — surfaces follow the declared operation program, presence means semantic presence, the census fails closed, closure moves to encode. The first pure-SSM witness goes from a nineteen-finding refusal to a zero-blocking admission with no fabricated surface anywhere, and opens through ordinary LQL with its source checkpoint deleted.",
+					},
+					{
+						date: "2026-08-31",
+						text: "The hybrid rehearsal closes end-to-end: a mixed Mamba2 / conv-QKV-attention model admits with five explicit judgments, executes through the generic runtime with no family lookup, matches its fp32 oracle at the oracle's own floor across 468 positions, and reproduces source-hidden LQL generation token-for-token — with no schema change. One layer now demonstrably carries two declared continuation regions.",
 					},
 				]}
 			/>

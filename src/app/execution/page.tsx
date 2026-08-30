@@ -154,7 +154,8 @@ KV assumed`}
       ↓
 declared operator program
   softmax · MLA · KDA
-  gated-delta · mamba2 · …
+  gated-delta · mamba2
+  conv-QKV attention · …
       ↓
 required surfaces
       ↓
@@ -171,14 +172,22 @@ continuation state`}
 before schema 6:   48 fabricated attention surfaces   ✕
 at schema 6:       48 Mamba2 operators
                     0 attention surfaces
+                    0 FFN surfaces                     ✓
+
+mamba2attn-250m — 28 Mamba2 operators · 4 conv-QKV attention operators
+
+at schema 6:       attention exactly where declared
+                   conv-QKV, never plain softmax
                     0 FFN surfaces                     ✓`}
 					</pre>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-						The witness is real, not staged: the first pure-SSM checkpoint through the pipeline was first
-						refused with nineteen itemised findings — the honest half of the story — and then admitted the
-						same day the lift landed, with zero fabricated surfaces, operand closure enforced at encode, and
-						the container opening through ordinary LQL after its source checkpoint was deleted. The Record
-						keeps both halves.
+						Both directions of the sentence are now executed evidence, not schema tests. An architecture with
+						no attention fabricates none: the pure-SSM witness was first refused with nineteen itemised
+						findings, then admitted with zero fabricated surfaces and operand closure enforced at encode. And
+						an architecture with selected, non-standard attention gets those operators only where declared:
+						the hybrid witness carries its four conv-QKV blocks — causal convolution over the fused QKV,
+						partial rotary — as their own operator on exactly the declared layers, and runs them at its
+						reference's numerical floor. The Record keeps every half.
 					</p>
 				</div>
 			</section>
@@ -226,6 +235,17 @@ LinearAttnNorm  LinearAttnOutProj`}
 Mamba2Conv1dBias
 Mamba2ALog  Mamba2D  Mamba2DtBias
 Mamba2GatedNorm  Mamba2OutProj
+Mamba2PreMixerNorm`}
+							</pre>
+						</div>
+						<div>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-3" style={{ color: "var(--color-accent)" }}>
+								conv-QKV attention — five, shared norm role
+							</p>
+							<pre className="voice-evidence text-xs leading-relaxed whitespace-pre overflow-x-auto m-0">
+								{`ConvQkvInProj  ConvQkvConv1d
+ConvQkvConv1dBias
+ConvQkvOutProj
 Mamba2PreMixerNorm`}
 							</pre>
 						</div>
@@ -352,16 +372,22 @@ gated deltanet       ├─ delta matrix         fixed size, folded every token
                      └─ conv history
 Mamba2               ├─ SSM state            head_dim × state_size per head
                      └─ conv history
+conv-QKV attention   ├─ KV rows              grows with context
+                     └─ conv history         fixed, over the fused QKV
 future operators     declared, never assumed`}
 					</pre>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-						Operations declare the continuation state they require — and an operator can require more than one
-						independently meaningful region: both recurrence families here carry a convolution history beside
-						their folded state, and modelling only the matrix once left a whole buffer invisible until the
-						first single-token continuation. KV is one region kind — not the definition of model continuation.
-						Two real witnesses hold that sentence up: a KDA + MLA + softmax hybrid carrying three state kinds
-						already executes, and a pure-SSM container describes its whole continuation as two recurrent
-						regions per layer — eighteen million elements, constant in sequence length, no KV row anywhere.
+						An operator may declare more than one continuation region — and operation family does not imply
+						state shape. Both recurrence families here carry a convolution history beside their folded state,
+						and modelling only the matrix once left a whole buffer invisible until the first single-token
+						continuation. Nor is multi-region state peculiar to recurrence: the hybrid witness's conv-QKV
+						attention — recognisably attention — requires a KV cache AND a convolution history on the same
+						layer, and a provider that can hold only rows refuses the layer rather than allocating half of
+						it. KV is one region kind — not the definition of model continuation. Three real witnesses hold
+						that sentence up: a KDA + MLA + softmax hybrid carrying three state kinds already executes, a
+						pure-SSM container describes its whole continuation as two recurrent regions per layer — eighteen
+						million elements, constant in sequence length, no KV row anywhere — and the Mamba2Attn hybrid
+						runs both mixed regions through generic execution at its reference's own numerical floor.
 						The typed state schema — declared precision for KDA, latent geometry for MLA — is the remaining
 						half of the lift, additive within schema 6. The rule underneath does not change: state geometry is
 						a container fact, read from the plan, never inferred from architecture.
