@@ -68,7 +68,7 @@ export default function RootLayout({
 				<SiteFooter
 					brand="VINDEX3"
 					tagline="The model is the database — components named, representations catalogued, claims checkable."
-					note="VINDEX3 · 3.0-candidate · every metric on this site names its model, hardware and date, and answers to the Record."
+					note="VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA 6 · updated 2026-08-30 · every metric on this site names its model, hardware and date, and answers to the Record."
 					groups={[
 						{
 							label: "THE JOURNEY",
@@ -103,6 +103,7 @@ export default function RootLayout({
 							label: "THE RECORD",
 							links: [
 								{ href: "/ladder", label: "The Record" },
+								{ href: "/3.0", label: "3.0 — version & status" },
 								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
 								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
 								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.5.0", label: "The release", external: true },

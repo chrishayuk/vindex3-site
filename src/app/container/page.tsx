@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
@@ -24,10 +27,34 @@ export const metadata: Metadata = {
 export default function ContainerPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Container",
+					description:
+						"The VINDEX3 container: one directory, one root authority, five weight classes, every part named and checkable.",
+					url: "https://vindex3.org/container",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["model container format"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Container", url: "https://vindex3.org/container" },
+				])}
+			/>
 			<Hero
 				kicker="THE CONTAINER · CANDIDATE SPEC §4–5"
 				title="ONE DIRECTORY, ONE ROOT"
 				dek="A VINDEX3 container is not a single blob. It is a directory whose every part is named, addressable, and explained — this page walks all of them."
+			/>
+
+			<Answer
+				id="what-is-a-vindex3-container"
+				question="What is a VINDEX3 container?"
+				answer="A directory, not a blob: one root authority (index.json) speaking for version, identity, checksums and segments; a system graph recording what the model means; segments holding the bytes; and execution profiles selecting among physically present representations. Every part is named and checkable, so the same artifact can be understood, executed, transformed and verified — including after the source checkpoint is deleted."
 			/>
 
 			<Statement text="Today, changing your mind about a model means making another file." />

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Agreement } from "@chrishayuk/hause/components/forms/Agreement";
@@ -22,10 +25,34 @@ export const metadata: Metadata = {
 export default function AuthorityPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "Authority",
+					description:
+						"Where truth comes from: four derived authorities, the fidelity lattice, and verification that re-hashes both ends.",
+					url: "https://vindex3.org/authority",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["verification", "model provenance"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "Authority", url: "https://vindex3.org/authority" },
+				])}
+			/>
 			<Hero
 				kicker="AUTHORITY · LIVING SPEC §7–8 · ABI §9.2"
 				title="WHERE TRUTH COMES FROM"
 				dek="Four independently-derived views of the same system that must be identical — and a fidelity level a profile can never claim above, only voluntarily below."
+			/>
+
+			<Answer
+				id="how-is-completeness-known"
+				question="How does VINDEX3 know a container is complete and faithful?"
+				answer="Four independently derived authorities must agree — what the source declared, what detection resolved, what the graph encodes, and what the container's bytes actually hold — with both ends re-hashed at verify time. Operand closure then proves the executable program is total: every stored tensor maps to an operation, every operation carries judged semantics, and a missing operand is a named refusal. Nothing is asserted; agreement is derived."
 			/>
 
 			<Agreement

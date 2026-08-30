@@ -12,6 +12,7 @@ const BASE = "https://vindex3.org";
 export default function sitemap(): MetadataRoute.Sitemap {
 	const pages = [
 		"",
+		"/3.0",
 		"/why",
 		"/anatomy",
 		"/quantization",

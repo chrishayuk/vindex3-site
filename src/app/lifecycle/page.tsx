@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
@@ -22,10 +25,34 @@ export const metadata: Metadata = {
 export default function LifecyclePage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Lifecycle",
+					description:
+						"What a container's life looks like after encoding: bound, questioned, executed, changed, compiled, diffed, compacted — each verb with a guarantee.",
+					url: "https://vindex3.org/lifecycle",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["model lifecycle"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Lifecycle", url: "https://vindex3.org/lifecycle" },
+				])}
+			/>
 			<Hero
 				kicker="THE LIFECYCLE · CANDIDATE SPEC §18–20 · LQL"
 				title="A CONTAINER HAS A LIFE"
 				dek="Encoding is where a container is born, not where the story ends. The same artifact is bound, questioned, executed, watched, changed, compared, made durable, and maintained — each verb with a stated guarantee."
+			/>
+
+			<Answer
+				id="what-is-the-lifecycle"
+				question="What can you do with a VINDEX3 container after encoding?"
+				answer="Everything a model's life requires, through one query language: bind it, question its structure, run inference, trace execution observationally, change effective state through overlays that never move the base bytes, compile changes into new standalone artifacts, diff two containers semantically, and compact for durability under a preservation rule — discard only when reported. Each verb carries a stated guarantee, and every guarantee answers to the Record."
 			/>
 
 			<Statement text="A format that only stores is a warehouse. This one has query semantics, execution semantics, mutation semantics — and equivalence semantics." />

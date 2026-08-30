@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { ExpertField } from "@chrishayuk/hause/components/forms/ExpertField";
@@ -25,10 +28,34 @@ export const metadata: Metadata = {
 export default function WhyPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Physics",
+					description:
+						"What a model is made of, why it is hard to move, and why the file format is where serving speed is decided.",
+					url: "https://vindex3.org/why",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["memory bandwidth", "quantization", "LLM inference"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Physics", url: "https://vindex3.org/why" },
+				])}
+			/>
 			<Hero
 				kicker="FIRST PRINCIPLES · WHY A FILE FORMAT MATTERS"
 				title="THE PHYSICS"
 				dek="What a model is made of, why it is hard to move, and why the file format — of all things — is where the battle is actually fought."
+			/>
+
+			<Answer
+				id="why-does-the-format-matter"
+				question="Why does a model file format decide serving speed?"
+				answer="Because decode is bandwidth-bound: every generated token re-reads the working set, so tokens per second is effectively memory bandwidth divided by bytes touched per token. The format decides those bytes — which representation is read, which experts are resident, what precision each role carries. That is why representation is a serving lever worth keeping adjustable, and why VINDEX3 stores variants beside the original instead of sealing one choice at conversion."
 			/>
 
 			<Observation

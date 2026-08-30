@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -23,10 +25,34 @@ export const metadata: Metadata = {
 export default function RepresentationPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "Representation",
+					description:
+						"Selection, not conversion: multiple physical representations catalogued beside the original, chosen by profile.",
+					url: "https://vindex3.org/representation",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["mixed precision", "quantization"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "Representation", url: "https://vindex3.org/representation" },
+				])}
+			/>
 			<Hero
 				kicker="REPRESENTATION · VINDEX3 ABI §9.1–9.2"
 				title="SELECTION, NOT CONVERSION"
 				dek="A region set may carry multiple physically present variants. A profile selects a present variant. That is the only legal representation model — a profile saying a format cannot conjure bytes into it."
+			/>
+
+			<Answer
+				id="what-is-a-representation"
+				question="What is a VINDEX3 representation?"
+				answer="A representation is a physical encoding of a logical model object. One object — target.decoder_stack, an expert bank — can carry several representations with different precision, storage and execution characteristics, catalogued beside the original with fidelity recorded against the source. Its semantic identity never changes with the encoding: a profile selects among physically present variants, and can never request bytes that were not extracted."
 			/>
 
 			<Answer

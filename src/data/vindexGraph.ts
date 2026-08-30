@@ -81,6 +81,10 @@ export const NODES: GraphNode[] = [
 	{ id: "ev-roundtrip", kind: "evidence", label: "five models round-trip byte-identically", href: "/ladder" },
 	{ id: "ev-gate", kind: "evidence", label: "52-layer refusal naming the gate primitive", href: "/execution" },
 
+	{ id: "schema-six", kind: "concept", label: "graph schema 6 — surfaces follow the program", href: "/execution" },
+	{ id: "continuation-state", kind: "concept", label: "continuation state", href: "/execution" },
+	{ id: "mamba2-op", kind: "concept", label: "the Mamba2 operator (pure SSM)", href: "/execution" },
+	{ id: "ev-witness", kind: "evidence", label: "mamba2-780m: 19-finding refusal → 0-blocking admission · 2026-08-30", href: "/ladder" },
 	{ id: "engines", kind: "concept", label: "both engines, one output", href: "/why" },
 	{ id: "write-order", kind: "concept", label: "segments first, index.json last", href: "/graph" },
 	{ id: "programme-manifest", kind: "concept", label: "moe_manifest.json — banks bound to programmes", href: "/container" },
@@ -134,6 +138,12 @@ export const EDGES: GraphEdge[] = [
 	{ from: "container", rel: "written_in_order", to: "write-order" },
 	{ from: "container", rel: "given_meaning_by", to: "programme-manifest" },
 	{ from: "five-classes", rel: "decides_residency_with", to: "profiles" },
+	{ from: "execution-surface", rel: "follows", to: "schema-six" },
+	{ from: "schema-six", rel: "witnessed_by", to: "ev-witness" },
+	{ from: "vindex3", rel: "declares_state_as", to: "continuation-state" },
+	{ from: "mamba2-op", rel: "carries", to: "continuation-state" },
+	{ from: "schema-six", rel: "admits", to: "mamba2-op" },
+	{ from: "closure", rel: "enforced_at_encode_by", to: "schema-six" },
 ];
 
 export type Intent = "compare" | "why" | "what" | "how" | "status" | "show";
@@ -646,6 +656,42 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		path: [e("vindex3", "queried_via")],
 		explore: ["record"],
 	},
+	{
+		id: "q-no-kv-assumption",
+		summary: "continuation state generalises KV",
+		entities: ["kv", "cache"],
+		intent: "why",
+		patterns: ["assume kv", "assume a kv", "kv cache", "doesn't assume", "no kv"],
+		answer:
+			"Because KV is one state family, not the definition of model continuation. The model program declares what persists between tokens: softmax attention declares KV rows, MLA a latent-compressed cache, KDA and Gated DeltaNet a fixed-size recurrent state, Mamba2 an SSM state plus a short conv history. A pure-SSM container describes its whole continuation with no KV row anywhere — and the runtime reads that declaration from the plan, never from an architecture guess.",
+		path: [e("vindex3", "declares_state_as"), e("mamba2-op", "carries")],
+		record: { status: "PASSED", note: "mamba2-780m: continuation reported as recurrent state only — 18.9M elements, constant in sequence length" },
+		explore: ["continuation-state", "mamba2-op", "record"],
+	},
+	{
+		id: "q-pure-ssm",
+		summary: "a model with no attention admits",
+		entities: ["attention-free"],
+		intent: "what",
+		patterns: ["no attention", "without attention", "pure ssm", "state space", "attention-free"],
+		answer:
+			"Yes — and it is witnessed, not promised. mamba2-780m, 48 SSM layers and zero attention anywhere, was first refused with nineteen itemised findings, then admitted the day graph schema 6 landed: a registered Mamba2 operator judgment consumes the SSM semantics, the container encodes with no attention surface and no FFN surface — the mixer is the whole block — and ordinary LQL opens it with the source checkpoint deleted. Execution still refuses by name until the generic Mamba2 executor lands.",
+		path: [e("schema-six", "admits"), e("schema-six", "witnessed_by")],
+		record: { status: "PASSED", note: "19 blocking → 0 · encoded with closure at encode · LQL-open under the deletion invariant · 2026-08-30" },
+		explore: ["mamba2-op", "schema-six", "record"],
+	},
+	{
+		id: "q-schema-six",
+		summary: "schema six: surfaces follow the program",
+		entities: ["schema"],
+		intent: "what",
+		patterns: ["schema 6", "schema six", "surfaces follow", "graph schema"],
+		answer:
+			"Graph schema 6 is the ontology lift's first half, landed 2026-08-30: presence means semantic presence. The execution surface's attention and FFN groups exist iff the component's declared operator program runs those operations; the per-layer operator is explicit, with no absent-means-softmax default; the layer census fails closed on an undeclared family; and operand closure is enforced at encode — a container whose operands do not close is removed, not written. Object kinds keep identity and stop implying operation families.",
+		path: [e("execution-surface", "follows"), e("schema-six", "witnessed_by"), e("closure", "enforced_at_encode_by")],
+		record: { status: "PASSED", note: "landed with the live pure-SSM witness; lift 2's state-schema facts remain, additive within v6" },
+		explore: ["schema-six", "execution-surface", "record"],
+	},
 ];
 CANON.push(...CANON_EXTENSION);
 
@@ -655,6 +701,8 @@ export const SUGGESTIONS = [
 	"What happens if I delete the original checkpoint?",
 	"How would an independent implementation read a container?",
 	"What is still open?",
+	"Why doesn't VINDEX3 assume a KV cache?",
+	"Can VINDEX3 hold a model with no attention?",
 ];
 
 /* ------------------------------------------------------------------
@@ -1072,7 +1120,7 @@ export const ENTITIES: Entity[] = [
 		display: "OPERAND CLOSURE",
 		five: "every operand accounted, or refused",
 		role: "Every stored tensor must map to a generic operation, every operation must carry judged semantics, and per-layer accounting must be total — a missing operand is a named refusal, never a silently skipped step.",
-		detail: "The proof is causal: mutate a stored fact and the computation must change; where mutation changes nothing, a hidden default was hiding. The gate primitive entered the IR exactly this way — 52 layers refused by name until the semantics were judged.",
+		detail: "The proof is causal: mutate a stored fact and the computation must change; where mutation changes nothing, a hidden default was hiding. The gate primitive entered the IR exactly this way — 52 layers refused by name until the semantics were judged. And since schema 6, closure is enforced at encode: a container whose operands do not close is removed, not written — encoding is the proof boundary.",
 		group: "format",
 		relations: [
 			{ rel: "completes", to: "verification-e" },
@@ -1086,7 +1134,7 @@ export const ENTITIES: Entity[] = [
 		display: "EXECUTION SURFACE",
 		five: "what generic operations need, resolved",
 		role: "A component says what part of the system it is; its execution surface says what the generic operations need to run it — every value fully resolved when the container was built.",
-		detail: "Seven surfaces — attention, ffn/moe, norm, head, and the linear-attention, KDA and MLA families — with no family knowledge in any of them. An executor reads; it never defaults.",
+		detail: "Eight surface groups — attention, ffn/moe, norm, head, and the linear-attention, KDA, MLA and Mamba2 families — with no family knowledge in any of them. Since graph schema 6, presence means semantic presence: attention and FFN groups exist iff the program runs those operations, so a pure-SSM component carries neither. An executor reads; it never defaults.",
 		group: "format",
 		relations: [
 			{ rel: "read_by", to: "closure-e" },
@@ -1247,7 +1295,7 @@ export const ENTITIES: Entity[] = [
 		display: "THE OPERATION PROGRAM",
 		five: "an ordered program of operations",
 		role: "What a VINDEX3 binding actually is: a closed, operand-verified program of typed operations plus its operand bytes — never tensors to reassemble into an engine's own architecture type.",
-		detail: "Attention, KDA, MLA, MoE, norm, projection, gating are operation kinds inside the program, not structural requirements of a component. The pinned ontology lift makes this the completeness authority too: a component requires what its declared program requires — object kinds keep identity and stop implying operation families. Attention is vocabulary, not ontology.",
+		detail: "Attention, KDA, MLA, Mamba2, MoE, norm, projection, gating are operation kinds inside the program, not structural requirements of a component. Since graph schema 6 this is the completeness authority in the format itself: a component requires what its declared program requires, surfaces exist iff the program runs them, and object kinds keep identity while implying nothing. Attention is vocabulary, not ontology.",
 		group: "format",
 		relations: [
 			{ rel: "read_by", to: "closure-e" },
@@ -1395,7 +1443,7 @@ export const ENTITIES: Entity[] = [
 		display: "KV STATE vs RECURRENT STATE",
 		five: "growing memory or folded memory",
 		role: "Two kinds of continuation memory: softmax attention keeps every past key and value and grows with context; linear families fold the past into a fixed-size state.",
-		detail: "A hybrid stack carries both at once, layer by layer, and the plan declares which — row geometry and windows for KV layers, state shape for recurrent layers. MLA sits between them: true KV state, stored through a latent bottleneck. The runtime's rule covers all of it: state geometry is a container fact.",
+		detail: "A hybrid stack carries both at once, layer by layer, and the plan declares which — row geometry and windows for KV layers, state shape for recurrent layers. MLA sits between them: true KV state, stored through a latent bottleneck. Mamba2 sits wholly on the folded side: SSM state plus a short conv history, and no KV row anywhere in the model. The runtime's rule covers all of it: state geometry is a container fact.",
 		group: "attention-families",
 		relations: [
 			{ rel: "distinguishes", to: "recurrent-state" },
@@ -1445,6 +1493,93 @@ export const ENTITIES: Entity[] = [
 		],
 		href: "/execution",
 	},
+	{
+		id: "mamba2-e",
+		names: ["mamba2", "mamba", "ssm", "state space model", "state-space model", "ssd", "mixer"],
+		display: "MAMBA2 — THE SSD MIXER",
+		five: "the mixer is the block",
+		role: "A pure state-space operator: one fused five-way input projection, a causal conv over the x|B|C channels, per-head scalar decay, a gated RMSNorm — and no attention and no FFN anywhere, because the mixer is the whole layer.",
+		detail: "Nine operand roles, closure needs all: the fused in-projection, the conv and its bias, A_log, D, dt_bias, the gated norm, the out-projection, and the layer's single pre-mixer norm. Its continuation is an SSM state — head_dim × state_size per head plus a short conv history — constant in sequence length. The declared geometry must close over the tensor estate exactly, an unbounded dt-clamp side is carried as a declared fact, and until a generic executor lands the operator stays honestly marked represented, not executable.",
+		group: "attention-families",
+		relations: [
+			{ rel: "sibling_of", to: "linear-attention" },
+			{ rel: "carries", to: "continuation-state-e" },
+			{ rel: "verified_by", to: "closure-e" },
+			{ rel: "admitted_by", to: "operator-e" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "continuation-state-e",
+		names: ["continuation state", "continuation", "state families", "persists between tokens"],
+		display: "CONTINUATION STATE",
+		five: "the program declares its memory",
+		role: "What persists between tokens, declared by the model program rather than assumed: KV rows for softmax attention, a latent-compressed cache for MLA, recurrent state for the delta families, SSM state for Mamba2.",
+		detail: "KV is one state family — not the definition of model continuation. Two real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, and a pure-SSM container describes its whole continuation with no KV row anywhere. The typed state schema is the remaining half of the ontology lift, additive within schema 6 — and until an operator's state precision is declared, the planner refuses to choose one.",
+		group: "format",
+		relations: [
+			{ rel: "generalises", to: "kv-vs-recurrent-state" },
+			{ rel: "declared_by", to: "model-program" },
+			{ rel: "carried_for", to: "mamba2-e" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "state-precision-e",
+		names: ["state precision", "state dtype", "mamba_ssm_dtype", "recurrent state precision", "state geometry"],
+		display: "STATE PRECISION & GEOMETRY",
+		five: "declared, or the planner refuses",
+		role: "A recurrence must be held at some precision, and the planner does not get to pick one: state geometry comes from the plan, and state precision is a declared fact or a named refusal.",
+		detail: "Qwen3.8 declares float32 state against a bf16 model — the checkpoint stating its recurrence is precision-sensitive in a way its bulk weights are not, because error in a state that feeds itself forward compounds. KDA and Mamba2 declare no state dtype, so continuation planning refuses to choose one rather than silently running the recurrence at the bulk precision. The refusal is the feature: an undeclared fact never becomes an executor's guess.",
+		group: "format",
+		relations: [
+			{ rel: "belongs_to", to: "continuation-state-e" },
+			{ rel: "protects", to: "deletion-invariant-e" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "operator-e",
+		names: ["operator", "layer operator", "layeroperator", "per-layer operator", "operator family"],
+		display: "THE LAYER OPERATOR",
+		five: "each layer names its family",
+		role: "The per-layer declaration of which attention-class operator runs: softmax, gated-delta, KDA, MLA, Mamba2 — or recurrent, the honest name for a declared recurrence this build cannot identify.",
+		detail: "Explicit since graph schema 6: the field is always written and required on read, with no absent-means-softmax default — absence silently reinterpreting a layer is exactly the fabrication the schema break removed. The operator gates the operand vocabulary too: role tables are operator-gated, so a mixer's bare norm.weight can never be mistaken for a transformer norm on an unknown stack.",
+		group: "format",
+		relations: [
+			{ rel: "recorded_in", to: "hybrid-attention-policy" },
+			{ rel: "selects_roles_for", to: "closure-e" },
+		],
+		href: "/execution",
+	},
+	{
+		id: "fail-closed-e",
+		names: ["fail closed", "fail-closed", "fails closed", "admission", "blocking findings", "fail-closed admission"],
+		display: "FAIL-CLOSED ADMISSION",
+		five: "unjudged blocks; nothing defaults through",
+		role: "Admission is fail-closed at every layer: an unjudged config key blocks, an undeclared layer family blocks, an operand that does not close blocks — and since schema 6, a failing closure at encode removes the container rather than writing it.",
+		detail: "The pure-SSM witness is the working example: before its operator was judged, mamba2-780m was refused with nineteen itemised findings — eighteen unrepresented SSM semantics and one incomplete surface — rather than approximated as a softmax tower. The census half is scoped honestly: a declared attention-head geometry counts as a program declaration; what fails closed is generic-plus-silence, where resolving layers to softmax would be a fabrication, not a resolution.",
+		group: "format",
+		relations: [
+			{ rel: "itemised_by", to: "closure-e" },
+			{ rel: "protects", to: "model-program" },
+		],
+		href: "/ladder",
+	},
+	{
+		id: "preservation-e",
+		names: ["preservation", "unknown fields", "reported discard", "preserve"],
+		display: "PRESERVATION",
+		five: "carry what you cannot read",
+		role: "A conforming reader carries what it cannot decode: unknown index fields survive every struct round-trip, unknown segment codecs inspect clean and copy byte-identically, and discard is sanctioned only when reported.",
+		detail: "The rule was drilled, not assumed: the ontology drill found COMPILE dropping unknown index fields where COMPACT preserved them — closed the same day with a flattened preservation map and a gate test — and COMPACT's collection of unregistered sidecars was resolved as reported discard, never silent. An older reader degrades, never lies.",
+		group: "format",
+		relations: [
+			{ rel: "belongs_to", to: "container-dir" },
+			{ rel: "protects", to: "authority-e" },
+		],
+		href: "/authority",
+	},
 ];
 
 export function findEntities(queryTokens: string[], queryLower: string): Entity[] {
@@ -1485,4 +1620,7 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "M4", label: "the flip to default", status: "OPEN", note: "a named decision, made in one place — not yet made" },
 	{ id: "browse-parity", label: "expert-region browse parity", status: "OPEN", note: "an open pre-freeze row" },
 	{ id: "E8", label: "held-out architecture test", status: "OPEN", note: "runs after the freeze, by design" },
+	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
+	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "OPEN", note: "KDA precision and MLA latent geometry — additive within schema 6" },
+	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "OPEN", note: "represented, not executable — the fp32 parity oracle is already banked" },
 ];

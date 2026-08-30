@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import Link from "next/link";
 import { ENTITIES } from "@/data/vindexGraph";
 import { conceptSlug } from "@/data/legibility";
@@ -19,6 +21,24 @@ export default function ConceptsIndexPage() {
 	}
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Concepts",
+					description:
+						"Every concept the VINDEX3 exhibition uses, defined once in a knowledge graph.",
+					url: "https://vindex3.org/concepts",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["LLM concepts"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Concepts", url: "https://vindex3.org/concepts" },
+				])}
+			/>
 			<section className="hause-grid pt-20 pb-8">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">

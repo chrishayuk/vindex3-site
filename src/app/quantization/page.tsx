@@ -41,6 +41,24 @@ export default async function QuantizationPage({
 	const unknownModel = model && model !== "granite-4.1-3b" ? model : null;
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "Quantization",
+					description:
+						"What quantization actually does to a model's bytes and answers, and how VINDEX3 holds precision as a catalogued representation.",
+					url: "https://vindex3.org/quantization",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["quantization"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "Quantization", url: "https://vindex3.org/quantization" },
+				])}
+			/>
 			{unknownModel && (
 				<section className="hause-grid pt-6">
 					<div

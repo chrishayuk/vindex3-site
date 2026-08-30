@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
@@ -22,10 +25,34 @@ export const metadata: Metadata = {
 export default function GraphPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The System Graph",
+					description:
+						"Components, logical objects and hidden-state edges — the container's judged understanding of the model, at graph schema 6.",
+					url: "https://vindex3.org/graph",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["system graph", "model semantics"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The System Graph", url: "https://vindex3.org/graph" },
+				])}
+			/>
 			<Hero
-				kicker="THE SYSTEM GRAPH · LIVING SPEC §5–6 · GRAPH_SCHEMA 5"
+				kicker="THE SYSTEM GRAPH · LIVING SPEC §5–6 · GRAPH_SCHEMA 6"
 				title="COMPONENTS, OBJECTS, EDGES"
 				dek="Everything VINDEX3 knows about a model, it knows as a graph — judged once when the container is built, stored verbatim inside it, and read by everything downstream."
+			/>
+
+			<Answer
+				id="what-is-the-system-graph"
+				question="What is the VINDEX3 system graph?"
+				answer="The container's understanding of the model, judged once from evidence at compile time and stored verbatim: which components exist, what logical objects they own, how hidden states flow between them, and — per layer — which operator runs and what it requires. From then on the graph is the only semantic authority; execution, verification and the query surface read it, never the checkpoint, and ambiguity is refused rather than guessed."
 			/>
 
 			<Statement text="model.layers.3.self_attn.q_proj.weight is a name, not a meaning." />
@@ -80,7 +107,7 @@ export default function GraphPage() {
 						],
 					},
 				]}
-				caption="Graph schema 5. The graph is stored verbatim in the container — inspect prints it back from the bytes alone, with the source deleted."
+				caption="Graph schema 6 — since 2026-08-30, presence means semantic presence: the execution surface's attention and FFN groups exist iff the component's declared program runs those operations, and the per-layer operator is explicit. The graph is stored verbatim in the container — inspect prints it back from the bytes alone, with the source deleted."
 			/>
 
 			<EdgeResolution />

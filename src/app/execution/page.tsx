@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
@@ -20,10 +23,41 @@ export const metadata: Metadata = {
 export default function ExecutionPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "Execution",
+					description:
+						"The execution surface, operand closure and the compiler boundary — how an encoded description becomes computation with zero architecture branches.",
+					url: "https://vindex3.org/execution",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["model execution", "state space models", "attention"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "Execution", url: "https://vindex3.org/execution" },
+				])}
+			/>
 			<Hero
 				kicker="EXECUTION · LIVING SPEC §8 · ABI §8.3"
 				title="FROM DESCRIPTION TO COMPUTATION"
 				dek="A component says what part of the system it is. Its execution surface says what the generic operations need to run it — every value fully resolved when the container was built."
+			/>
+
+			<Answer
+				id="how-does-vindex3-execute"
+				question="How does VINDEX3 execute a model?"
+				answer="VINDEX3 stores a generic model program. Components declare operators — softmax, MLA, KDA, gated-delta, Mamba2 — and each operator declares the semantics, operands and continuation state it requires. The runtime binds every required operand or refuses by name, then lowers the program to generic kernels without ever recovering the source model family: the checkpoint, config and architecture name can be deleted and execution must not change."
+			/>
+
+			<Answer
+				id="why-no-kv-assumption"
+				question="Why doesn't VINDEX3 assume a KV cache?"
+				answer="Because KV is one state family, not the definition of continuation. The program declares what persists between tokens: KV rows for softmax attention, a latent-compressed cache for MLA, fixed-size recurrent state for the delta families, SSM state for Mamba2. A pure-SSM container declares its whole continuation with no KV row anywhere — and the runtime reads the declaration from the plan, never from an architecture guess."
+				cite="witnessed — mamba2-780m · 2026-08-30"
 			/>
 
 			<Statement text="The most dangerous fact in a system is the one whose deletion changes nothing." />
@@ -80,19 +114,74 @@ export default function ExecutionPage() {
 						],
 					},
 					{
-						label: "linear_attention · kda · mla",
-						note: "THE OTHER ATTENTION FAMILIES",
+						label: "linear_attention · kda · mla · mamba2",
+						note: "THE OTHER OPERATOR FAMILIES",
 						detail:
-							"Recurrent and latent attention carried as first-class surfaces, present only when the model uses them — never inferred from a model name.",
+							"Recurrent, latent and state-space operators carried as first-class surfaces, present only when the model uses them — never inferred from a model name.",
 						children: [
 							{ label: "linear_attention", detail: "key_heads · key_head_dim · value_heads · value_head_dim · conv_kernel · state_dtype?" },
 							{ label: "mla", detail: "num_heads · kv_lora_rank · qk_nope_head_dim · qk_rope_head_dim · v_head_dim" },
 							{ label: "kda", detail: "the KDA geometry, plus kda_gate_lower_bound?" },
+							{ label: "mamba2", detail: "state_size · num_heads · head_dim · expand · conv_kernel · n_groups · chunk_size · the dt clamp (an unbounded side is a declared fact) · rms_norm · the bias estate · activation" },
 						],
 					},
 				]}
-				caption="The completeness contract today: a DecoderStack or PerceptionTower object carries attention + ffn + norm; an Embedding or OutputHead object carries head. Anything less does not execute. And pinned for Final in the Candidate: completeness moves to the component's declared operation program, and object kinds stop implying operation families — attention is vocabulary, not ontology."
+				caption="The completeness contract, since graph schema 6: the surfaces follow the component's declared operation program, and presence means semantic presence. A stack whose layers attend carries an attention group; a stack whose program runs an FFN carries an FFN group; a pure-SSM stack carries neither — and writing one anyway is the fabrication schema 6 removed. Object kinds keep identity; they no longer imply operation families. Attention is vocabulary, not ontology."
 			/>
+
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						SURFACES FOLLOW THE PROGRAM — SCHEMA 6, WITNESSED
+					</p>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+						<div className="border-l-2 pl-5" style={{ borderColor: "var(--color-mist)" }}>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-4">BEFORE — KIND-IMPLIED</p>
+							<pre className="voice-evidence text-xs sm:text-sm leading-loose whitespace-pre overflow-x-auto m-0">
+								{`DecoderStack
+      ↓
+attention assumed
+      ↓
+FFN assumed
+      ↓
+KV assumed`}
+							</pre>
+						</div>
+						<div className="border-l-2 pl-5" style={{ borderColor: "var(--color-accent)" }}>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-4">SCHEMA 6 — PROGRAM-DERIVED</p>
+							<pre className="voice-evidence text-xs sm:text-sm leading-loose whitespace-pre overflow-x-auto m-0">
+								{`Component
+      ↓
+declared operator program
+  softmax · MLA · KDA
+  gated-delta · mamba2 · …
+      ↓
+required surfaces
+      ↓
+continuation state`}
+							</pre>
+						</div>
+					</div>
+					<pre
+						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6 mt-10"
+						style={{ borderColor: "var(--color-mist)" }}
+					>
+						{`mamba2-780m — 48 SSM layers, 0 attention layers
+
+before schema 6:   48 fabricated attention surfaces   ✕
+at schema 6:       48 mamba2 operators
+                    0 attention surfaces
+                    0 FFN surfaces                     ✓`}
+					</pre>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
+						The witness is real, not staged: the first pure-SSM checkpoint through the pipeline was first
+						refused with nineteen itemised findings — the honest half of the story — and then admitted the
+						same day the lift landed, with zero fabricated surfaces, operand closure enforced at encode, and
+						the container opening through ordinary LQL after its source checkpoint was deleted. The Record
+						keeps both halves.
+					</p>
+				</div>
+			</section>
 
 			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
@@ -130,6 +219,18 @@ LinearAttnNorm  LinearAttnOutProj`}
 						</div>
 						<div>
 							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-3" style={{ color: "var(--color-accent)" }}>
+								mamba2 — nine, one norm per layer
+							</p>
+							<pre className="voice-evidence text-xs leading-relaxed whitespace-pre overflow-x-auto m-0">
+								{`Mamba2InProj  Mamba2Conv1d
+Mamba2Conv1dBias
+Mamba2ALog  Mamba2D  Mamba2DtBias
+Mamba2GatedNorm  Mamba2OutProj
+Mamba2PreMixerNorm`}
+							</pre>
+						</div>
+						<div>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-3" style={{ color: "var(--color-accent)" }}>
 								kimi delta attention — fifteen
 							</p>
 							<pre className="voice-evidence text-xs leading-relaxed whitespace-pre overflow-x-auto m-0">
@@ -160,7 +261,8 @@ FfnGate  FfnUp  FfnDown`}
 								{`PreAttentionNorm  PostAttentionNorm
 PreFfnNorm  PostFfnNorm
 PreExpertsNorm  PostDenseFfnNorm
-PostExpertsNorm`}
+PostExpertsNorm
+placement: PreOnly | PrePost | PreMixer`}
 							</pre>
 						</div>
 						<div>
@@ -240,21 +342,25 @@ generic kernels
 						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
 						style={{ borderColor: "var(--color-mist)" }}
 					>
-						{`ContinuationState                        (pinned for Final)
+						{`ContinuationState
+
+the model program declares what persists between tokens
+
 ├── kv            softmax attention — rows that grow with context
 ├── latent-kv     MLA — true KV, stored through a low-rank bottleneck
-├── recurrent     KDA · linear attention — fixed size, folded every token
-├── convolution   short-conv operators
+├── recurrent     KDA · gated deltanet — fixed size, folded every token
+├── ssm           Mamba2 — head_dim × state_size per head + conv history
 └── future …      declared, never assumed`}
 					</pre>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
 						Operations declare the continuation state they require. KV is one state family — not the definition
-						of model continuation. Today&apos;s documented runtime contract is KV rows, with recurrent state
-						already carried de facto by the KDA executor; the typed schema is the second half of the ontology
-						lift the Candidate pins for Final, and it has a real witness rather than a hypothetical one: a
-						KDA + MLA + softmax hybrid carrying three state kinds already executes. The rule underneath does
-						not change — state geometry is a container fact, read from the plan, never inferred from
-						architecture.
+						of model continuation. Two real witnesses now hold that sentence up: a KDA + MLA + softmax hybrid
+						carrying three state kinds already executes, and a pure-SSM container now describes its whole
+						continuation as recurrent state — eighteen million elements, constant in sequence length, with no
+						KV row anywhere. The typed state schema — declared precision for KDA, latent geometry for MLA —
+						is the remaining half of the lift, additive within schema 6; until an operator&apos;s state
+						precision is declared, the planner refuses to choose one. The rule underneath does not change —
+						state geometry is a container fact, read from the plan, never inferred from architecture.
 					</p>
 				</div>
 			</section>
@@ -286,7 +392,7 @@ execution correctness    + causal mutation controls = semantic authority`}
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
 						<li>vindex3-format.md §8 (the living spec)</li>
-						<li>vindex3-format-spec.md §8.3, §17.4 (the 3.0 Candidate — the pinned ontology lift)</li>
+						<li>vindex3-format-spec.md §8.3, §17.4 (the 3.0 Candidate — lift 1 landed at graph schema 6)</li>
 						<li>reference implementation — graph/surface.rs · graph/roles.rs</li>
 					</ul>
 				</div>

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { ByteMap } from "@chrishayuk/hause/components/forms/ByteMap";
@@ -22,10 +25,34 @@ export const metadata: Metadata = {
 export default function BytesPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Bytes",
+					description:
+						"LYRW v2, the expert-bank codec — a binary layout simple enough to read with a ruler.",
+					url: "https://vindex3.org/bytes",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["binary format"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Bytes", url: "https://vindex3.org/bytes" },
+				])}
+			/>
 			<Hero
 				kicker="THE BYTES · CANDIDATE SPEC §6–7 · LYRW v2"
 				title="DOWN TO THE BYTE"
 				dek="LYRW v2 is the expert-bank codec of VINDEX3 — a binary format simple enough to read with a ruler. This page is that ruler."
+			/>
+
+			<Answer
+				id="what-is-lyrw"
+				question="What is the LYRW layer file?"
+				answer="LYRW v2 is the layer-weight codec: a 24-byte header, bank and segment descriptors, one region schema per bank, and an entry table of offsets and lengths. A reader needs nothing but the bytes in front of it; unknown tags are preserved rather than fatal, and refusal waits for the operation that actually needs what a reader cannot do. Segments answer to file management, group extents to hardware — two scales, kept deliberately distinct."
 			/>
 
 			<Statement text="A blob you cannot check is a promise you cannot keep." />

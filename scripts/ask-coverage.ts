@@ -56,6 +56,21 @@ const cases: Case[] = [
 	{ q: "has G4 passed?", expect: "status_report", mustMention: "G4" },
 	{ q: "is expert-region browse parity finished?", expect: ["status_report", "canonical"] },
 
+	// ── Schema 6 + the pure-SSM witness (landed 2026-08-30) ──
+	{ q: "Why doesn't VINDEX3 assume a KV cache?", expect: "canonical", mustMention: "continuation" },
+	{ q: "Can VINDEX3 hold a model with no attention?", expect: "canonical", mustMention: "no attention" },
+	{ q: "what is schema 6?", expect: "canonical", mustMention: "schema six" },
+	{ q: "do surfaces follow the program?", expect: "canonical", mustMention: "schema six" },
+	{ q: "what is mamba2?", expect: "definition", mustMention: "MAMBA2" },
+	{ q: "what is an ssm?", expect: "definition", mustMention: "MAMBA2" },
+	{ q: "what is continuation state?", expect: ["definition", "canonical"], mustMention: "continuation" },
+	{ q: "what is state precision?", expect: "definition", mustMention: "STATE PRECISION" },
+	{ q: "what is the layer operator?", expect: ["definition", "component_flow"], mustMention: "operator" },
+	{ q: "what is fail-closed admission?", expect: "definition", mustMention: "FAIL-CLOSED" },
+	{ q: "what does preservation mean here?", expect: "definition", mustMention: "PRESERVATION" },
+	{ q: "has schema 6 passed?", expect: ["canonical", "status_report"], mustMention: "schema six" },
+	{ q: "is there a mamba2 executor?", expect: ["status_report", "canonical", "definition"] },
+
 	// ── The arriving vocabulary: ecosystem words, classified ──
 	{ q: "what is NF4?", expect: "canonical", mustMention: "numeric format" },
 	{ q: "what is Q4_K?", expect: "canonical", mustMention: "block scheme" },

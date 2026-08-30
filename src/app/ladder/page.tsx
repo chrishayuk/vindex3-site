@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
+import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
+import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
 import { Question } from "@chrishayuk/hause/components/forms/Question";
 import { Evidence } from "@chrishayuk/hause/components/forms/Evidence";
@@ -25,10 +28,40 @@ export const metadata: Metadata = {
 export default function LadderPage() {
 	return (
 		<main>
+			<JsonLd
+				data={techArticleLd({
+					headline: "The Record",
+					description:
+						"The status instrument: guarantees, gate ladders, measured evidence and open questions — VINDEX3's canonical maturity answer.",
+					url: "https://vindex3.org/ladder",
+					siteUrl: "https://vindex3.org",
+					siteName: "VINDEX3",
+					dateModified: "2026-08-30",
+					about: ["conformance", "benchmarks"],
+				})}
+			/>
+			<JsonLd
+				data={breadcrumbLd([
+					{ name: "VINDEX3", url: "https://vindex3.org" },
+					{ name: "The Record", url: "https://vindex3.org/ladder" },
+				])}
+			/>
 			<Hero
 				kicker="CONFORMANCE · CANDIDATE SPEC §0, §13–§21 · LIVING SPEC §2"
 				title="THE RECORD"
 				dek="Where this site keeps its honesty: what a VINDEX3 implementation guarantees, the gate ladders behind those guarantees, the measured evidence, the history, and the questions still open. Every claim on every other page answers to something here."
+			/>
+
+			<Answer
+				id="is-vindex3-production-ready"
+				question="Is VINDEX3 production ready?"
+				answer="VINDEX3 is a 3.0 Candidate Specification (promoted 2026-08-30, graph schema 6). The format works today: production models encode, verify and execute byte-identically to their sources, containers serve real inference at recorded speeds, and every guarantee below is held by implementation gates. It is not yet Final: the named gates that remain — the shape convergence, the required/optional freeze, an independent reader, the held-out architecture test, the default flip, and the ontology lift's second half — are listed on this page with their statuses."
+				cite="derived from the gate ladders below — not asserted"
+			/>
+
+			<Observation
+				label="THE CURRENT STATE"
+				text="VINDEX3 3.0 Candidate, promoted 2026-08-30. Graph schema 6 — the ontology lift's first half, landed the same day it was drilled: surfaces follow the declared operation program, the layer census fails closed, and operand closure is enforced at encode. The remaining Final gates are named below, each with its status; when they pass, this page will say 3.0 Final, and until they do, it will not."
 			/>
 
 			<Observation
@@ -215,7 +248,7 @@ export default function LadderPage() {
 						question: "A pure SSM decoder — no attention anywhere.",
 						gate: "zero attention surfaces can be valid; stateful operations need no fake attention or KV",
 						status: "DISPROVED",
-						detail: "The schema flinched, exactly where the lift predicted: the attention surface is mandatory and fabricated — a pure-recurrent stack already in the tree passes completeness carrying a softmax surface zero layers read — and a checkpoint declaring no layer types slips the census and encodes before closure can refuse. Confirmed: lift one, plus a fail-closed census and closure at encode time.",
+						detail: "The schema flinched, exactly where the lift predicted: the attention surface is mandatory and fabricated — a pure-recurrent stack already in the tree passes completeness carrying a softmax surface zero layers read — and a checkpoint declaring no layer types slips the census and encodes before closure can refuse. Confirmed: lift one, plus a fail-closed census and closure at encode time. Closed the same day: all three landed at graph schema 6, and the live witness below is the proof.",
 					},
 					{
 						id: "HYBRID",
@@ -240,6 +273,48 @@ export default function LadderPage() {
 					},
 				]}
 				caption="Hostile schema review against the real types, findings recorded before verdicts — sixteen findings, and every schema gap landed inside the two pinned lifts, nowhere else. The ontology question itself did not flinch. The full ledger is docs/vindex3-ontology-drill.md."
+			/>
+
+			<Ladder
+				kicker="THE FIRST LIVE WITNESS — MAMBA2-780M · PURE SSM · 2026-08-30"
+				rungs={[
+					{
+						id: "REFUSE",
+						question: "Before the lift: does the format approximate an architecture it cannot represent?",
+						gate: "admission itemises what is missing, or it is not admission",
+						status: "PASSED",
+						detail: "It did not approximate. The physical ontology held — decoder stack, embedding and final norm placed cleanly from 434 tensors — and admission refused with nineteen blocking findings: eighteen unrepresented SSM semantics and one incomplete execution surface. The container did not guess at an unsupported architecture; it itemised the missing semantics and refused. Even finding zero was real: the checkpoint's own config carries a bare Infinity that a strict JSON reader must judge, not fake.",
+					},
+					{
+						id: "ADMIT",
+						question: "After schema 6: does the pure case admit for semantic reasons — not by exemption?",
+						gate: "19 blocking → 0 blocking, every key judged: consumed into the operator, declaration-only, or refused",
+						status: "PASSED",
+						detail: "A registered Mamba2 operator judgment consumes the SSM geometry — and the declared geometry must close over the tensor estate exactly: in_proj rows 2·d_inner + 2·groups·state + heads, the conv deliberately excluding the gate channels, per-head scalar decay. The five initialisation-only keys grade declaration-only. Nothing was waved through.",
+					},
+					{
+						id: "ENCODE",
+						question: "Does it encode with zero fabricated surfaces — and does closure hold at encode?",
+						gate: "closure at encode: a container whose operands do not close is removed, not written",
+						status: "PASSED",
+						detail: "Encoded: 48 mamba2 operators, no attention surface anywhere, no FFN surface anywhere — the mixer is the whole block — one pre-mixer norm per layer, and all 434 operands closing against the declared geometry at encode time. The CI twin proves the negative too: drop one per-head tensor and the encode refuses, names the missing role, and removes its own output.",
+					},
+					{
+						id: "OPEN",
+						question: "Does ordinary LQL open it — with the source checkpoint deleted?",
+						gate: "USE · STATS · SHOW LAYERS · EXPLAIN INFER from the container alone; refusal by name where no executor exists",
+						status: "PASSED",
+						detail: "With the source checkpoint gone, USE binds, STATS reports 0 sliding / 0 full / 48 recurrent and a continuation of recurrent state only — 18.9M elements, constant in sequence length — SHOW LAYERS names every layer mamba2, EXPLAIN INFER walks the mixer program operand by operand, and INFER refuses by name: represented but not executable, no executor exists for this operator. No Mamba2Model escape hatch anywhere in the chain.",
+					},
+					{
+						id: "GENERATE",
+						question: "Does the generic V3 execution path generate correctly — paritied against the reference?",
+						gate: "prefill logits, first token, 16–32 recurrent steps, prompt lengths, state reset, chunked vs one-shot — against a captured fp32 oracle",
+						status: "OPEN",
+						detail: "The oracle is already banked: full per-position prefill logits, per-layer hidden states and 32 stepwise decode logits for three prompt lengths, one crossing the SSD chunk boundary — bitwise-deterministic, with token-by-token recurrence agreeing with the one-shot scan to 2e-4. What remains is the generic Mamba2 executor itself; until it lands, the operator stays honestly marked represented, not executable.",
+					},
+				]}
+				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. Next in line: mamba2attn-2.7b, the surfaces-follow-the-program A/B — the same generic runtime, pure SSM against hybrid, differing only in their declared programs."
 			/>
 
 			<Evidence
@@ -286,6 +361,10 @@ export default function LadderPage() {
 					{
 						date: "2026-08-30",
 						text: "3.0-candidate published — the promotion from draft. One canonical container model: the graph shape is normative, the bank-import shape is named, ranked and given a convergence rule; the contract stack is the spec's own structure; compatibility rules say what a conforming reader must understand, ignore, refuse and preserve.",
+					},
+					{
+						date: "2026-08-30",
+						text: "The same day: the four-architecture ontology drill runs, and its first half lands. Graph schema 6 — surfaces follow the declared operation program, presence means semantic presence, the census fails closed, closure moves to encode. The first pure-SSM witness goes from a nineteen-finding refusal to a zero-blocking admission with no fabricated surface anywhere, and opens through ordinary LQL with its source checkpoint deleted.",
 					},
 				]}
 			/>
@@ -341,7 +420,7 @@ export default function LadderPage() {
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift — no longer merely pinned: the four-architecture drill ran on 30 August, produced sixteen findings, and every schema gap landed inside the two lifts, nowhere else. Until those gates pass, candidate it stays."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift's second half. The first half is no longer pinned but landed: the four-architecture drill ran on 30 August, every schema gap fell inside the two lifts, and graph schema 6 shipped the same day with a live pure-SSM witness. The state-schema half — declared KDA precision, MLA latent geometry — remains, additive within the schema-6 span. Until those gates pass, candidate it stays."
 			/>
 
 			<Observation
