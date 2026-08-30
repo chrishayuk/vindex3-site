@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { SiteFooter } from "@chrishayuk/hause/components/SiteFooter";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { webSiteLd } from "@chrishayuk/hause/seo";
 
@@ -62,6 +63,51 @@ export default function RootLayout({
 			<body className="antialiased">
 				<Nav />
 				{children}
+				<SiteFooter
+					brand="VINDEX3"
+					tagline="The model is the database — components named, representations catalogued, claims checkable."
+					note="VINDEX3 · 3.0-draft-2 · every metric on this site names its model, hardware and date, and answers to the Record."
+					groups={[
+						{
+							label: "THE JOURNEY",
+							links: [
+								{ href: "/why", label: "The Physics" },
+								{ href: "/anatomy", label: "The Anatomy" },
+								{ href: "/quantization", label: "Quantization" },
+								{ href: "/discovery", label: "Discovering the Map" },
+							],
+						},
+						{
+							label: "THE SPEC",
+							links: [
+								{ href: "/container", label: "The Container" },
+								{ href: "/graph", label: "The System Graph" },
+								{ href: "/bytes", label: "The Bytes" },
+								{ href: "/execution", label: "Execution" },
+								{ href: "/representation", label: "Representation" },
+								{ href: "/authority", label: "Authority" },
+							],
+						},
+						{
+							label: "ASK & EXPLORE",
+							links: [
+								{ href: "/ask", label: "Ask VINDEX3" },
+								{ href: "/explorer", label: "The Explorer" },
+								{ href: "/concepts", label: "The Concepts" },
+								{ href: "/get-started", label: "Get Started — the CLI" },
+							],
+						},
+						{
+							label: "THE RECORD",
+							links: [
+								{ href: "/ladder", label: "The Record" },
+								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
+								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
+								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.2.0", label: "The release", external: true },
+							],
+						},
+					]}
+				/>
 				<footer className="hause-grid py-16 mt-20 border-t" style={{ borderColor: "var(--color-mist)" }}>
 					<div className="col-span-12 flex flex-wrap items-baseline justify-between gap-4">
 						<p className="voice-evidence text-xs opacity-50">VINDEX3 · SPEC / 2026</p>
