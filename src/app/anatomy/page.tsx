@@ -49,7 +49,7 @@ export default function AnatomyPage() {
 			<Hero
 				kicker="THE ANATOMY · BETWEEN THE PHYSICS AND THE CONTAINER"
 				title="WHAT A MODEL ACTUALLY CONTAINS"
-				dek="The addresses in this exhibition — q_proj, gate_proj, router, expert — name real machinery. This chapter is that machinery, opened, in one worked shape: hidden 2,048 · intermediate 6,144 · 24 layers · 32 experts, top-4. No mathematics required; ten minutes, and the rest of the site reads in plain sight."
+				dek="The addresses in this exhibition — q_proj, gate_proj, router, expert — name real machinery. This chapter is that machinery, opened, in one worked, conventional decoder shape — a pure-SSM stack, like the Mamba2 witness on the Record, carries none of the attention below: hidden 2,048 · intermediate 6,144 · 24 layers · 32 experts, top-4. No mathematics required; ten minutes, and the rest of the site reads in plain sight."
 			/>
 
 			<Statement text="layer.17.mlp.down_proj reads like a filename — until you know the machine it names." />

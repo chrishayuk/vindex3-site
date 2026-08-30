@@ -663,7 +663,7 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		intent: "why",
 		patterns: ["assume kv", "assume a kv", "kv cache", "doesn't assume", "no kv"],
 		answer:
-			"Because KV is one state family, not the definition of model continuation. The model program declares what persists between tokens: softmax attention declares KV rows, MLA a latent-compressed cache, KDA and Gated DeltaNet a fixed-size recurrent state, Mamba2 an SSM state plus a short conv history. A pure-SSM container describes its whole continuation with no KV row anywhere — and the runtime reads that declaration from the plan, never from an architecture guess.",
+			"Because KV is one state family, not the definition of model continuation. The model program declares what persists between tokens: softmax attention declares KV rows, MLA a latent-compressed cache, KDA and Gated DeltaNet a fixed-size recurrent state, Mamba2 two regions — an SSM state plus a convolution history. A pure-SSM container describes its whole continuation with no KV row anywhere — and the runtime reads that declaration from the plan, never from an architecture guess.",
 		path: [e("vindex3", "declares_state_as"), e("mamba2-op", "carries")],
 		record: { status: "PASSED", note: "mamba2-780m: continuation reported as recurrent state only — 18.9M elements, constant in sequence length" },
 		explore: ["continuation-state", "mamba2-op", "record"],
@@ -1499,7 +1499,7 @@ export const ENTITIES: Entity[] = [
 		display: "MAMBA2 — THE SSD MIXER",
 		five: "the mixer is the block",
 		role: "A pure state-space operator: one fused five-way input projection, a causal conv over the x|B|C channels, per-head scalar decay, a gated RMSNorm — and no attention and no FFN anywhere, because the mixer is the whole layer.",
-		detail: "Nine operand roles, closure needs all: the fused in-projection, the conv and its bias, A_log, D, dt_bias, the gated norm, the out-projection, and the layer's single pre-mixer norm. Its continuation is an SSM state — head_dim × state_size per head plus a short conv history — constant in sequence length. The declared geometry must close over the tensor estate exactly, an unbounded dt-clamp side is carried as a declared fact, and until a generic executor lands the operator stays honestly marked represented, not executable.",
+		detail: "Nine operand roles, closure needs all: the fused in-projection, the conv and its bias, A_log, D, dt_bias, the gated norm, the out-projection, and the layer's single pre-mixer norm. Its continuation is TWO declared state regions, not one: an SSM state (head_dim × state_size per head) and a convolution history — both constant in sequence length, and the history is load-bearing at the first single-token continuation. The declared geometry must close over the tensor estate exactly, an unbounded dt-clamp side is carried as a declared fact, and until a generic executor lands the operator stays honestly marked represented, not executable.",
 		group: "attention-families",
 		relations: [
 			{ rel: "sibling_of", to: "linear-attention" },
@@ -1514,7 +1514,7 @@ export const ENTITIES: Entity[] = [
 		names: ["continuation state", "continuation", "state families", "persists between tokens"],
 		display: "CONTINUATION STATE",
 		five: "the program declares its memory",
-		role: "What persists between tokens, declared by the model program rather than assumed: KV rows for softmax attention, a latent-compressed cache for MLA, recurrent state for the delta families, SSM state for Mamba2.",
+		role: "What persists between tokens, declared by the model program rather than assumed: KV rows for softmax attention, a latent-compressed cache for MLA, and one or more regions for each recurrence family — Gated DeltaNet and Mamba2 both carry a convolution history beside their folded state.",
 		detail: "KV is one state family — not the definition of model continuation. Two real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, and a pure-SSM container describes its whole continuation with no KV row anywhere. The typed state schema is the remaining half of the ontology lift, additive within schema 6 — and until an operator's state precision is declared, the planner refuses to choose one.",
 		group: "format",
 		relations: [

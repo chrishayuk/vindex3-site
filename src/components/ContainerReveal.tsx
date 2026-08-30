@@ -9,7 +9,10 @@ import Link from "next/link";
  * holds a beat alone — the one-root rule staged, not captioned — then
  * the remaining layers fan out at the hause stagger.
  *
- * Bespoke to this site (it knows the ABI §5 directory layout), built
+ * Bespoke to this site — it draws the CANONICAL graph shape of ABI §5:
+ * index.json + system_graph.json + one segment per logical object, the
+ * layout a real encode writes (the transitional bank-import shape lives
+ * on /container, named and ranked, not here). Built
  * from DOM + CSS transforms only. The server-rendered state is the
  * exploded, fully-labelled cutaway; motion-capable visitors get it
  * collapsed on mount and opened once in view, so reduced-motion and
@@ -19,14 +22,12 @@ import Link from "next/link";
 
 const LAYERS: { name: string; note: string; root?: boolean; muted?: boolean }[] = [
 	{ name: "index.json", note: "SOLE ROOT AUTHORITY", root: true },
-	{ name: "moe_manifest.json", note: "PROGRAMME" },
-	{ name: "profiles/", note: "EXECUTION" },
-	{ name: "control/", note: "CLASS 1" },
-	{ name: "dense/", note: "CLASS 2" },
-	{ name: "shared/", note: "CLASS 3" },
-	{ name: "routed/", note: "CLASSES 4 & 5" },
-	{ name: "query/", note: "THE WEIGHTS ARE THE INDEX" },
-	{ name: "tokenizer.json · weight_manifest.json", note: "", muted: true },
+	{ name: "system_graph.json", note: "THE JUDGED MEANING" },
+	{ name: "segments/target.embedding.bin", note: "LOGICAL OBJECT" },
+	{ name: "segments/target.decoder_stack.bin", note: "LOGICAL OBJECT" },
+	{ name: "segments/target.expert_bank.bin", note: "LOGICAL OBJECT · WHEN THE MODEL ROUTES" },
+	{ name: "segments/target.final_norm.bin", note: "LOGICAL OBJECT" },
+	{ name: "tokenizer.json · special_tokens_map.json", note: "CAPABILITY SNAPSHOT", muted: true },
 ];
 
 // Row pitch (height + gap) the collapse math assumes — keep in sync with the styles below.
@@ -129,9 +130,11 @@ export function ContainerReveal() {
 				{/* Always-present text fallback — plain and first-visit friendly; the
 				    one-root argument itself lives on /container. */}
 				<p className="voice-evidence text-xs opacity-40 leading-relaxed max-w-2xl mt-12">
-					A model, stored as a directory you can read. One file — index.json — speaks for the whole container.
-					Every other part is named, findable, and checkable.
-				</p>
+					A model, stored as a directory you can read. One file — index.json — speaks for the whole container;
+					system_graph.json carries the judged meaning — components, logical objects, and each layer&apos;s
+					declared operator; the segments carry the bytes, one per logical object. Every part named, findable,
+					checkable.
+					</p>
 				<Link
 					href="/container"
 					className="voice-evidence text-xs tracking-[0.14em] uppercase border-b pb-0.5 mt-6 w-fit inline-block"

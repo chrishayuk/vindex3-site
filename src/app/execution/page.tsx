@@ -166,10 +166,10 @@ continuation state`}
 						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6 mt-10"
 						style={{ borderColor: "var(--color-mist)" }}
 					>
-						{`mamba2-780m — 48 SSM layers, 0 attention layers
+						{`mamba2-780m — 48 declared Mamba2 operators · 0 attention operators
 
 before schema 6:   48 fabricated attention surfaces   ✕
-at schema 6:       48 mamba2 operators
+at schema 6:       48 Mamba2 operators
                     0 attention surfaces
                     0 FFN surfaces                     ✓`}
 					</pre>
@@ -342,25 +342,29 @@ generic kernels
 						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
 						style={{ borderColor: "var(--color-mist)" }}
 					>
-						{`ContinuationState
+						{`Operator
+   ↓ declares
+ContinuationState — one or more typed regions
 
-the model program declares what persists between tokens
-
-├── kv            softmax attention — rows that grow with context
-├── latent-kv     MLA — true KV, stored through a low-rank bottleneck
-├── recurrent     KDA · gated deltanet — fixed size, folded every token
-├── ssm           Mamba2 — head_dim × state_size per head + conv history
-└── future …      declared, never assumed`}
+softmax attention    └─ KV rows              grows with context
+MLA                  └─ latent KV            compressed, per position
+gated deltanet       ├─ delta matrix         fixed size, folded every token
+                     └─ conv history
+Mamba2               ├─ SSM state            head_dim × state_size per head
+                     └─ conv history
+future operators     declared, never assumed`}
 					</pre>
 					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-						Operations declare the continuation state they require. KV is one state family — not the definition
-						of model continuation. Two real witnesses now hold that sentence up: a KDA + MLA + softmax hybrid
-						carrying three state kinds already executes, and a pure-SSM container now describes its whole
-						continuation as recurrent state — eighteen million elements, constant in sequence length, with no
-						KV row anywhere. The typed state schema — declared precision for KDA, latent geometry for MLA —
-						is the remaining half of the lift, additive within schema 6; until an operator&apos;s state
-						precision is declared, the planner refuses to choose one. The rule underneath does not change —
-						state geometry is a container fact, read from the plan, never inferred from architecture.
+						Operations declare the continuation state they require — and an operator can require more than one
+						independently meaningful region: both recurrence families here carry a convolution history beside
+						their folded state, and modelling only the matrix once left a whole buffer invisible until the
+						first single-token continuation. KV is one region kind — not the definition of model continuation.
+						Two real witnesses hold that sentence up: a KDA + MLA + softmax hybrid carrying three state kinds
+						already executes, and a pure-SSM container describes its whole continuation as two recurrent
+						regions per layer — eighteen million elements, constant in sequence length, no KV row anywhere.
+						The typed state schema — declared precision for KDA, latent geometry for MLA — is the remaining
+						half of the lift, additive within schema 6. The rule underneath does not change: state geometry is
+						a container fact, read from the plan, never inferred from architecture.
 					</p>
 				</div>
 			</section>

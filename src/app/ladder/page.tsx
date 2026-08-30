@@ -314,7 +314,7 @@ export default function LadderPage() {
 						detail: "The oracle is already banked: full per-position prefill logits, per-layer hidden states and 32 stepwise decode logits for three prompt lengths, one crossing the SSD chunk boundary — bitwise-deterministic, with token-by-token recurrence agreeing with the one-shot scan to 2e-4. What remains is the generic Mamba2 executor itself; until it lands, the operator stays honestly marked represented, not executable.",
 					},
 				]}
-				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. Next in line: mamba2attn-2.7b, the surfaces-follow-the-program A/B — the same generic runtime, pure SSM against hybrid, differing only in their declared programs."
+				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. Next in line: mamba2attn-2.7b, the surfaces-follow-the-program A/B — the same generic runtime, pure SSM against hybrid, differing only in their declared programs. Its six declared attention layers are themselves not plain softmax — causal convolution over the fused QKV, partial rotary — so the hybrid brings its own operator judgment, and its attention layers carry convolution history beside their KV."
 			/>
 
 			<Evidence

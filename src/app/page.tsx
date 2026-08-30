@@ -67,7 +67,7 @@ export default function Home() {
 			<Transformation
 				kicker="ONE RELEASE — TWO INTERPRETATIONS"
 				objectLabel="the same checkpoint, byte-identically preserved either way"
-				blockLabels={["EMBEDDINGS", "ATTENTION", "EXPERTS", "ROUTER", "LM HEAD"]}
+				blockLabels={["EMBEDDING", "DECODER STACK", "EXPERT BANK", "FINAL NORM", "OUTPUT HEAD"]}
 				from={{
 					label: "A WEIGHTS FILE",
 					properties: [
@@ -80,6 +80,7 @@ export default function Home() {
 					label: "A DATABASE",
 					properties: [
 						"Addresses model semantics — knows what they mean",
+						"Each layer's operator declared — surfaces follow the program",
 						"Representations present, selected, authoritative",
 						"Run it, query it, verify it — the same bytes",
 					],

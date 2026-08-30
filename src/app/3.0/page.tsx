@@ -80,7 +80,7 @@ export default function VersionPage() {
 						question: "Continuation requirements are explicit.",
 						gate: "the program declares what persists between tokens; undeclared precision is refused, never chosen",
 						status: "BUILDING",
-						detail: "The declaration side holds — KV, latent KV, recurrent and SSM state are all declared per operation, witnessed by a three-state hybrid and a pure-SSM container. The typed state schema (declared KDA precision, MLA latent geometry) is the ontology lift's second half: additive within schema 6, and honestly open.",
+						detail: "The declaration side holds — each operation declares one or more typed state regions (KV, latent KV, or a folded state with its convolution history), witnessed by a three-state hybrid and a pure-SSM container whose layers each carry two. The typed state schema (declared KDA precision, MLA latent geometry) is the ontology lift's second half: additive within schema 6, and honestly open.",
 					},
 					{
 						id: "REPRESENTATION-INDEPENDENT",
