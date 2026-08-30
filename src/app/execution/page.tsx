@@ -91,7 +91,7 @@ export default function ExecutionPage() {
 						],
 					},
 				]}
-				caption="The completeness contract: a DecoderStack or PerceptionTower object carries attention + ffn + norm; an Embedding or OutputHead object carries head. Anything less does not execute."
+				caption="The completeness contract today: a DecoderStack or PerceptionTower object carries attention + ffn + norm; an Embedding or OutputHead object carries head. Anything less does not execute. And pinned for Final in the Candidate: completeness moves to the component's declared operation program, and object kinds stop implying operation families — attention is vocabulary, not ontology."
 			/>
 
 			<section className="hause-grid py-16 sm:py-24">
@@ -232,6 +232,34 @@ generic kernels
 			<Statement text="Removing the original checkpoint, config.json, the HF model type and the architecture name must not change execution." />
 
 			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						STATE IS AN OPERATION REQUIREMENT
+					</p>
+					<pre
+						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
+						style={{ borderColor: "var(--color-mist)" }}
+					>
+						{`ContinuationState                        (pinned for Final)
+├── kv            softmax attention — rows that grow with context
+├── latent-kv     MLA — true KV, stored through a low-rank bottleneck
+├── recurrent     KDA · linear attention — fixed size, folded every token
+├── convolution   short-conv operators
+└── future …      declared, never assumed`}
+					</pre>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
+						Operations declare the continuation state they require. KV is one state family — not the definition
+						of model continuation. Today&apos;s documented runtime contract is KV rows, with recurrent state
+						already carried de facto by the KDA executor; the typed schema is the second half of the ontology
+						lift the Candidate pins for Final, and it has a real witness rather than a hypothetical one: a
+						KDA + MLA + softmax hybrid carrying three state kinds already executes. The rule underneath does
+						not change — state geometry is a container fact, read from the plan, never inferred from
+						architecture.
+					</p>
+				</div>
+			</section>
+
+			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
 						THE ENGINEERING CONTRACT, COMPLETE
@@ -258,7 +286,7 @@ execution correctness    + causal mutation controls = semantic authority`}
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase opacity-50 mb-4">SOURCES</p>
 					<ul className="voice-evidence text-sm opacity-60 flex flex-col gap-1">
 						<li>vindex3-format.md §8 (the living spec)</li>
-						<li>vindex3-format-spec.md §8.3 (the 3.0 Candidate)</li>
+						<li>vindex3-format-spec.md §8.3, §17.4 (the 3.0 Candidate — the pinned ontology lift)</li>
 						<li>reference implementation — graph/surface.rs · graph/roles.rs</li>
 					</ul>
 				</div>

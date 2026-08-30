@@ -163,6 +163,32 @@ export default function ContainerPage() {
 				text="A part gets its own physical identity only when the runtime may independently omit it, quantise it, place it, prefetch it, execute it — or query it. That is the split rule. The query clause is real: WALK reads gate rows without up or down, so on a browse-enabled index the gate role has an independent access pattern by construction. Query metadata itself stays derived and optional — its absence downgrades label richness, never correctness — because no query index is stored beside the weights: the weights are the query index."
 			/>
 
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						THREE AXES — IDENTITY, REPRESENTATION, RESIDENCE
+					</p>
+					<pre
+						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
+						style={{ borderColor: "var(--color-mist)" }}
+					>
+						{`LOGICAL OBJECT        what it is
+      ↓
+REPRESENTATION        how it is encoded
+      ↓
+RESIDENCE             where the useful bytes live right now`}
+					</pre>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
+						Residency is operational, not semantic: the same container means the same thing mmap-cold on NVMe,
+						resident in unified memory, or split across devices. The Candidate pins the division — the format may
+						carry portable residency facts (access class, zero-copy capability, evictability, co-use grouping),
+						while placement belongs to a runtime plan that is never persisted: a device name in the format would
+						age with the machine, not the model. Artifact size, resident-set size and bytes-touched-per-token are
+						three independent quantities — which is the whole point for models larger than memory.
+					</p>
+				</div>
+			</section>
+
 			<ClassTraffic />
 
 			<Procession

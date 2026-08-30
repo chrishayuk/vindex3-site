@@ -41,7 +41,7 @@ export default function Home() {
 			<Hero
 				kicker="VINDEX3 · 3.0 CANDIDATE SPECIFICATION"
 				title="THE MODEL IS THE DATABASE"
-				dek="A self-describing, executable, queryable model container: the same copy can be run, questioned, checked — and changed, with proof. Nothing repackaged, nothing thrown away."
+				dek="A self-describing, executable, queryable model container: the same copy can be run, questioned, checked — and changed, with proof. Nothing re-exported for each use, nothing thrown away."
 			/>
 
 			<section className="hause-grid py-8">
