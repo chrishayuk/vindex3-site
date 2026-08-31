@@ -138,3 +138,91 @@ export const VISION = {
 } as const;
 
 export const RECORDED_TAG = "recorded — qwen3.8-27b.s6.vindex3 · encoded and compiled 2026-08-30";
+
+/* ------------------------------------------------------------------
+   QUANTIZATION FIGURES — measured 2026-08-31 by running the CLI
+   against the real containers. `vindex diff` supplied the original and
+   reconstructed values and the error; `vindex precision --matrix` the
+   map; `vindex representations` the byte counts. Storage facts only:
+   nothing here is quality evidence, and none of it licenses a claim
+   about behaviour.
+   ------------------------------------------------------------------ */
+
+/** The film's tensor, under both representations. */
+export const DOWN_PROJ_NVFP4: { original: number; nvfp4: number }[] = [
+	{ original: -0.001671, nvfp4: -0.001824 },
+	{ original: -0.000618, nvfp4: -0.0 },
+	{ original: -0.01416, nvfp4: -0.01459 },
+	{ original: -0.004883, nvfp4: -0.005471 },
+	{ original: -0.014832, nvfp4: -0.01459 },
+	{ original: 0.013794, nvfp4: 0.01459 },
+	{ original: -0.020996, nvfp4: -0.021885 },
+	{ original: -0.012146, nvfp4: -0.010943 },
+];
+
+/** Rows 2 and 4 are distinct inputs landing on the same −0.014590. */
+export const DOWN_PROJ_NVFP4_COLLAPSED = new Set([2, 4]);
+
+export const DOWN_PROJ_STATS = {
+	tensor: "layer.0.mlp.down_proj",
+	shape: "5,120 × 17,408",
+	weights: 89_128_960,
+	bf16_bytes: 178_257_920,
+	rms_error: 0.001009,
+	max_error: 0.060547,
+	changed: 89_128_960,
+} as const;
+
+/**
+ * The precision map as the CLI prints it: grouped by token-mixer
+ * programme, each group carrying only the columns its programme
+ * computes with. This is what makes Qwen's map structurally different
+ * from a single-programme model's — there is no one row that describes
+ * the model.
+ */
+export type Programme = {
+	label: string;
+	layers: number;
+	span: string;
+	columns: { id: string; bits: number }[];
+};
+
+export const PRECISION_MAP: Programme[] = [
+	{
+		label: "GATED DELTANET",
+		layers: 48,
+		span: "0–62",
+		columns: [
+			{ id: "gate", bits: 4.5 },
+			{ id: "up", bits: 4.5 },
+			{ id: "down", bits: 4.5 },
+			{ id: "qkv", bits: 4.5 },
+			{ id: "decay", bits: 16 },
+			{ id: "write", bits: 16 },
+			{ id: "zgate", bits: 4.5 },
+			{ id: "conv", bits: 16 },
+			{ id: "out", bits: 4.5 },
+		],
+	},
+	{
+		label: "GATED ATTENTION",
+		layers: 16,
+		span: "3–63",
+		columns: [
+			{ id: "gate", bits: 4.5 },
+			{ id: "up", bits: 4.5 },
+			{ id: "down", bits: 4.5 },
+			{ id: "q", bits: 4.5 },
+			{ id: "k", bits: 4.5 },
+			{ id: "v", bits: 4.5 },
+			{ id: "o", bits: 4.5 },
+			{ id: "zgate", bits: 4.5 },
+		],
+	},
+];
+
+export const DECODER_STACK = {
+	bytes: 13_736_385_088,
+	weights: 24_353_196_544,
+	effectiveBits: 4.5124,
+} as const;

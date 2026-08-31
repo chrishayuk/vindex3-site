@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { hatch, reducedMotion, useInView } from "@chrishayuk/hause/figure";
 import { tick } from "@chrishayuk/hause/sound";
 import { DOWN_PROJ_8 as WEIGHTS8, DOWN_PROJ_COLLAPSED as COLLAPSED } from "@/data/recordedRuns";
+import { DEFAULT_MODEL, type QuantModel } from "@/data/quantModels";
 
 /**
  * QUANTIZATION — the instruments.
@@ -23,21 +24,22 @@ import { DOWN_PROJ_8 as WEIGHTS8, DOWN_PROJ_COLLAPSED as COLLAPSED } from "@/dat
 
 const f6 = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(6);
 
-export function TensorOpen() {
+export function TensorOpen({ model = DEFAULT_MODEL }: { model?: QuantModel }) {
 	const { ref, inView } = useInView();
+	const W8 = model.values;
 	return (
 		<section className="hause-grid py-12 sm:py-16">
 			<div ref={ref} className="col-span-12 md:col-start-3 md:col-span-8">
 				<div className="border p-6" style={{ borderColor: "var(--color-mist)" }}>
 					<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-accent)" }}>
-						layer.0.mlp.down_proj · granite-4.1-3b
+						{model.tensor.address} · {model.display}
 					</p>
 					<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
 						{[
-							["shape", "2,560 × 8,192"],
-							["weights", "20,971,520"],
+							["shape", model.tensor.shape],
+							["weights", model.tensor.weights.toLocaleString()],
 							["dtype", "BF16 · 16 bits each"],
-							["stored", "41,943,040 bytes"],
+							["stored", `${model.tensor.bf16Bytes.toLocaleString()} bytes`],
 						].map(([k, v]) => (
 							<div key={k}>
 								<p className="voice-evidence text-[10px] tracking-[0.12em] uppercase opacity-45 m-0">{k}</p>
@@ -49,7 +51,7 @@ export function TensorOpen() {
 						the first eight weights of row zero — real values
 					</p>
 					<div className="flex flex-wrap gap-2">
-						{WEIGHTS8.map((w, i) => (
+						{W8.map((w, i) => (
 							<span
 								key={i}
 								className={inView ? "graph-pulse voice-evidence text-[12px] border px-2.5 py-1.5" : "voice-evidence text-[12px] border px-2.5 py-1.5"}
@@ -359,7 +361,7 @@ export function CollapseFigure() {
 /* ------------------------------------------------------------------
    THE PRECISION MAP — the object the argument is about.
    ------------------------------------------------------------------ */
-export function PrecisionMapFigure() {
+export function PrecisionMapFigure({ model = DEFAULT_MODEL }: { model?: QuantModel }) {
 	const { ref, inView } = useInView();
 	const [mixed, setMixed] = useState(false);
 	useEffect(() => {
@@ -371,11 +373,15 @@ export function PrecisionMapFigure() {
 		const t = setTimeout(() => setMixed(true), 1600);
 		return () => clearTimeout(t);
 	}, [inView]);
-	const OPERANDS = ["mlp.down", "mlp.gate", "mlp.up", "attn.k", "attn.o", "attn.q", "attn.v"];
-	const bandRows = [
-		{ label: "0–34", protectedMlp: false },
-		{ label: "35–39", protectedMlp: true },
-	];
+
+	// A model whose layers all run one programme can be described by a
+	// single row. A hybrid cannot — which is the argument this figure
+	// exists to make, so the grouping is the model's, never assumed.
+	const hybrid = model.programmes.length > 1;
+	// Uniform is the counterfactual: every eligible operand at 4.50.
+	// The map is what was actually compiled.
+	const effective = mixed ? model.stack.effectiveBits : 4.5;
+
 	return (
 		<section className="hause-grid py-12 sm:py-16">
 			<div ref={ref} className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
@@ -401,53 +407,91 @@ export function PrecisionMapFigure() {
 						</button>
 					))}
 				</div>
+
 				<div className="border p-4 sm:p-6 overflow-x-auto" style={{ borderColor: "var(--color-mist)" }}>
-					<div className="grid gap-2 voice-evidence text-[10px] tracking-[0.08em] uppercase opacity-45 mb-2" style={{ gridTemplateColumns: "4rem repeat(7, minmax(3.2rem, 1fr))" }}>
-						<span>layer</span>
-						{OPERANDS.map((o) => (
-							<span key={o}>{o}</span>
-						))}
-					</div>
-					{bandRows.map((band) => (
-						<div key={band.label} className="grid gap-2 items-center py-2 border-t" style={{ gridTemplateColumns: "4rem repeat(7, minmax(3.2rem, 1fr))", borderColor: "var(--color-mist)" }}>
-							<span className="voice-evidence text-[11px] opacity-60">{band.label}</span>
-							{OPERANDS.map((o) => {
-								const protectedCell = mixed && band.protectedMlp && o.startsWith("mlp");
-								return (
-									<div key={o} className="flex flex-col gap-1">
-										<div
-											style={{
-												height: 14,
-												width: protectedCell ? "100%" : "34%",
-												backgroundImage: hatch("var(--color-accent)", protectedCell ? 3 : 5),
-												opacity: protectedCell ? 0.95 : 0.55,
-												border: "1px solid var(--color-mist)",
-												transition: "width var(--motion-cinematic) var(--ease-hause), opacity var(--motion-considered) var(--ease-hause)",
-											}}
-										/>
-										<span className="voice-evidence text-[10px] opacity-55">{protectedCell ? "16.00" : "4.50"}</span>
-									</div>
-								);
-							})}
-						</div>
-					))}
+					{model.programmes.map((prog, pi) => {
+						const cols = `4rem repeat(${prog.columns.length}, minmax(3.2rem, 1fr))`;
+						return (
+							<div key={prog.label} className={pi > 0 ? "mt-8" : undefined}>
+								{hybrid && (
+									<p className="voice-evidence text-[11px] tracking-[0.1em] uppercase mb-3 m-0" style={{ color: "var(--color-accent)" }}>
+										{prog.label} · {prog.layers} layers
+									</p>
+								)}
+								<div
+									className="grid gap-2 voice-evidence text-[10px] tracking-[0.08em] uppercase opacity-45 mb-2"
+									style={{ gridTemplateColumns: cols }}
+								>
+									<span>layer</span>
+									{prog.columns.map((c) => (
+										<span key={c.id}>{c.id}</span>
+									))}
+								</div>
+								<div
+									className="grid gap-2 items-center py-2 border-t"
+									style={{ gridTemplateColumns: cols, borderColor: "var(--color-mist)" }}
+								>
+									<span className="voice-evidence text-[11px] opacity-60">{prog.span}</span>
+									{prog.columns.map((c) => {
+										// Before the map lands, every eligible operand reads
+										// 4.50 — the uniform counterfactual. After, each
+										// column shows what the programme actually chose.
+										const bits = mixed ? c.bits : 4.5;
+										const raised = bits > 4.5;
+										return (
+											<div key={c.id} className="flex flex-col gap-1">
+												<div
+													style={{
+														height: 14,
+														width: raised ? "100%" : "34%",
+														backgroundImage: hatch("var(--color-accent)", raised ? 3 : 5),
+														opacity: raised ? 0.95 : 0.55,
+														border: "1px solid var(--color-mist)",
+														transition:
+															"width var(--motion-cinematic) var(--ease-hause), opacity var(--motion-considered) var(--ease-hause)",
+													}}
+												/>
+												<span className="voice-evidence text-[10px] opacity-55">{bits.toFixed(2)}</span>
+											</div>
+										);
+									})}
+								</div>
+							</div>
+						);
+					})}
+
 					<div className="flex flex-wrap gap-x-8 gap-y-1 mt-4 pt-3 border-t" style={{ borderColor: "var(--color-mist)" }}>
-						<span className="voice-evidence text-[11px] opacity-60">stored 2,221,671,460 bytes (2.069 GiB)</span>
-						<span className="voice-evidence text-[11px] opacity-60">weights 3,145,728,000</span>
+						<span className="voice-evidence text-[11px] opacity-60">
+							stored {model.stack.bytes.toLocaleString()} bytes
+						</span>
+						<span className="voice-evidence text-[11px] opacity-60">
+							weights {model.stack.weights.toLocaleString()}
+						</span>
 						<span className="voice-evidence text-[12px]" style={{ color: "var(--color-accent)" }}>
-							effective {mixed ? "5.6500" : "4.5000"} bits / weight
+							effective {effective.toFixed(4)} bits / weight
 						</span>
 					</div>
 				</div>
+
 				<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-6">
 					This is the object the whole argument is about. Not &ldquo;the model is four-bit&rdquo; — a program:
-					these tensors at four and a half bits, those fifteen at sixteen, effective rate 5.65 — and it is a
-					physical fact inside the file, not a flag passed at load time. Execution honours it: ask for the
-					all-NVFP4 backend and sixteen tensors run at higher precision anyway, because the pack says so.
+					these tensors at four and a half bits, those at sixteen, an effective rate that is neither — and it is
+					a physical fact inside the file, not a flag passed at load time. Execution honours it: ask for the
+					all-NVFP4 backend and the protected tensors run at higher precision anyway, because the pack says so.
 				</p>
+
+				{hybrid && (
+					<p className="voice-system text-sm sm:text-base opacity-70 leading-relaxed max-w-2xl mt-3">
+						And {model.display} needs {model.programmes.length} tables, not one, because its layers do not all
+						run the same token-mixing programme. There is no single row that describes this model — which is
+						the sharpest form of the point: a bit-width is not a property a hybrid model has.
+					</p>
+				)}
+
 				<p className="voice-evidence text-xs opacity-45 leading-relaxed max-w-2xl mt-3">
-					recorded · granite-4.1-3b: uniform ≈116 tok/s · this map ≈104 tok/s · +400 MB · 3.5× better in the tail.
-					Three axes, not one.
+					{model.throughput
+						? `recorded · ${model.display}: ${model.throughput}. Three axes, not one.`
+						: `recorded · ${model.display}: storage derived from the container's own bytes. Speed and behaviour are not measured here — and a map that is smaller is not thereby better.`}
 				</p>
 			</div>
 		</section>

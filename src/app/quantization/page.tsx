@@ -19,6 +19,7 @@ import {
 	PrecisionMapFigure,
 	DistributionFigure,
 } from "@/components/QuantizationFigures";
+import { quantModel, DEFAULT_MODEL } from "@/data/quantModels";
 
 export const metadata: Metadata = {
 	title: "LLM Quantization Explained: 4-Bit, NVFP4 & Precision Maps",
@@ -43,7 +44,13 @@ export default async function QuantizationPage({
 	searchParams: Promise<{ model?: string }>;
 }) {
 	const { model } = await searchParams;
-	const unknownModel = model && model !== "granite-4.1-3b" ? model : null;
+	// Three states, and the page must not blur them: a model it has
+	// recorded in full, a model it has recorded only the storage of,
+	// and a name it has nothing for.
+	const selected = quantModel(model);
+	const unknownModel = selected ? null : model;
+	const m = selected ?? DEFAULT_MODEL;
+	const storageOnly = Boolean(selected && !selected.quality);
 	return (
 		<main>
 			<JsonLd
@@ -64,6 +71,25 @@ export default async function QuantizationPage({
 					{ name: "Quantization", url: "https://vindex3.org/quantization" },
 				])}
 			/>
+			{storageOnly && (
+				<section className="hause-grid pt-6">
+					<div
+						className="col-span-12 md:col-start-2 md:col-span-9 border p-4"
+						style={{ borderColor: "var(--color-status-ongoing)" }}
+					>
+						<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-status-ongoing)" }}>
+							{m.display} — STORAGE MEASURED · QUALITY NOT ESTABLISHED
+						</p>
+						<p className="voice-system text-sm opacity-80 m-0 mt-2 leading-relaxed">
+							The tensor, the collapse and the precision map below are {m.display}&apos;s own, derived from the
+							container&apos;s bytes. The quality figures are not: they remain a recorded run against
+							granite-4.1-3b and are labelled as exactly that. Smaller is not better — until the quality bank
+							returns, this page can tell you what {m.display} costs, and not what it is worth.
+						</p>
+					</div>
+				</section>
+			)}
+
 			{unknownModel && (
 				<section className="hause-grid pt-6">
 					<div
@@ -118,7 +144,7 @@ export default async function QuantizationPage({
 				text="Quantization gets described as a dial: sixteen bits in, four bits out, model four times smaller, done. But the scales are never free, the information loss is deliberate and permanent, the right precision differs per component — and the same policy that behaves beautifully on one model degrades badly on another. This chapter walks the real mechanics on one real tensor, and ends at the object that replaces the dial: the precision map."
 			/>
 
-			<TensorOpen />
+			<TensorOpen model={m} />
 
 			<Observation
 				label="SELECTION, NOT CONVERSION"
@@ -173,7 +199,7 @@ export default async function QuantizationPage({
 				cite="recorded — granite-4.1-3b · uniform 4.5 ↔ mixed 5.65 effective bits/weight"
 			/>
 
-			<PrecisionMapFigure />
+			<PrecisionMapFigure model={m} />
 
 			<Observation
 				label="NEVER JUDGE BY THE TOKEN"
