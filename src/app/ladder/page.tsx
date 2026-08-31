@@ -322,6 +322,29 @@ export default function LadderPage() {
 				caption="The witness the schema-6 delta was defined against, run live the day the lift landed — the refusal is as much a part of the record as the admission. The hybrid half of the story now has its own witness below: the 250M rehearsal PASSED the next day, and mamba2attn-2.7b remains open as scale validation of the same abstraction."
 			/>
 
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-8">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						THE WITNESS PROGRAMME, IN ONE GLANCE
+					</p>
+					<pre
+						className="voice-evidence text-sm sm:text-base leading-loose whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
+						style={{ borderColor: "var(--color-mist)" }}
+					>
+						{`PURE SSM      mamba2-780m        430/430   0 schema changes
+HYBRID 250M   Mamba2Attn-250M    468/468   0 schema changes
+HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
+					</pre>
+					<p className="voice-system text-sm opacity-80 leading-relaxed max-w-2xl mt-6">
+						Increasing architectural complexity did not require a new ontology dimension. Each row is
+						teacher-forced full-logit parity against an independent fp32 oracle, argmax-exact at every scored
+						position, with source-hidden LQL generation reproducing the reference exactly — and each model is
+						strictly nastier than the last: pure recurrence, then mixed state families with non-standard
+						attention, then the native dialect at scale with no declared geometry at all.
+					</p>
+				</div>
+			</section>
+
 			<Ladder
 				kicker="THE HYBRID REHEARSAL — LITE-OUTE-2-MAMBA2ATTN-250M · MIXED PROGRAM · 2026-08-31"
 				rungs={[
