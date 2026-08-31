@@ -60,7 +60,7 @@ export default function LadderPage() {
 			<Answer
 				id="is-vindex3-production-ready"
 				question="Is VINDEX3 production ready?"
-				answer="VINDEX3 is a 3.0 Candidate Specification (promoted 2026-08-30, graph schema 6). The format works today: production models encode, verify and execute byte-identically to their sources, containers serve real inference at recorded speeds, and every guarantee below is held by implementation gates. It is not yet Final: the named gates that remain — the shape convergence, the required/optional freeze, an independent reader, the held-out architecture test, the default flip, and the ontology lift's second half — are listed on this page with their statuses."
+				answer="VINDEX3 is a 3.0 Candidate Specification (promoted 2026-08-30, graph schema 6). The format works today: production models encode, verify and execute byte-identically to their sources, containers serve real inference at recorded speeds, and every guarantee below is held by implementation gates. The ontology lift is closed on both halves — schema 6 on 2026-08-30, the typed continuation-state schema on 2026-08-31. It is not yet Final: the named gates that remain — the shape convergence, the required/optional freeze, an independent reader, the held-out architecture test, the default flip, and the last bank-ABI rows — are listed on this page with their statuses, and they are standards and release closure rather than architecture."
 				cite="derived from the gate ladders below — not asserted"
 			/>
 
@@ -260,7 +260,7 @@ export default function LadderPage() {
 						question: "KDA + MLA + softmax — three continuation-state kinds in one program.",
 						gate: "one program declares heterogeneous state; no family owns continuation globally",
 						status: "DISPROVED",
-						detail: "Not hypothetical — this is Kimi-Linear, executing in-tree. The state schema cannot yet declare KDA precision or MLA latent-KV geometry, and one judged fact the container cannot carry at all was found. The confirmation came with a gift: in the code, KvState is already an alias of ContinuationProvider, retiring at a named consolidation point — lift two is underway under its own name.",
+						detail: "Not hypothetical — this is Kimi-Linear, executing in-tree. The drill found what the state schema could not yet declare: KDA precision, MLA latent-KV geometry, and one judged fact the container could not carry at all — the epsilon MLA's latent norm runs at, which is not the layer's. All three closed on 2026-08-31 as lift two, additive within schema 6; the witness is below.",
 					},
 					{
 						id: "SYSTEM",
@@ -403,6 +403,48 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 				]}
 			/>
 
+			<Ladder
+				kicker="LIFT TWO — THE TYPED STATE SCHEMA · KIMI-LINEAR-48B-A3B-INSTRUCT · 2026-08-31"
+				rungs={[
+					{
+						id: "CARRY",
+						question: "Can the container carry the state facts it was missing — without a schema break?",
+						gate: "additive fields within schema 6: KDA state precision, MLA latent-cache geometry, the per-operator norm epsilon",
+						status: "PASSED",
+						detail: "Three facts, each recorded rather than chosen. KDA's recurrence is held at the precision its own reference computes at — no checkpoint declares one, so the judgment is a transcription of the reference kernel, kept in one place. MLA's cache became a third state species: one operator-defined row per position, never a K/V pair, so a consumer that holds only rows still fails closed on it. And the epsilon MLA's latent norm runs at — its class default, an order of magnitude from the layer's own — moved out of an executor constant and into the graph, where deleting the checkpoint can no longer lose it.",
+					},
+					{
+						id: "GRAPH-ONLY",
+						question: "What did fixing the meaning cost the bytes?",
+						gate: "re-encode the 92 GB container and compare every representation payload hash",
+						status: "PASSED",
+						detail: "Nothing. All five representations — decoder stack, embedding, expert bank, final norm, output head — came back with byte-identical payload hashes, while the missing semantic appeared in the graph. A 92 GB artifact had its meaning corrected without a single stored representation changing. That is the separation this format exists to make: logical identity, physical representation and residency are three different things.",
+					},
+					{
+						id: "CLOSE",
+						question: "Does the real 27-layer hybrid close, from the container alone?",
+						gate: "operand closure and continuation geometry derived from the declared plan, no family lookup",
+						status: "PASSED",
+						detail: "27 layers — 20 KDA, 7 MLA — every operand accounted, the plan built from the container by itself, and both operators executable through the ordinary prepared-operands path rather than the family-shaped loader they were reachable from before. A miniature of the same stack runs in CI: it admits, encodes, declares both state species, and its single-token decode path matches batch prefill bitwise.",
+					},
+					{
+						id: "REPORT",
+						question: "Do the reporting surfaces tell the truth about heterogeneous state?",
+						gate: "the account of continuation must derive from the same plan the executor allocates from",
+						status: "PASSED",
+						detail: "They did not, and that was the catch. A summary that classified layers itself called all 27 recurrent and the whole stack constant in sequence length — hiding seven layers whose cache grows with every position, and undercounting KDA's own state by omitting its three convolution windows (10,485,760 elements reported against 11,223,040 actual). Reading it off the continuation plan instead makes state what it is: a collection of declared regions, each with its own growth behaviour, not a single category label.",
+					},
+					{
+						id: "SCALE",
+						question: "Does the real model execute end-to-end on this machine?",
+						gate: "separate axis: execution placement, not meaning",
+						status: "OPEN",
+						detail: "Execution semantics close; residency does not. The CPU backend expands the 94 GB BF16 routed-expert bank to F32, which would need roughly 188 GB resident on a 137 GB machine, so the reference path refuses to fit rather than running wrong. Device and streaming execution are the appropriate path, and this row is deliberately kept separate from the four above: a backend's residency policy is not an ontology gap.",
+					},
+				]}
+				caption="The lift the ontology drill named a year of design ahead of — closed inside the schema it was predicted to fit in. The strongest line is the second: the payload hashes did not move."
+			/>
+
 			<Timeline
 				entries={[
 					{
@@ -432,6 +474,10 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 					{
 						date: "2026-08-31",
 						text: "The hybrid rehearsal closes end-to-end: a mixed Mamba2 / conv-QKV-attention model admits with five explicit judgments, executes through the generic runtime with no family lookup, matches its fp32 oracle at the oracle's own floor across 468 positions, and reproduces source-hidden LQL generation token-for-token — with no schema change. One layer now demonstrably carries two declared continuation regions.",
+					},
+					{
+						date: "2026-08-31",
+						text: "Lift two closes, and the ontology lift with it. The typed continuation-state schema lands additively inside schema 6 — KDA state precision, MLA latent-cache geometry, and the per-operator norm epsilon the container previously could not carry — and Kimi-Linear-48B is re-encoded to hold them. All five representation payload hashes come back byte-identical: meaning corrected, not one stored representation touched.",
 					},
 					{
 						date: "2026-08-31",
@@ -491,7 +537,7 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, the last pre-registered bank-ABI rows — and the ontology lift's second half. The first half is no longer pinned but landed: the four-architecture drill ran on 30 August, every schema gap fell inside the two lifts, and graph schema 6 shipped the same day with a live pure-SSM witness. The state-schema half — declared KDA precision, MLA latent geometry — remains, additive within the schema-6 span. Until those gates pass, candidate it stays."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, and the last pre-registered bank-ABI rows. The ontology lift is no longer among them: the four-architecture drill ran on 30 August, every schema gap fell inside the two lifts, graph schema 6 shipped the same day with a live pure-SSM witness, and the state-schema half — declared KDA precision, MLA latent-cache geometry, the per-operator norm epsilon — landed on 31 August, additive within that same span. Until the remaining gates pass, candidate it stays."
 			/>
 
 			<Observation

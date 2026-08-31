@@ -183,7 +183,18 @@ function panelModel(model: string | null): PanelModel {
 }
 
 function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: string | null; clear?: boolean; panel?: TerminalPanel } {
-	const need = (): Line[] => [{ text: "no model open — OPEN vindex3-demo first", tone: "err" }];
+	// The Qwen record holds the runs that were made, and nothing else.
+	// A verb with no recorded answer refuses by name rather than
+	// falling through to the demo container's data — which would answer
+	// a question about a 64-layer hybrid with a 24-layer worked example.
+	const recordOnly = (verb: string): Line[] => [
+		{ text: `${verb}: no recorded answer for qwen3.8-27b`, tone: "err" },
+		{ text: "this record holds SHOW REPRESENTATIONS · SHOW PRECISION · DIFF · VERIFY — the runs that were made", tone: "dim" },
+		{ text: "OPEN vindex3-demo to walk a mounted container instead", tone: "dim" },
+	];
+	const need = (): Line[] => [
+		{ text: "no model open — OPEN vindex3-demo, or OPEN qwen3.8-27b for the recorded hybrid", tone: "err" },
+	];
 	switch (cmd.kind) {
 		case "help":
 			return { lines: HELP };
@@ -201,17 +212,36 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 					})),
 				],
 			};
-		case "use":
-			if (cmd.model !== "vindex3-demo")
+		case "use": {
+			// Two things can be opened, and they are not the same kind of
+			// thing. vindex3-demo is a container this surface mounts.
+			// qwen3.8-27b is a RECORD of runs made against a container
+			// that is not distributed — so it answers with what was
+			// measured, and refuses to pretend it is executing.
+			if (cmd.model === "vindex3-demo")
+				return {
+					lines: [{ text: "opened — vindex3-demo (worked example · 24 layers · 32 experts · moe-decoder)", tone: "ok" }],
+					model: "vindex3-demo",
+				};
+			if (cmd.model === "qwen3.8-27b")
 				return {
 					lines: [
-						{ text: `${cmd.model}: LIVE ENDPOINT PENDING`, tone: "err" },
-						{ text: "this snapshot mounts vindex3-demo only — real containers arrive with the live VINDEX query endpoint", tone: "dim" },
+						{ text: "opened — qwen3.8-27b (recorded · 64 layers · hybrid gated-deltanet / gated attention)", tone: "ok" },
+						{ text: "a RECORD, not a connection: the container is not distributed, and these are runs made against it", tone: "dim" },
+						{ text: "storage measured · quality NOT ESTABLISHED — SHOW PRECISION · DIFF BF16 NVFP4 layer.0.ffn.down · VERIFY", tone: "dim" },
 					],
+					model: "qwen3.8-27b",
 				};
-			return { lines: [{ text: "opened — vindex3-demo (worked example · 24 layers · 32 experts · moe-decoder)", tone: "ok" }], model: "vindex3-demo" };
+			return {
+				lines: [
+					{ text: `${cmd.model}: LIVE ENDPOINT PENDING`, tone: "err" },
+					{ text: "this surface mounts vindex3-demo, and holds the qwen3.8-27b record — SHOW MODELS", tone: "dim" },
+				],
+			};
+		}
 		case "show-components":
 			if (!model) return { lines: need() };
+			if (model === "qwen3.8-27b") return { lines: recordOnly("SHOW COMPONENTS") };
 			if (cmd.layer !== undefined) {
 				if (cmd.layer < 0 || cmd.layer >= DEMO.layers) return { lines: [{ text: `layer.${cmd.layer}: out of range — 0..${DEMO.layers - 1}`, tone: "err" }] };
 				return { lines: DEMO.layerObjects(cmd.layer).map((t) => ({ text: t })) };
@@ -248,6 +278,7 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 		}
 		case "walk-weights": {
 			if (!model) return { lines: need() };
+			if (model === "qwen3.8-27b") return { lines: recordOnly("WALK") };
 			const rows = [
 				{ l: 24, f: "24:1882", sc: 0.83 },
 				{ l: 27, f: "27:0413", sc: 0.79 },
@@ -274,6 +305,7 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 			};
 		case "tree": {
 			if (!model) return { lines: need() };
+			if (model === "qwen3.8-27b") return { lines: recordOnly("TREE") };
 			const lm = cmd.address.match(/^layer\.(\d+)/i);
 			const l = lm ? Number(lm[1]) : 12;
 			return {
@@ -599,7 +631,23 @@ function completeLine(input: string, live: boolean): string[] {
 	return input.length > 0 ? verbs.filter((v) => v.toUpperCase().startsWith(up) && v.toUpperCase() !== up) : [];
 }
 
-function snapshotBanner(): Line[] {
+function snapshotBanner(model: string | null): Line[] {
+	// A recorded model is not a connection. Saying "Connected" over a
+	// record would be the substitution this whole surface exists to
+	// refuse — so the verb changes with the thing.
+	if (model === "qwen3.8-27b") {
+		return [
+			{ text: "Opened — qwen3.8-27b · recorded · schema 6 · 18.4 GiB deployable", tone: "ok" },
+			{
+				text: "This is a RECORD, not a connection: the container is not distributed, and these panels are runs made against it.",
+				tone: "dim",
+			},
+			{
+				text: "Storage measured · quality NOT ESTABLISHED — try SHOW PRECISION, DIFF BF16 NVFP4 layer.0.ffn.down, VERIFY",
+				tone: "dim",
+			},
+		];
+	}
 	return [
 		{ text: "Connected — " + SNAPSHOT_ID, tone: "ok" },
 		{ text: "Profile: PUBLIC_EXPLORER (read-only) · the live endpoint connects quietly in the background", tone: "dim" },
@@ -630,6 +678,11 @@ export function VindexTerminal() {
 				// the snapshot answers from the first keystroke.
 				const r = await fetch(`${LIVE_ENDPOINT}/v1/health`, { signal: AbortSignal.timeout(20000) });
 				if (cancelled || !r.ok) return;
+				// The live endpoint serves vindex3-demo and nothing else.
+				// Switching a Qwen record onto it would answer Qwen
+				// questions with another model's container — quietly, and
+				// with a green LIVE line vouching for it.
+				if (named === "qwen3.8-27b") return;
 				setTransport("live");
 				setNotice({
 					text: "● LIVE — " + LIVE_ENDPOINT.replace("https://", "") + " connected · profile PUBLIC_EXPLORER · statements now execute on a real container (vindex3-demo: miniature, synthetic weights — the format is real)",
@@ -735,7 +788,7 @@ export function VindexTerminal() {
 		<Terminal
 			kicker="THE EXPLORER — ENTER A MODEL"
 			headline="psql, for a model."
-			banner={transport === "live" ? liveBanner() : snapshotBanner()}
+			banner={transport === "live" ? liveBanner() : snapshotBanner(model)}
 			prompt="vindex>"
 			seeds={transport === "live" ? LIVE_SEED : SEED}
 			execute={(line) => (transport === "live" ? runLive(line) : runSnapshot(line))}

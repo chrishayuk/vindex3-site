@@ -48,7 +48,7 @@ export default function VersionPage() {
 			<Answer
 				id="what-is-vindex3-3-0"
 				question="What is VINDEX3 3.0, and what is its current status?"
-				answer="VINDEX3 3.0 is a Candidate Specification for a self-describing, executable, queryable model container, promoted from draft on 2026-08-30 and carrying graph schema 6. The container model is settled: one canonical graph shape, a contract stack, compatibility rules, and a per-layer operator program that surfaces and state follow. Schema 6 has now executed both a pure SSM and a mixed Mamba2 / conv-QKV-attention model through the generic runtime with no family lookup and no further schema change — the hybrid matches its fp32 oracle across 468 positions and reproduces source-hidden LQL generation token-for-token. Candidate means the model is settled, not that the bytes are frozen — the gates that remain before Final are named below, each with its status."
+				answer="VINDEX3 3.0 is a Candidate Specification for a self-describing, executable, queryable model container, promoted from draft on 2026-08-30 and carrying graph schema 6. The container model is settled: one canonical graph shape, a contract stack, compatibility rules, and a per-layer operator program that surfaces and state follow. Schema 6 has now executed both a pure SSM and a mixed Mamba2 / conv-QKV-attention model through the generic runtime with no family lookup and no further schema change — the hybrid matches its fp32 oracle across 468 positions and reproduces source-hidden LQL generation token-for-token. Lift 2 closed on 2026-08-31 inside the same schema: a 48-billion-parameter hybrid was re-encoded to carry the state facts it had been missing, and all five of its representation payload hashes came back byte-identical — meaning corrected without touching a single stored representation. Candidate means the model is settled, not that the bytes are frozen — the gates that remain before Final are named below, each with its status."
 				cite="derived from the Record — /ladder"
 			/>
 
@@ -75,8 +75,8 @@ export default function VersionPage() {
 						id: "STATE-COMPLETE",
 						question: "Continuation requirements are explicit.",
 						gate: "the program declares what persists between tokens; undeclared precision is refused, never chosen",
-						status: "BUILDING",
-						detail: "State declaration is now proven across a multi-region hybrid: an operator declares the continuation regions it requires and execution consumes those declarations — including one layer carrying a KV cache AND a convolution history, with a KV-only provider refusing rather than allocating half. Witnessed by a three-state hybrid, a pure-SSM container whose layers each carry two regions, and the Mamba2Attn hybrid at its oracle's floor. The typed state schema (declared KDA precision, MLA latent geometry) is the ontology lift's second half: additive within schema 6, and honestly open.",
+						status: "PASSED",
+						detail: "Kimi-Linear-48B-A3B-Instruct was re-encoded under lift 2 with its representation payloads unchanged. Its 20 KDA layers declare recurrent state plus convolution history; its 7 MLA layers declare a growing latent cache. All operands close, including the MLA KV-A normalisation epsilon — a judged fact the container previously could not carry at all — and every reporting surface derives its account of continuation from the same plan the executor allocates from. One layer may carry a KV cache AND a convolution history; a consumer that holds only rows refuses such a layer rather than allocating half of it.",
 					},
 					{
 						id: "REPRESENTATION-INDEPENDENT",
@@ -105,7 +105,12 @@ export default function VersionPage() {
 
 			<Observation
 				label="WHAT REMAINS BEFORE FINAL"
-				text="Seven named gates, none of them drift: the shape convergence executed; the required/optional RFC-2119 freeze; the independent reader (vindex-core) with a conformance harness; the held-out architecture test (E8), run after the freeze under a rule of zero format changes; the default flip (M4); the remaining pre-registered bank-ABI rows; and the ontology lift's second half — the typed continuation-state schema. The first half landed 2026-08-30 as graph schema 6, with a live pure-SSM witness. Each gate's current status lives on the Record."
+				text="The ontology lift is closed on both halves — schema 6 on 2026-08-30, the typed continuation-state schema on 2026-08-31, the second additive within the first. Six named gates remain, none of them drift: the shape convergence executed; the required/optional RFC-2119 freeze; the independent reader (vindex-core) with a conformance harness; the held-out architecture test (E8), run after the freeze under a rule of zero format changes; the default flip (M4); and the remaining pre-registered bank-ABI rows. What remains is standards, conformance and release closure rather than architecture. Each gate's current status lives on the Record."
+			/>
+
+			<Observation
+				label="WHAT IS NOT A 3.0 GATE — KIMI REAL-SCALE EXECUTION"
+				text="Execution semantics close for Kimi-Linear-48B: every operand accounted, every continuation region declared, the plan built from the container alone. CPU reference execution of that model is nonetheless constrained by residency, not by meaning — the backend expands the 94 GB BF16 routed-expert bank to F32, which would need roughly 188 GB resident on a 137 GB machine. Device and streaming execution are the appropriate path. This is an execution-placement axis, and it is deliberately not counted against STATE-COMPLETE: model meaning, physical representation and residency are three separate things, and this is the third one refusing."
 			/>
 
 			<Connection

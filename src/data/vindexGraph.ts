@@ -756,7 +756,7 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		answer:
 			"Graph schema 6 is the ontology lift's first half, landed 2026-08-30: presence means semantic presence. The execution surface's attention and FFN groups exist iff the component's declared operator program runs those operations; the per-layer operator is explicit, with no absent-means-softmax default; the layer census fails closed on an undeclared family; and operand closure is enforced at encode — a container whose operands do not close is removed, not written. Object kinds keep identity and stop implying operation families.",
 		path: [e("execution-surface", "follows"), e("schema-six", "witnessed_by"), e("closure", "enforced_at_encode_by")],
-		record: { status: "PASSED", note: "landed with the live pure-SSM witness; lift 2's state-schema facts remain, additive within v6" },
+		record: { status: "PASSED", note: "landed with the live pure-SSM witness; lift 2's state-schema facts landed 2026-08-31, additive within v6" },
 		explore: ["schema-six", "execution-surface", "record"],
 	},
 ];
@@ -1634,7 +1634,7 @@ export const ENTITIES: Entity[] = [
 		display: "CONTINUATION STATE",
 		five: "the program declares its memory",
 		role: "What persists between tokens, declared by the model program rather than assumed: KV rows for softmax attention, a latent-compressed cache for MLA, and one or more regions for each recurrence family — Gated DeltaNet and Mamba2 both carry a convolution history beside their folded state.",
-		detail: "KV is one state family — not the definition of model continuation, and an operator may declare more than one region: operation family does not imply state shape. Three real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, a pure-SSM container describes its whole continuation with no KV row anywhere, and the Mamba2Attn hybrid's conv-QKV attention — recognisably attention — declares a KV cache AND a convolution history on the same layer, with a KV-only provider refusing the layer rather than allocating half of it. The typed state schema is the remaining half of the ontology lift, additive within schema 6 — and until an operator's state precision is declared, the planner refuses to choose one.",
+		detail: "KV is one state family — not the definition of model continuation, and an operator may declare more than one region: operation family does not imply state shape. Three real witnesses hold the sentence up: a KDA + MLA + softmax hybrid carries three state kinds at once, a pure-SSM container describes its whole continuation with no KV row anywhere, and the Mamba2Attn hybrid's conv-QKV attention — recognisably attention — declares a KV cache AND a convolution history on the same layer, with a KV-only provider refusing the layer rather than allocating half of it. The typed state schema closed that account on 2026-08-31, additive within schema 6: a latent cache is its own region species, one operator-defined row per position rather than a K/V pair, and a state precision no checkpoint declares is a recorded transcription of the operator's own reference — never a planner's choice, and refused outright where no reference has been read.",
 		group: "format",
 		relations: [
 			{ rel: "generalises", to: "kv-vs-recurrent-state" },
@@ -1753,7 +1753,8 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "browse-parity", label: "expert-region browse parity", status: "OPEN", note: "an open pre-freeze row" },
 	{ id: "E8", label: "held-out architecture test", status: "OPEN", note: "runs after the freeze, by design" },
 	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
-	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "OPEN", note: "KDA precision and MLA latent geometry — additive within schema 6" },
+	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "PASSED", note: "landed 2026-08-31, additive within schema 6: KDA state precision and its convolution windows, MLA latent-cache geometry, the per-operator norm epsilon — witnessed by a graph-only re-encode of Kimi-Linear-48B whose five representation payload hashes were unchanged" },
+	{ id: "kimi-real-scale", label: "real-scale Kimi CPU execution (residency, not ontology)", status: "OPEN", note: "semantics close; the backend's F32 expansion of the 94 GB BF16 routed-expert bank would need ~188 GB resident on a 137 GB machine — device/streaming execution is the path" },
 	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "PASSED", note: "paritied against the fp32 oracle: 430/430 argmax exact, trajectories token-for-token, max|Δ| 7.6e-4" },
 	{ id: "hybrid-rehearsal", label: "the 250M hybrid rehearsal (Mamba2 + conv-QKV attention)", status: "PASSED", note: "no family lookup, no schema change: 468/468 argmax exact at the oracle's own floor (max|Δ| 6.9e-5), source-hidden LQL generation id-for-id" },
 	{ id: "hybrid-scale", label: "the 2.7B scale witness (mamba2attn-2.7b, state-spaces original)", status: "PASSED", note: "zero schema changes under the strict rule: identity and ALL geometry judged from the config shape and recorded package defaults, argmax 430/430 at the oracle floor (max|Δ| 2.3e-4), source-hidden generation id-for-id; found and closed three fail-opens" },

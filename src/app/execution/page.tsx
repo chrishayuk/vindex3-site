@@ -431,9 +431,13 @@ future operators     declared, never assumed`}
 						pure-SSM container describes its whole continuation as two recurrent regions per layer — eighteen
 						million elements, constant in sequence length, no KV row anywhere — and the Mamba2Attn hybrid
 						runs both mixed regions through generic execution at its reference's own numerical floor.
-						The typed state schema — declared precision for KDA, latent geometry for MLA — is the remaining
-						half of the lift, additive within schema 6. The rule underneath does not change: state geometry is
-						a container fact, read from the plan, never inferred from architecture.
+						The typed state schema — declared precision for KDA, latent-cache geometry for MLA — closed that
+						half of the lift on 2026-08-31, additive within schema 6: a latent cache is its own region
+						species, one operator-defined row per position rather than a K/V pair, and Kimi-Linear-48B now
+						declares its 20 recurrent layers and its 7 growing caches from the container alone. The rule
+						underneath does not change: state geometry is a container fact, read from the plan, never
+						inferred from architecture — and the surfaces that report it read the same plan, after one
+						summary was caught calling seven growing caches constant-size recurrent state.
 					</p>
 				</div>
 			</section>
