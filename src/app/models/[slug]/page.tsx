@@ -9,7 +9,16 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Evidence } from "@chrishayuk/hause/components/forms/Evidence";
 import { ModelBrowser } from "@/components/ModelBrowser";
-import { QWEN, OBJECTS, COMPILE, SURFACES, VISION, RECORDED_TAG } from "@/data/qwen38";
+import {
+	QWEN,
+	OBJECTS,
+	COMPILE,
+	SURFACES,
+	VISION,
+	RECORDED_TAG,
+	FIDELITY,
+	CONTROL_PATH_EXPERIMENT,
+} from "@/data/qwen38";
 
 /**
  * A model page is the artifact's own identity surface: what it is,
@@ -51,7 +60,7 @@ const STATUS: { label: string; value: string; state: "ok" | "running" | "open" }
 	{ label: "NVFP4 COMPILED", value: "✓", state: "ok" },
 	{ label: "SELF-VERIFIED", value: "✓", state: "ok" },
 	{ label: "NVFP4 EXECUTION", value: "✓", state: "ok" },
-	{ label: "FIDELITY", value: "MEASURING", state: "running" },
+	{ label: "FIDELITY", value: "MEASURED", state: "ok" },
 	{ label: "VISION FIDELITY", value: "NOT EVALUATED", state: "open" },
 ];
 
@@ -87,8 +96,9 @@ function StatusStrip() {
 					))}
 				</div>
 				<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-5">
-					The strip tells the truth as it changes. FIDELITY reads MEASURING because the canonical bank is running — not
-					because the number is being withheld, and not because another model&apos;s number will stand in for it.
+					The strip tells the truth as it changes, and it has. FIDELITY read MEASURING while the bank ran; Q-BANK-1
+					returned on 2026-08-31 and it reads MEASURED. Vision stays NOT EVALUATED, because the tower&apos;s bytes are
+					carried and carried is not measured.
 				</p>
 			</div>
 		</section>
@@ -228,9 +238,13 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
 					},
 					{
 						label: "Text-decoder fidelity",
-						status: "ONGOING",
-						detail:
-							"The canonical quality bank is running: KL divergence, next-token likelihood, top-1 agreement and top-5 overlap, conditioned on how uncertain the reference model was. Until it returns there is no number here, and no other model's number will be shown in its place.",
+						status: "SUPPORTED",
+						detail: `Q-BANK-1, ${FIDELITY.positions.toLocaleString()} positions against the BF16 reference: KL mean ${FIDELITY.klMean} (median ${FIDELITY.klMedian}, p95 ${FIDELITY.klP95}), ΔNLL mean +${FIDELITY.dNllMean}, top-1 agreement ${(FIDELITY.top1 * 100).toFixed(2)}% with ${FIDELITY.flips} flips, top-5 overlap ${(FIDELITY.top5 * 100).toFixed(2)}%.`,
+					},
+					{
+						label: "The recurrence-control exception",
+						status: "REFUTED",
+						detail: `Preserving the decay and write projections at BF16 removed ${CONTROL_PATH_EXPERIMENT.flipDifference} top-1 flips of ${FIDELITY.positions.toLocaleString()} — McNemar exact p = ${CONTROL_PATH_EXPERIMENT.mcnemarP} on the paired difference — for 33.9 MB, while KL p95 and mean ΔNLL were better without it and the high-margin tertile flipped zero times either way. Real, and too small to earn a default exception. The compiler no longer protects that path.`,
 					},
 					{
 						label: "Vision fidelity",

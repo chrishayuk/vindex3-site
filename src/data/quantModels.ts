@@ -8,7 +8,7 @@
  * smooth over:
  *
  *   granite-4.1-3b   storage AND quality (the banked quality records)
- *   qwen3.8-27b      storage ONLY — the quality bank has not returned
+ *   qwen3.8-27b      storage AND quality — Q-BANK-1 returned 2026-08-31
  *
  * A model with `quality: false` renders the storage figures from its own
  * measurements and refuses the quality ones. That is the honest middle
@@ -87,7 +87,7 @@ const GRANITE: QuantModel = {
 const QWEN: QuantModel = {
 	slug: "qwen3.8-27b",
 	display: "Qwen3.8-27B",
-	quality: false,
+	quality: true,
 	tensor: {
 		address: QWEN_TENSOR.tensor,
 		shape: QWEN_TENSOR.shape,

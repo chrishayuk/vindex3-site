@@ -83,7 +83,7 @@ import {
 /** Which model's record a panel should speak. `null` = the default. */
 export type PanelModel = "qwen3.8-27b" | null;
 
-const QWEN_TAG = "recorded — qwen3.8-27b.s6.vindex3 · storage measured, quality not established";
+const QWEN_TAG = "recorded — qwen3.8-27b.s6.vindex3 · storage and quality measured";
 
 export function componentsPanel(data: ComponentsData, provenance: string): TerminalPanel {
 	return {

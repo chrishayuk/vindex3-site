@@ -20,6 +20,7 @@ import {
 	DistributionFigure,
 } from "@/components/QuantizationFigures";
 import { quantModel, DEFAULT_MODEL } from "@/data/quantModels";
+import { FIDELITY } from "@/data/qwen38";
 
 export const metadata: Metadata = {
 	title: "LLM Quantization Explained: 4-Bit, NVFP4 & Precision Maps",
@@ -51,6 +52,9 @@ export default async function QuantizationPage({
 	const unknownModel = selected ? null : model;
 	const m = selected ?? DEFAULT_MODEL;
 	const storageOnly = Boolean(selected && !selected.quality);
+	// A model the bank has returned for says so, rather than leaving the
+	// reader to infer it from the absence of a warning.
+	const measured = Boolean(selected && selected.quality && selected.slug !== DEFAULT_MODEL.slug);
 	return (
 		<main>
 			<JsonLd
@@ -71,6 +75,26 @@ export default async function QuantizationPage({
 					{ name: "Quantization", url: "https://vindex3.org/quantization" },
 				])}
 			/>
+			{measured && (
+				<section className="hause-grid pt-6">
+					<div
+						className="col-span-12 md:col-start-2 md:col-span-9 border p-4"
+						style={{ borderColor: "var(--color-status-supported)" }}
+					>
+						<p className="voice-evidence text-xs m-0" style={{ color: "var(--color-status-supported)" }}>
+							{m.display} — STORAGE AND QUALITY MEASURED
+						</p>
+						<p className="voice-system text-sm opacity-80 m-0 mt-2 leading-relaxed">
+							Q-BANK-1 returned on 2026-08-31: KL mean {FIDELITY.klMean}, top-1 agreement{" "}
+							{(FIDELITY.top1 * 100).toFixed(2)}%, {FIDELITY.flips} flips across{" "}
+							{FIDELITY.positions.toLocaleString()} positions, against the BF16 reference. The precision map
+							below is the representation those numbers describe — and one of its cells is there because the
+							measurement said so, not because a prior did.
+						</p>
+					</div>
+				</section>
+			)}
+
 			{storageOnly && (
 				<section className="hause-grid pt-6">
 					<div

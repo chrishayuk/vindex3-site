@@ -53,9 +53,9 @@ export const COMPILE = {
 	reencoded: 400,
 	carried: 448,
 	decoderBefore: 48_706_393_088,
-	decoderAfter: 13_736_385_088,
+	decoderAfter: 13_702_470_592,
 	decoderRatio: "3.54×",
-	decoderBits: 4.5124,
+	decoderBits: 4.5012,
 	deployableBytes: 19_743_449_120,
 	deployable: "18.4 GiB",
 	original: "51.0 GiB",
@@ -73,8 +73,8 @@ export type Operand = { semantics: string; column: string; bits: number | null; 
 
 export const DELTANET_OPERANDS: Operand[] = [
 	{ semantics: "fused recurrent q|k|v", column: "qkv", bits: 4.5 },
-	{ semantics: "decay projection", column: "decay", bits: 16, note: "recurrence control — preserved by policy" },
-	{ semantics: "write-strength projection", column: "write", bits: 16, note: "recurrence control — preserved by policy" },
+	{ semantics: "decay projection", column: "decay", bits: 4.5, note: "recurrence control — measured, not excepted" },
+	{ semantics: "write-strength projection", column: "write", bits: 4.5, note: "recurrence control — measured, not excepted" },
 	{ semantics: "output-gate projection", column: "zgate", bits: 4.5 },
 	{ semantics: "causal conv over q|k|v", column: "conv", bits: 16, note: "3-D depthwise kernel — no block layout applies" },
 	{ semantics: "log decay", column: "—", bits: null },
@@ -197,8 +197,8 @@ export const PRECISION_MAP: Programme[] = [
 			{ id: "up", bits: 4.5 },
 			{ id: "down", bits: 4.5 },
 			{ id: "qkv", bits: 4.5 },
-			{ id: "decay", bits: 16 },
-			{ id: "write", bits: 16 },
+			{ id: "decay", bits: 4.5 },
+			{ id: "write", bits: 4.5 },
 			{ id: "zgate", bits: 4.5 },
 			{ id: "conv", bits: 16 },
 			{ id: "out", bits: 4.5 },
@@ -222,9 +222,9 @@ export const PRECISION_MAP: Programme[] = [
 ];
 
 export const DECODER_STACK = {
-	bytes: 13_736_385_088,
+	bytes: 13_702_470_592,
 	weights: 24_353_196_544,
-	effectiveBits: 4.5124,
+	effectiveBits: 4.5012,
 } as const;
 
 /* ------------------------------------------------------------------
@@ -235,7 +235,7 @@ export const DECODER_STACK = {
 /** `vindex representations`, verbatim. */
 export const REPRESENTATIONS = [
 	{ id: "target.decoder_stack@BF16", encoding: "BF16", fidelity: "canonical", tensors: 848, bytes: 48_706_393_088 },
-	{ id: "target.decoder_stack@NVFP4", encoding: "NVFP4", fidelity: "approximate", tensors: 848, bytes: 13_736_385_088 },
+	{ id: "target.decoder_stack@NVFP4", encoding: "NVFP4", fidelity: "approximate", tensors: 848, bytes: 13_702_470_592 },
 	{ id: "target.embedding@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 2_542_796_800 },
 	{ id: "target.final_norm@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 10_240 },
 	{ id: "target.output_head@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 2_542_796_800 },
@@ -262,4 +262,48 @@ export const DIFF = {
 	changed: 89_128_960,
 	rms: 0.001009,
 	max: 0.060547,
+} as const;
+
+/* ------------------------------------------------------------------
+   Q-BANK-1 — the fidelity evidence, and the experiment that set the
+   default. Measured 2026-08-31, 1,740 positions, both arms `84b55964`,
+   `dirty:false`, `production-nvfp4 / stored`, runtime compile 0.
+   ------------------------------------------------------------------ */
+
+/** The shipped representation, against its BF16 reference. */
+export const FIDELITY = {
+	positions: 1_740,
+	klMean: 0.02411,
+	klMedian: 0.01301,
+	klP95: 0.08708,
+	klP99: 0.17023,
+	dNllMean: 0.01725,
+	top1: 0.9391,
+	flips: 106,
+	top5: 0.9161,
+} as const;
+
+/**
+ * The one-variable experiment: an otherwise identical programme with the
+ * recurrence-control projections preserved at BF16, against one
+ * compiling them. Differing by a single role string.
+ *
+ * Protection worked, and lost anyway. It removed eight top-1 flips —
+ * McNemar exact two-sided p = 0.0215 on the paired difference — while
+ * moving mean KL by 0.000389 bits/token for 33.9 MB, and the metrics
+ * disagreed on direction: KL p95 and mean ΔNLL were better WITHOUT it.
+ * The benefit sat where the reference was already least decisive; the
+ * high-margin tertile had zero flips either way.
+ *
+ * "Measured, and not worth it" is a different finding from "no effect",
+ * and the default changed on the strength of it.
+ */
+export const CONTROL_PATH_EXPERIMENT = {
+	protect: { klMean: 0.02372, top1: 0.9437, flips: 98, extraBytes: 33_914_496 },
+	uniform: { klMean: 0.02411, top1: 0.9391, flips: 106, extraBytes: 0 },
+	flipDifference: 8,
+	mcnemarP: 0.0215,
+	highMarginFlips: 0,
+	/** Which arm the compiler now produces by default. */
+	shipped: "uniform" as const,
 } as const;

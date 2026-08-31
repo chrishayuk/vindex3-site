@@ -58,7 +58,7 @@ const MODELS = [
 	// A recorded model rather than a servable one: the container is not
 	// distributed, so what the browser can show is its record. Storage
 	// is measured; quality is not yet established, and the panels say so.
-	{ name: "qwen3.8-27b", size: "18.4 GiB", arch: "hybrid gdn/attn", status: "RECORD (storage only)" },
+	{ name: "qwen3.8-27b", size: "18.4 GiB", arch: "hybrid gdn/attn", status: "RECORD (measured)" },
 	{ name: "granite-4.1-3b", size: "6.35 GiB", arch: "granite", status: "LIVE ENDPOINT PENDING" },
 	{ name: "gpt-oss-20b", size: "13.8 GiB", arch: "gpt-oss", status: "LIVE ENDPOINT PENDING" },
 ];
@@ -228,7 +228,7 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 					lines: [
 						{ text: "opened — qwen3.8-27b (recorded · 64 layers · hybrid gated-deltanet / gated attention)", tone: "ok" },
 						{ text: "a RECORD, not a connection: the container is not distributed, and these are runs made against it", tone: "dim" },
-						{ text: "storage measured · quality NOT ESTABLISHED — SHOW PRECISION · DIFF BF16 NVFP4 layer.0.ffn.down · VERIFY", tone: "dim" },
+						{ text: "storage and quality measured · Q-BANK-1 — SHOW PRECISION · DIFF BF16 NVFP4 layer.0.ffn.down · VERIFY", tone: "dim" },
 					],
 					model: "qwen3.8-27b",
 				};
@@ -643,7 +643,7 @@ function snapshotBanner(model: string | null): Line[] {
 				tone: "dim",
 			},
 			{
-				text: "Storage measured · quality NOT ESTABLISHED — try SHOW PRECISION, DIFF BF16 NVFP4 layer.0.ffn.down, VERIFY",
+				text: "Storage and quality measured · Q-BANK-1, 1,740 positions — try SHOW PRECISION, DIFF BF16 NVFP4 layer.0.ffn.down, VERIFY",
 				tone: "dim",
 			},
 		];

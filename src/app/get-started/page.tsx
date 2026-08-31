@@ -32,9 +32,9 @@ export default function GetStartedPage() {
 					description:
 						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json.",
 					url: "https://vindex3.org/get-started",
-					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.5.0",
+					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.6.1",
 					operatingSystem: "macOS, Linux, Windows (build from source)",
-					version: "0.5.0",
+					version: "0.6.1",
 				})}
 			/>
 			<Hero
@@ -48,7 +48,7 @@ export default function GetStartedPage() {
 			<Snippet
 				label="INSTALL — PREBUILT (MACOS ARM64) OR FROM SOURCE, ANY PLATFORM WITH STABLE RUST"
 				code={`$ curl -L https://github.com/chrishayuk/larql/releases/download/\\
-    vindex-v0.5.0/vindex-0.5.0-macos-arm64.tar.gz | tar xz
+    vindex-v0.6.1/vindex-0.6.1-macos-arm64.tar.gz | tar xz
 
 $ cargo install --git https://github.com/chrishayuk/larql vindex-cli
 
