@@ -104,6 +104,7 @@ export default function RootLayout({
 							links: [
 								{ href: "/ladder", label: "The Record" },
 								{ href: "/3.0", label: "3.0 — version & status" },
+								{ href: "/cite", label: "How to cite" },
 								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
 								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
 								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.5.0", label: "The release", external: true },

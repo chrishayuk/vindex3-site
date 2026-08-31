@@ -30,6 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		"/ask",
 		"/explorer",
 		"/get-started",
+		"/cite",
 		"/concepts",
 	].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.8 }));
 	const answers = CANON.map((c) => ({

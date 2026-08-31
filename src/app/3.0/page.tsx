@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
-import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
+import { breadcrumbLd, citationLd } from "@chrishayuk/hause/seo";
+import { citationMeta } from "@chrishayuk/hause/cite";
+import { Provenance } from "@chrishayuk/hause/components/forms/Provenance";
+import { Citation } from "@chrishayuk/hause/components/forms/Citation";
+import { SPEC, SPEC_HISTORY } from "@/data/citation";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -13,6 +17,9 @@ export const metadata: Metadata = {
 	alternates: { canonical: "/3.0" },
 	description:
 		"The durable version page: what VINDEX3 3.0 claims — self-describing, programmable, state-complete, representation-independent, fail-closed, verifiable — what already holds each claim up, and exactly what remains before Candidate becomes Final.",
+	// This page IS the citable object, so the head carries the specification's
+	// own record — the tags a reference manager reads without being asked.
+	other: citationMeta(SPEC),
 };
 
 /**
@@ -24,18 +31,7 @@ export const metadata: Metadata = {
 export default function VersionPage() {
 	return (
 		<main>
-			<JsonLd
-				data={techArticleLd({
-					headline: "VINDEX3 3.0 — Version, Status & the Six Claims",
-					description:
-						"What VINDEX3 3.0 claims, what already holds each claim up, and exactly what remains before Candidate becomes Final.",
-					url: "https://vindex3.org/3.0",
-					siteUrl: "https://vindex3.org",
-					siteName: "VINDEX3",
-					dateModified: "2026-08-31",
-					about: ["model container format", "specification lifecycle", "conformance"],
-				})}
-			/>
+			<JsonLd data={citationLd(SPEC)} />
 			<JsonLd
 				data={breadcrumbLd([
 					{ name: "VINDEX3", url: "https://vindex3.org" },
@@ -120,6 +116,13 @@ export default function VersionPage() {
 					{ href: "https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md", label: "THE CANDIDATE SPECIFICATION" },
 					{ href: "https://github.com/chrishayuk/larql", label: "GITHUB — THE REFERENCE IMPLEMENTATION" },
 				]}
+			/>
+		
+			<Provenance record={SPEC} history={SPEC_HISTORY} citeHref="#cite" />
+			<Citation
+				record={SPEC}
+				kicker="CITE THE SPECIFICATION"
+				note="Cite the version, not the website: this URL is durable, and 3.1 will be a different object rather than a silent edit of this one. No DOI appears above because none has been registered — a reference carrying an author, a date, a version and a canonical URL is complete without one."
 			/>
 		</main>
 	);

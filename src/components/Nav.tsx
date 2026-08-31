@@ -20,6 +20,7 @@ const LINKS: NavLink[] = [
 	{ href: "/lifecycle", label: "Lifecycle", panelOnly: true, group: "THE SPEC" },
 	{ href: "/models/qwen3.8-27b", label: "Qwen3.8-27B", panelOnly: true, group: "THE RECORD" },
 	{ href: "/ladder", label: "Record", hide: "sm", group: "THE RECORD" },
+	{ href: "/cite", label: "How to cite", panelOnly: true, group: "THE RECORD" },
 	{ href: "/ask", label: "Ask", accent: true, group: "ASK & EXPLORE" },
 	{ href: "/explorer", label: "Explorer", group: "ASK & EXPLORE" },
 	{ href: "/concepts", label: "Concepts", panelOnly: true, group: "ASK & EXPLORE" },

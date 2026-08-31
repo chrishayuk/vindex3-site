@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 	title: "The Model System Graph: Semantic Identity for AI Models",
 	alternates: { canonical: "/graph" },
 	description: "Components, logical objects, and edges — the semantic IR a VINDEX3 container carries, and how it is materialised.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/graph"),
 };
 
 /**
@@ -177,6 +182,8 @@ SegmentHeader {
 					{ href: "/ask", label: "ASK — THE KNOWLEDGE GRAPH, QUERIED" },
 				]}
 			/>
+
+			<CiteThis slug="/graph" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

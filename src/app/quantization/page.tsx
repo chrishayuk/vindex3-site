@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import Link from "next/link";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -23,6 +25,9 @@ export const metadata: Metadata = {
 	alternates: { canonical: "/quantization" },
 	description:
 		"Understand how LLM quantization actually works: BF16, NVFP4, shared scales, effective bits per weight, mixed precision, precision maps and measured quality — on one real tensor.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/quantization"),
 };
 
 /**
@@ -239,6 +244,8 @@ export default async function QuantizationPage({
 					{ href: "/ladder", label: "THE RECORD" },
 				]}
 			/>
+
+			<CiteThis slug="/quantization" />
 		</main>
 	);
 }

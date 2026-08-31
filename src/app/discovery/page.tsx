@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
@@ -13,6 +15,9 @@ export const metadata: Metadata = {
 	alternates: { canonical: "/discovery" },
 	description:
 		"Four attempts to automatically discover which LLM tensors deserve higher precision — weight error, activation-weighted error, local consequence, downstream replay — and why each failed, measured against ground truth.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/discovery"),
 };
 
 /**
@@ -91,6 +96,8 @@ export default function DiscoveryPage() {
 					{ href: "/ladder", label: "THE RECORD — THE PROGRAMME'S STATUS" },
 				]}
 			/>
+
+			<CiteThis slug="/discovery" />
 		</main>
 	);
 }

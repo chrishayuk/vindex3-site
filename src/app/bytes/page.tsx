@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 	title: "The VINDEX3 Binary Layout: How Model Bytes Are Framed",
 	alternates: { canonical: "/bytes" },
 	description: "LYRW v2, the layer-weight binary format, explained to the byte — header, banks, segments, region schemas, entry table.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/bytes"),
 };
 
 /**
@@ -206,6 +211,8 @@ export default function BytesPage() {
 					{ href: "/container", label: "ONE DIRECTORY, ONE ROOT" },
 				]}
 			/>
+
+			<CiteThis slug="/bytes" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

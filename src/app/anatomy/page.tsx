@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 	alternates: { canonical: "/anatomy" },
 	description:
 		"Explore the anatomy of an LLM layer: query, key, value, gate, up and down projections, residual streams, MoE experts and routers — interactively, from a live knowledge graph.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/anatomy"),
 };
 
 /**
@@ -152,6 +157,8 @@ export default function AnatomyPage() {
 					{ href: "/explorer", label: "ENTER A MODEL — THE EXPLORER" },
 				]}
 			/>
+
+			<CiteThis slug="/anatomy" />
 		</main>
 	);
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -13,6 +15,9 @@ export const metadata: Metadata = {
 	title: "How a Model Container Executes: The Compiler Boundary",
 	alternates: { canonical: "/execution" },
 	description: "The execution surface, operand closure, and the compiler boundary — how an encoded description becomes computation aimed at zero architecture branches — the design goal the held-out architecture test will prove.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/execution"),
 };
 
 /**
@@ -416,6 +421,8 @@ execution correctness    + causal mutation controls = semantic authority`}
 					{ href: "/graph", label: "COMPONENTS, OBJECTS, EDGES" },
 				]}
 			/>
+
+			<CiteThis slug="/execution" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

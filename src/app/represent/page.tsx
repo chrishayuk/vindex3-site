@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import Link from "next/link";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -15,6 +17,9 @@ export const metadata: Metadata = {
 	alternates: { canonical: "/represent" },
 	description:
 		"Don't choose a quantization — declare the behaviour to preserve. How REPRESENT searches candidate representations under a frozen behavioural contract, why individually safe substitutions fail together, and the recorded Kimi Linear 48B topology.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/represent"),
 };
 
 /**
@@ -182,6 +187,8 @@ export default function RepresentPage() {
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
 				]}
 			/>
+
+			<CiteThis slug="/represent" />
 		</main>
 	);
 }

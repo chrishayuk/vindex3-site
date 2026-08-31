@@ -1720,5 +1720,6 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
 	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "OPEN", note: "KDA precision and MLA latent geometry — additive within schema 6" },
 	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "PASSED", note: "paritied against the fp32 oracle: 430/430 argmax exact, trajectories token-for-token, max|Δ| 7.6e-4" },
-	{ id: "hybrid-rehearsal", label: "the 250M hybrid rehearsal (Mamba2 + conv-QKV attention)", status: "PASSED", note: "no family lookup, no schema change: 468/468 argmax exact at the oracle's own floor (max|Δ| 6.9e-5), source-hidden LQL generation id-for-id; mamba2attn-2.7b stays OPEN as scale validation" },
+	{ id: "hybrid-rehearsal", label: "the 250M hybrid rehearsal (Mamba2 + conv-QKV attention)", status: "PASSED", note: "no family lookup, no schema change: 468/468 argmax exact at the oracle's own floor (max|Δ| 6.9e-5), source-hidden LQL generation id-for-id" },
+	{ id: "hybrid-scale", label: "the 2.7B scale witness (mamba2attn-2.7b, state-spaces original)", status: "PASSED", note: "zero schema changes under the strict rule: identity and ALL geometry judged from the config shape and recorded package defaults, argmax 430/430 at the oracle floor (max|Δ| 2.3e-4), source-hidden generation id-for-id; found and closed three fail-opens" },
 ];

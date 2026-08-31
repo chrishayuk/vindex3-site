@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 	title: "Model Provenance & Authority: Where AI Model Truth Comes From",
 	alternates: { canonical: "/authority" },
 	description: "The four-authority invariant and the derived-authority fold — where truth comes from in a VINDEX3 container.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/authority"),
 };
 
 /**
@@ -140,6 +145,8 @@ export default function AuthorityPage() {
 					{ href: "/ladder", label: "THE RECORD" },
 				]}
 			/>
+
+			<CiteThis slug="/authority" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

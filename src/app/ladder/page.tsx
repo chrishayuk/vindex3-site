@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 	title: "VINDEX3 Conformance, Benchmarks & Evidence",
 	alternates: { canonical: "/ladder" },
 	description: "The status instrument — the guarantees ladder, the gate ladders, measured evidence, the history, and the open questions, kept honestly in one place.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/ladder"),
 };
 
 /**
@@ -345,8 +350,8 @@ export default function LadderPage() {
 						id: "SCALE",
 						question: "mamba2attn-2.7b — the same abstraction at scale.",
 						gate: "no schema changes permitted: new source judgments and tensor-derived proofs are in-bounds; changing what an existing concept means is a finding",
-						status: "OPEN",
-						detail: "The rehearsal established the semantics: two state families in one model, non-standard attention, an ambiguous interleave, source-family defaults and declared FFN absence — all closed with zero new ontology dimensions. The 2.7B witness is therefore scale validation of a closed abstraction, not architecture research, and it is held to the strictest rule on the Record.",
+						status: "PASSED",
+						detail: "The rule held: zero schema changes. The state-spaces original — which declares NO SSM geometry and no model type at all — admitted through judgments alone: identity from the declared config shape, every geometry field a recorded package default still answerable to shape closure, and the padded vocabulary carried as what the head genuinely emits. Teacher-forced parity against the fp32 oracle: argmax exact at all 430 positions across three prompt lengths, max deviation 2.3e-4 against the oracle's own 1.7e-4 self-agreement floor, every trajectory token-for-token — 64 layers, six live conv-QKV interleaves, 2.7 billion parameters. Source hidden, ordinary LQL generation reproduces the reference id-for-id. And the witness still earned its keep as more than validation: it found the closure-at-encode gate missing from one of the two writer paths, a stale twin of the FFN rule, and a silent norm-epsilon default — three fail-opens, all closed.",
 					},
 				]}
 				caption="The rehearsal introduced no new ontology dimension. The 2.7B witness is now scale validation of the same abstraction — recorded here before it runs, so the claim cannot move to fit the result."
@@ -404,6 +409,10 @@ export default function LadderPage() {
 					{
 						date: "2026-08-31",
 						text: "The hybrid rehearsal closes end-to-end: a mixed Mamba2 / conv-QKV-attention model admits with five explicit judgments, executes through the generic runtime with no family lookup, matches its fp32 oracle at the oracle's own floor across 468 positions, and reproduces source-hidden LQL generation token-for-token — with no schema change. One layer now demonstrably carries two declared continuation regions.",
+					},
+					{
+						date: "2026-08-31",
+						text: "The same day, the scale witness: mamba2attn-2.7b — the state-spaces original that declares no SSM geometry and no model type — admits through judgments alone and matches its fp32 oracle at 430 of 430 positions, reproducing source-hidden generation id-for-id. Zero schema changes across the entire hybrid programme, and three fail-opens found and closed on the way.",
 					},
 				]}
 			/>
@@ -484,6 +493,8 @@ export default function LadderPage() {
 					{ href: "/authority", label: "WHERE TRUTH COMES FROM" },
 				]}
 			/>
+
+			<CiteThis slug="/ladder" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -16,6 +18,9 @@ export const metadata: Metadata = {
 	title: "Inside an AI Model Container: Objects, Segments & the Index",
 	alternates: { canonical: "/container" },
 	description: "Every layer of a VINDEX3 container, explained — one directory, one root, the canonical graph shape and the five durable weight classes.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/container"),
 };
 
 /**
@@ -231,6 +236,8 @@ RESIDENCE             where the useful bytes live right now`}
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
 				]}
 			/>
+
+			<CiteThis slug="/container" />
 
 			<section className="hause-grid pb-32 pt-8 border-t" style={{ borderColor: "var(--color-mist)" }}>
 				<div className="col-span-12">

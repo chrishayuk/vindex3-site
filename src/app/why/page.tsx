@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CiteThis } from "@/components/CiteThis";
+import { citeMeta } from "@/data/citation";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, techArticleLd } from "@chrishayuk/hause/seo";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -17,6 +19,9 @@ export const metadata: Metadata = {
 	title: "Why LLM Inference Is Bandwidth-Bound: The Physics",
 	alternates: { canonical: "/why" },
 	description: "What a model is made of, why it is hard to move, and why the file format is where the battle is actually fought.",
+	// The head surface of this chapter's publication record — citation_* tags,
+	// built from the same object the Provenance line and the reference print.
+	other: citeMeta("/why"),
 };
 
 /**
@@ -168,6 +173,8 @@ export default function WhyPage() {
 					{ href: "/ladder", label: "THE RECORD — WHERE THESE NUMBERS ANSWER" },
 				]}
 			/>
+
+			<CiteThis slug="/why" />
 		</main>
 	);
 }
