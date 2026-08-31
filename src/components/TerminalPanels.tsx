@@ -442,6 +442,20 @@ export function verifyPanel(): TerminalPanel {
 					scope: self — recorded hashes re-derived from the artifact alone; source faithfulness is the reference
 					implementation&apos;s G4
 				</p>
+				{/* The distinction this panel must not blur: the browser is
+				    showing a verification that happened, not performing one.
+				    Verifying requires the bytes, and the bytes are not here. */}
+				<p
+					className="voice-evidence text-[10px] mt-3 mb-0 pt-2 border-t"
+					style={{ borderColor: "var(--color-mist)", color: "var(--color-status-ongoing)" }}
+				>
+					this is a recorded verification, not one performed in your browser
+				</p>
+				<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+					verifying re-derives hashes from the container&apos;s own bytes, so it runs where the container is:
+					<span className="voice-evidence"> vindex verify &lt;container&gt;</span>. This surface holds the record
+					of that run — public evidence does not imply public weights.
+				</p>
 			</div>
 		),
 		raw: {

@@ -13,6 +13,7 @@ import { Lens } from "@chrishayuk/hause/components/forms/Lens";
 import { specSection } from "@/data/corpus";
 import { SpecClause } from "@/components/SpecClause";
 import { GraphExplorer } from "@/components/GraphExplorer";
+import { NameCollision } from "@/components/NameCollision";
 import { EdgeResolution } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
@@ -67,6 +68,8 @@ export default function GraphPage() {
 			/>
 
 			<Statement text="model.layers.3.self_attn.q_proj.weight is a name, not a meaning." />
+
+			<NameCollision />
 
 			<Observation
 				label="WHAT THIS FIXES"
