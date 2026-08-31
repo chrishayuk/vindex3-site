@@ -8,6 +8,7 @@ import {
 	type TerminalResult,
 } from "@chrishayuk/hause/components/forms/Terminal";
 import { ENTITIES, entity, type Entity } from "@/data/vindexGraph";
+import type { PanelModel } from "@/components/TerminalPanels";
 import {
 	componentsPanel,
 	precisionPanel,
@@ -54,6 +55,10 @@ const SNAPSHOT_ID = "vindex3-demo · compiled snapshot · 3.0-candidate / 2026-0
 // ---------- the demo universe (matches the Bytes encoder's worked example) ----------
 const MODELS = [
 	{ name: "vindex3-demo", size: "15.2 GiB", arch: "moe-decoder", status: "READY (snapshot)" },
+	// A recorded model rather than a servable one: the container is not
+	// distributed, so what the browser can show is its record. Storage
+	// is measured; quality is not yet established, and the panels say so.
+	{ name: "qwen3.8-27b", size: "18.4 GiB", arch: "hybrid gdn/attn", status: "RECORD (storage only)" },
 	{ name: "granite-4.1-3b", size: "6.35 GiB", arch: "granite", status: "LIVE ENDPOINT PENDING" },
 	{ name: "gpt-oss-20b", size: "13.8 GiB", arch: "gpt-oss", status: "LIVE ENDPOINT PENDING" },
 ];
@@ -171,6 +176,11 @@ const HELP: Line[] = [
 	{ text: "  INFER <prompt>                      execute (live endpoint)" },
 	{ text: "  SNAPSHOT · HELP · CLEAR", tone: "dim" },
 ];
+
+/** Only a model with a recorded panel set answers as itself. */
+function panelModel(model: string | null): PanelModel {
+	return model === "qwen3.8-27b" ? "qwen3.8-27b" : null;
+}
 
 function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: string | null; clear?: boolean; panel?: TerminalPanel } {
 	const need = (): Line[] => [{ text: "no model open — OPEN vindex3-demo first", tone: "err" }];
@@ -313,13 +323,13 @@ function execute(cmd: Cmd, model: string | null): { lines: Line[]; model?: strin
 				],
 			};
 		case "show-precision":
-			return { lines: [], panel: precisionPanel() };
+			return { lines: [], panel: precisionPanel(panelModel(model)) };
 		case "explain-representation":
 			return { lines: [], panel: explainRepresentationPanel(cmd.address) };
 		case "diff":
-			return { lines: [], panel: diffPanel(cmd.address) };
+			return { lines: [], panel: diffPanel(cmd.address, panelModel(model)) };
 		case "verify":
-			return { lines: [], panel: verifyPanel() };
+			return { lines: [], panel: verifyPanel(panelModel(model)) };
 		case "explain-plan": {
 			if (!model) return { lines: need() };
 			const l = cmd.layer ?? 12;
@@ -601,12 +611,17 @@ export function VindexTerminal() {
 	const [transport, setTransport] = useState<Transport>("snapshot");
 	// The demo model is open from the first keystroke — no ritual
 	// between a visitor and their first WALK.
+	// The URL may name the model: /explorer?model=qwen3.8-27b opens that
+	// record directly, so a link can land on the thing it is about.
 	const [model, setModel] = useState<string | null>("vindex3-demo");
 	const [notice, setNotice] = useState<Line | undefined>(undefined);
 	const [autorun, setAutorun] = useState<string | undefined>(undefined);
 
 	useEffect(() => {
-		setAutorun(new URLSearchParams(window.location.search).get("run") ?? undefined);
+		const params = new URLSearchParams(window.location.search);
+		const named = params.get("model");
+		if (named && MODELS.some((m) => m.name === named)) setModel(named);
+		setAutorun(params.get("run") ?? undefined);
 		let cancelled = false;
 		(async () => {
 			try {
@@ -639,12 +654,12 @@ export function VindexTerminal() {
 			const semantic = semanticPanel(dm[1]);
 			if (semantic) return semantic;
 		}
-		if (/^SHOW\s+PRECISION$/i.test(trimmed)) return { lines: [], panel: precisionPanel() };
+		if (/^SHOW\s+PRECISION$/i.test(trimmed)) return { lines: [], panel: precisionPanel(panelModel(model)) };
 		const em = trimmed.match(/^EXPLAIN\s+REPRESENTATION\s+(\S+)$/i);
 		if (em) return { lines: [], panel: explainRepresentationPanel(em[1]) };
 		const dfm = trimmed.match(/^DIFF\s+(?:BF16\s+NVFP4\s+)?(\S+)$/i);
-		if (dfm) return { lines: [], panel: diffPanel(dfm[1]) };
-		if (/^VERIFY$/i.test(trimmed)) return { lines: [], panel: verifyPanel() };
+		if (dfm) return { lines: [], panel: diffPanel(dfm[1], panelModel(model)) };
+		if (/^VERIFY$/i.test(trimmed)) return { lines: [], panel: verifyPanel(panelModel(model)) };
 		// The typed protocol endpoints: structured facts from the REAL
 		// container, rendered as designed panels — RAW is the server's
 		// own JSON. A failed fetch falls through to /v1/query lines.

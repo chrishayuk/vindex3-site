@@ -226,3 +226,40 @@ export const DECODER_STACK = {
 	weights: 24_353_196_544,
 	effectiveBits: 4.5124,
 } as const;
+
+/* ------------------------------------------------------------------
+   EXPLORER RECORD — what the browser can show about this model.
+   Measured with the CLI against the real container, 2026-08-31.
+   ------------------------------------------------------------------ */
+
+/** `vindex representations`, verbatim. */
+export const REPRESENTATIONS = [
+	{ id: "target.decoder_stack@BF16", encoding: "BF16", fidelity: "canonical", tensors: 848, bytes: 48_706_393_088 },
+	{ id: "target.decoder_stack@NVFP4", encoding: "NVFP4", fidelity: "approximate", tensors: 848, bytes: 13_736_385_088 },
+	{ id: "target.embedding@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 2_542_796_800 },
+	{ id: "target.final_norm@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 10_240 },
+	{ id: "target.output_head@BF16", encoding: "BF16", fidelity: "canonical", tensors: 1, bytes: 2_542_796_800 },
+	{ id: "vision.perception_tower@BF16", encoding: "BF16", fidelity: "canonical", tensors: 333, bytes: 921_460_192 },
+] as const;
+
+/**
+ * `vindex verify`, verbatim — all six representations `ok`, in
+ * 20 min 00 s against the real container. The scope line is the
+ * artifact's own, and it is the whole point: self-integrity is not
+ * source faithfulness, and the container says which one it proved.
+ */
+export const VERIFY = {
+	entries: REPRESENTATIONS.map((r) => r.id),
+	verified: true,
+	scope: "self — recorded hashes re-derived from the artifact alone; source faithfulness is the reference implementation's G4",
+	seconds: 1200,
+} as const;
+
+/** `vindex diff BF16 NVFP4 layer.0.ffn.down`, verbatim. */
+export const DIFF = {
+	tensor: "0.mlp.down_proj.weight",
+	weights: 89_128_960,
+	changed: 89_128_960,
+	rms: 0.001009,
+	max: 0.060547,
+} as const;

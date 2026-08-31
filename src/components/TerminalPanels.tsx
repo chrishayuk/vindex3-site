@@ -61,6 +61,30 @@ export type ComponentsData = {
 	coherent: boolean;
 };
 
+/**
+ * The Explorer serves whichever model the URL names. Granite is the
+ * default and carries both storage and quality evidence; Qwen carries
+ * storage only, and the panels say so rather than filling the gap.
+ * A model with no record is refused by name — the same standing rule
+ * the quantization chapter follows.
+ */
+import {
+	REPRESENTATIONS as QWEN_REPS,
+	VERIFY as QWEN_VERIFY,
+	DIFF as QWEN_DIFF,
+	DOWN_PROJ_NVFP4,
+	DOWN_PROJ_NVFP4_COLLAPSED,
+	DOWN_PROJ_STATS as QWEN_TENSOR,
+	PRECISION_MAP as QWEN_MAP,
+	DECODER_STACK as QWEN_STACK,
+	QWEN,
+} from "@/data/qwen38";
+
+/** Which model's record a panel should speak. `null` = the default. */
+export type PanelModel = "qwen3.8-27b" | null;
+
+const QWEN_TAG = "recorded — qwen3.8-27b.s6.vindex3 · storage measured, quality not established";
+
 export function componentsPanel(data: ComponentsData, provenance: string): TerminalPanel {
 	return {
 		designed: (
@@ -263,7 +287,38 @@ export function treePanel(layer: number, special: boolean, provenance: string, r
 
 /* ── SHOW PRECISION — the recorded map from the quantization chapter ── */
 
-export function precisionPanel(): TerminalPanel {
+export function precisionPanel(model: PanelModel = null): TerminalPanel {
+	if (model === "qwen3.8-27b") {
+		return {
+			designed: (
+				<div>
+					<Kicker>THE PRECISION MAP · {QWEN_TAG}</Kicker>
+					{QWEN_MAP.map((prog) => (
+						<div key={prog.label} className="mb-3">
+							<p className="voice-evidence text-[10px] tracking-[0.1em] uppercase m-0 mb-1" style={{ color: "var(--color-accent)" }}>
+								{prog.label} · {prog.layers} layers
+							</p>
+							<Row cols={["layers", ...prog.columns.map((c) => c.id)]} dim />
+							<Row cols={[prog.span, ...prog.columns.map((c) => c.bits.toFixed(2))]} accent />
+						</div>
+					))}
+					<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+						two programmes, two tables — {QWEN.display} does not have one row that describes it, and therefore does
+						not have a bit-width. effective {QWEN_STACK.effectiveBits} bits/weight over the decoder stack.
+					</p>
+					<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+						the 16.00 cells are what this programme chose, not what was proven necessary
+					</p>
+				</div>
+			),
+			raw: {
+				artifact: "qwen3.8-27b.s6.vindex3 — recorded run",
+				programmes: QWEN_MAP,
+				effective_bits_per_weight: QWEN_STACK.effectiveBits,
+			},
+		};
+	}
+
 	const operands = ["mlp.down", "mlp.gate", "mlp.up", "attn.k", "attn.o", "attn.q", "attn.v"];
 	const raw = {
 		artifact: "granite-late5.vindex3 — recorded run, the quantization chapter's artifact",
@@ -359,7 +414,52 @@ export function explainRepresentationPanel(address: string): TerminalPanel {
 
 const f6 = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(6);
 
-export function diffPanel(address: string): TerminalPanel {
+export function diffPanel(address: string, model: PanelModel = null): TerminalPanel {
+	if (model === "qwen3.8-27b") {
+		const known = /layer\.0\.(mlp|ffn)\.down/i.test(address) || /down_proj/i.test(address);
+		if (!known) {
+			return {
+				designed: (
+					<div>
+						<Kicker>DIFF · {QWEN_TAG}</Kicker>
+						<p className="voice-system text-sm opacity-80 m-0 max-w-xl">
+							The recorded diff covers {QWEN_TENSOR.tensor}. This page refuses to invent values no run produced.
+						</p>
+					</div>
+				),
+				raw: { address, recorded: QWEN_TENSOR.tensor },
+			};
+		}
+		return {
+			designed: (
+				<div>
+					<Kicker>BF16 → NVFP4 · {QWEN_DIFF.tensor} · {QWEN_TAG}</Kicker>
+					<Row cols={["original", "reconstructed", "error"]} dim />
+					{DOWN_PROJ_NVFP4.map((w, i) => (
+						<Row
+							key={i}
+							cols={[
+								w.original.toFixed(6),
+								w.nvfp4.toFixed(6),
+								(w.nvfp4 - w.original).toFixed(6),
+							]}
+							accent={DOWN_PROJ_NVFP4_COLLAPSED.has(i)}
+						/>
+					))}
+					<p className="voice-evidence text-[10px] opacity-45 mt-3 mb-0">
+						rows 3 and 5 are distinct inputs landing on the same −0.014590 — the information is gone, not merely
+						rounded
+					</p>
+					<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+						over the whole tensor: {QWEN_DIFF.changed.toLocaleString()} of {QWEN_DIFF.weights.toLocaleString()}{" "}
+						values differ · rms {QWEN_DIFF.rms} · max {QWEN_DIFF.max}
+					</p>
+				</div>
+			),
+			raw: { ...QWEN_DIFF, values: DOWN_PROJ_NVFP4 },
+		};
+	}
+
 	const known = /layer\.0\.(mlp|ffn)\.down/i.test(address) || /down_proj/i.test(address);
 	if (!known) {
 		return {
@@ -416,7 +516,44 @@ export function diffPanel(address: string): TerminalPanel {
 
 /* ── VERIFY — the demo container against its own record ── */
 
-export function verifyPanel(): TerminalPanel {
+export function verifyPanel(model: PanelModel = null): TerminalPanel {
+	if (model === "qwen3.8-27b") {
+		return {
+			designed: (
+				<div>
+					<Kicker>VERIFY · recorded — vindex verify, qwen3.8-27b · 2026-08-31</Kicker>
+					{QWEN_VERIFY.entries.map((e) => (
+						<div key={e} className="flex items-baseline justify-between py-0.5 border-t" style={{ borderColor: "var(--color-mist)" }}>
+							<span className="voice-evidence text-[11px]">{e}</span>
+							<span className="voice-evidence text-[11px]" style={{ color: "var(--color-status-supported)" }}>
+								ok
+							</span>
+						</div>
+					))}
+					<p className="voice-evidence text-[11px] mt-3 mb-0" style={{ color: "var(--color-status-supported)" }}>
+						verified yes — the artifact agrees with its own record
+					</p>
+					<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">scope: {QWEN_VERIFY.scope}</p>
+					<p
+						className="voice-evidence text-[10px] mt-3 mb-0 pt-2 border-t"
+						style={{ borderColor: "var(--color-mist)", color: "var(--color-status-ongoing)" }}
+					>
+						this is a recorded verification, not one performed in your browser
+					</p>
+					<p className="voice-evidence text-[10px] opacity-45 mt-1 mb-0">
+						it took 20 minutes against the real container, and it re-derives hashes from the container&apos;s own
+						bytes — so it runs where the container is. Public evidence does not imply public weights.
+					</p>
+				</div>
+			),
+			raw: {
+				entries: QWEN_VERIFY.entries.map((id) => ({ id, segment_ok: true, payload_ok: true })),
+				failures: 0,
+				scope: "self",
+			},
+		};
+	}
+
 	const entries = [
 		"target.decoder_stack@F32",
 		"target.embedding@F32",
