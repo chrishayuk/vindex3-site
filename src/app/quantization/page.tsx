@@ -222,12 +222,19 @@ export default async function QuantizationPage({
 
 			<Statement text="Quantization is not a model-wide label. It is a representation decision over semantic components, supported by evidence." />
 
+			<Answer
+				id="why-choose-one-quantization"
+				question="Q4 vs Q6 vs Q8 — which should I choose?"
+				answer="The chapter's honest answer: why should you have to choose one? A model is not uniformly sensitive, so a single format is the wrong shape of answer. The object that replaces the choice is the precision map — and the thing that writes the map from declared behaviour rather than intuition is REPRESENT: a composition-aware search under a frozen behavioural contract, verified on the composed model."
+			/>
+
 			<Statement text="One question remains under all of it: we can store a precision map — but who writes it?" />
 
 			<Connection
-				text="What keeps those decisions honest for the life of the artifact — variants beside their original, fidelity recorded, selection failing closed — is the representation model. And whether the decisions were good answers to the Record."
+				text="Cheap automatic discovery was tried, measured, and refused — four times. What finally writes the map is a search that judges the composed model against a declared behavioural contract. And what keeps those decisions honest for the life of the artifact is the representation model and the Record."
 				links={[
-					{ href: "/discovery", label: "DISCOVERING THE MAP — WHO WRITES IT?" },
+					{ href: "/represent", label: "REPRESENT — WHAT WRITES THE MAP" },
+					{ href: "/discovery", label: "WHY CHEAP DISCOVERY FAILED" },
 					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
 					{ href: "/ladder", label: "THE RECORD" },
 				]}

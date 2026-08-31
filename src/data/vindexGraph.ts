@@ -437,6 +437,47 @@ export const CANON: CanonEntry[] = [
 
 export const CANON_EXTENSION: CanonEntry[] = [
 	{
+		id: "q-what-is-represent",
+		summary: "REPRESENT searches representations under behavioural contract",
+		entities: ["represent", "optimizer", "optimiser", "behavioural contract", "behavioral contract", "search"],
+		intent: "what",
+		patterns: [
+			"what is represent",
+			"represent search",
+			"quantization search",
+			"quantisation search",
+			"who writes the precision map",
+			"writes the map",
+			"behaviour contract",
+			"declare the behaviour",
+		],
+		answer:
+			"REPRESENT is the optimizer above quantization: it freezes a behavioural contract — bounds on KL divergence, displaced probability mass and routing consequence at a fixed evidence scale — then searches candidate physical representations per region and returns the cheapest topology whose COMPOSED behaviour passes at authority scale. Its first earned result, on Kimi Linear 48B, keeps layers 0–23 at BF16 and takes layers 24–26 to Q8_0: 8,192-position PASS, 5.1 GB removed, measured faster beside its own baseline. Quantization is one mechanism it uses; deciding which representation, where, in which combination, is the point.",
+		path: [e("vindex3", "supports"), e("representation", "governed_by"), e("authority", "graded_on")],
+		record: { status: "SUPPORTED", note: "kimi-logit-v3 PASS @ 8192 positions — KL p99 4.153e-4 vs 1e-3 limit" },
+		explore: ["representation", "precision-map", "authority"],
+	},
+	{
+		id: "q-composition-not-additive",
+		summary: "individually safe representations can fail together",
+		entities: ["composition", "composed", "together", "combine", "combined", "interaction"],
+		intent: "why",
+		patterns: [
+			"safe together",
+			"fail when combined",
+			"fail together",
+			"combine quantizations",
+			"composed map",
+			"layers interact",
+			"individually safe",
+		],
+		answer:
+			"Because a model is not a bag of independent tensors: each substitution displaces the hidden state, and later routing decisions read that displaced state, so errors interact through the model's own control flow. Measured on Kimi Linear 48B: three composed maps whose every member passed the contract alone all failed it — one super-additively, its composed displacement 1.9× the sum of its members — while the map that survived, layers 24–26 at Q8_0, passed at 8,192 positions. This is why REPRESENT verifies the composed model and treats per-layer sensitivity as a ranking signal, never a certificate.",
+		path: [e("vindex3", "supports"), e("representation", "governed_by"), e("authority", "graded_on")],
+		record: { status: "SUPPORTED", note: "4 composed maps recorded: 3 FAIL from passing members; composition factor spans 0.52–1.90" },
+		explore: ["representation", "precision-map", "authority"],
+	},
+	{
 		id: "q-multi-region-state",
 		summary: "operation family does not imply state shape",
 		entities: ["multi-region", "two regions", "kv and conv", "state shape", "conv history", "kv", "regions"],

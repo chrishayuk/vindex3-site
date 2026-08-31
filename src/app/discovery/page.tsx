@@ -81,14 +81,14 @@ export default function DiscoveryPage() {
 				text="One route remains that survives the analysis. Against a KL metric, first-order sensitivity is identically zero — a divergence is stationary at its own reference — so the leading term is second-order curvature. That sounds expensive, but the curvature matrix factors exactly: draw a random vector, shape it by the model's own output probabilities, push it backwards through the network once, and sensitivity arrives at every layer boundary simultaneously. The catch: it needs reverse-mode execution the reference implementation does not have. That is a research programme, not a feature — and it is filed on the Record as exactly that: candidate, not built."
 			/>
 
-			<Statement text="Measurements can justify a precision map. VINDEX3 can express, compile and execute that map. Automatically discovering the right map remains open." />
+			<Statement text="Measurements can justify a precision map. VINDEX3 can express, compile and execute that map. Cheap surrogates cannot write it — what writes it is a search that pays for real composed measurements." />
 
 			<Connection
-				text="The map this page could not discover automatically is the one the quantization chapter compiles from measurements — and the programme's standing lives where every open claim lives."
+				text="The sequel exists: REPRESENT abandons the cheap-surrogate hope this page falsified and searches with real evidence under a frozen behavioural contract — judging composed maps, because the composed model is the only honest judge. Its first earned topology is on the Record."
 				links={[
+					{ href: "/represent", label: "REPRESENT — THE SEARCH THAT WORKS" },
 					{ href: "/quantization", label: "QUANTIZATION — THE MAP ITSELF" },
 					{ href: "/ladder", label: "THE RECORD — THE PROGRAMME'S STATUS" },
-					{ href: "/explorer", label: "SHOW PRECISION — THE EXPLORER" },
 				]}
 			/>
 		</main>

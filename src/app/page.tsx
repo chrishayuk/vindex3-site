@@ -23,14 +23,15 @@ const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
 	{ n: "01", href: "/why", title: "THE PHYSICS", hook: "Why is a file format, of all things, where the battle is fought?" },
 	{ n: "02", href: "/anatomy", title: "THE ANATOMY", hook: "What is actually inside a model — what do gate, query, expert mean?" },
 	{ n: "03", href: "/quantization", title: "QUANTIZATION", hook: "How many bits does a model need — and why is “4-bit” an incomplete sentence?" },
-	{ n: "04", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
-	{ n: "05", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
-	{ n: "06", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
-	{ n: "07", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, aiming at zero architecture branches?" },
-	{ n: "08", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
-	{ n: "09", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
-	{ n: "10", href: "/lifecycle", title: "THE LIFECYCLE", hook: "What can you do with a container over its life — run it, watch it, change it, prove it?" },
-	{ n: "11", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
+	{ n: "04", href: "/represent", title: "REPRESENT", hook: "Who writes the precision map — and why is the composed model the only honest judge?" },
+	{ n: "05", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
+	{ n: "06", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
+	{ n: "07", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
+	{ n: "08", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, aiming at zero architecture branches?" },
+	{ n: "09", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
+	{ n: "10", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
+	{ n: "11", href: "/lifecycle", title: "THE LIFECYCLE", hook: "What can you do with a container over its life — run it, watch it, change it, prove it?" },
+	{ n: "12", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
 ];
 
 export default function Home() {
@@ -192,13 +193,36 @@ export default function Home() {
 				</div>
 			</section>
 
+			{/* ── BEAT FOUR-POINT-FIVE — the optimizer ── */}
+
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-9 border p-8" style={{ borderColor: "var(--color-accent)" }}>
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">NEW · RECORDED ON KIMI LINEAR 48B</p>
+					<p className="voice-editorial text-2xl sm:text-3xl mb-4 max-w-2xl">Quantization shouldn&apos;t be a format choice.</p>
+					<p className="voice-system text-sm opacity-80 max-w-2xl leading-relaxed mb-6">
+						REPRESENT discovers the cheapest physical model that preserves the behaviour you declare —
+						BF16 where behaviour demands it, Q8/Q6/Q4 where evidence permits it, verified as a whole
+						model rather than tensor by tensor. Its first earned topology passed a frozen behavioural
+						contract at 8,192 positions after three composed maps of individually-safe substitutions
+						failed it.
+					</p>
+					<Link
+						href="/represent"
+						className="voice-evidence text-xs px-4 py-2 border inline-block"
+						style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
+					>
+						EXPLORE REPRESENT →
+					</Link>
+				</div>
+			</section>
+
 			{/* ── BEAT FIVE — the story, in order ── */}
 
 			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
 					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">THE STORY, IN ORDER</p>
 					<p className="voice-editorial text-2xl sm:text-3xl mb-10 max-w-2xl">
-						Eleven chapters. Each opens with what breaks without it, and hands its question to the next.
+						Twelve chapters. Each opens with what breaks without it, and hands its question to the next.
 					</p>
 					<div className="flex flex-col">
 						{JOURNEY.map((c, i) => (

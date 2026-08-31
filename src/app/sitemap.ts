@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { CANON, ENTITIES } from "@/data/vindexGraph";
+import { QWEN } from "@/data/qwen38";
 import { askSlug, conceptSlug } from "@/data/legibility";
 
 const BASE = "https://vindex3.org";
@@ -17,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		"/anatomy",
 		"/quantization",
 		"/discovery",
+		"/represent",
 		"/container",
 		"/graph",
 		"/bytes",
@@ -40,5 +42,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		changeFrequency: "weekly" as const,
 		priority: 0.6,
 	}));
-	return [...pages, ...answers, ...concepts];
+	const models = [QWEN.slug].map((slug) => ({
+		url: `${BASE}/models/${slug}`,
+		changeFrequency: "weekly" as const,
+		priority: 0.7,
+	}));
+	return [...pages, ...answers, ...concepts, ...models];
 }
