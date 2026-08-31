@@ -8,6 +8,9 @@ import { Answer } from "@chrishayuk/hause/components/forms/Answer";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Variants } from "@chrishayuk/hause/components/forms/Variants";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { Excerpt } from "@chrishayuk/hause/components/forms/Excerpt";
+import { specSection } from "@/data/corpus";
 import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Film } from "@chrishayuk/hause/components/forms/Film";
@@ -27,6 +30,9 @@ export const metadata: Metadata = {
  * is the spec's own JSON example, the refusal fields are the ones the
  * spec promises, and the eligibility table is quoted policy.
  */
+/** The clause this chapter's SPEC depth quotes — resolved from the corpus, never retyped. */
+const SPEC_9_1 = specSection("vindex3-format-spec.md", "9.1");
+
 export default function RepresentationPage() {
 	return (
 		<main>
@@ -73,64 +79,80 @@ export default function RepresentationPage() {
 				text="Quantization used to be a fork: a second file with no lineage, whose claim to be the model was a filename. And the word exact was free — name a lossy copy the baseline, and nothing was left to contradict it. Here, every copy lives beside its original as a named variant, and what each one is worth — its fidelity — is recorded against the source at extraction: derived, never asserted. The loophole where lossy becomes exact by promotion is closed by construction."
 			/>
 
-			<Variants
-				kicker="REGION SET — layer.12.routed.gate_up"
-				objectLabel="The identity never changes. The physical form is chosen."
-				variants={[
+
+			<Lens
+				kicker="ONE REGION SET — THREE DEPTHS"
+				concept="Representation variants"
+				caption="Same concept, same URL, the depth of your choosing — and the depth you choose is remembered as you move through the rest of the specification."
+				depths={[
 					{
-						id: "exact-q6k",
-						fidelity: "source-equivalent",
-						storage: "routed/layer_012.q6k",
-						present: true,
-						scale: 1,
-						density: 7,
+						id: "learn",
+						label: "LEARN",
+						hint: "what a variant is",
+						content: (
+							<Observation
+								label="A REGION SET, IN PLAIN TERMS"
+								text="A region set is one logical thing in the model — a layer's routed gate-up weights, say — and it may hold more than one physical print of itself. A profile selects a print by name; the baseline is what loads when no profile chooses. New prints arrive as incremental packs: independent, checksummed segment files beside the baseline, with untouched segments hard-linked rather than rewritten — so adding a representation costs the pack's bytes, not the container's."
+							/>
+						),
 					},
 					{
-						id: "native-mxfp4",
-						fidelity: "source-exact",
-						storage: "routed/layer_012.mxfp4",
-						present: true,
-						scale: 0.72,
-						density: 4,
+						id: "inspect",
+						label: "INSPECT",
+						hint: "the object, operated",
+						content: (
+							<Variants
+								kicker="REGION SET — layer.12.routed.gate_up"
+								objectLabel="The identity never changes. The physical form is chosen."
+								variants={[
+									{
+										id: "exact-q6k",
+										fidelity: "source-equivalent",
+										storage: "routed/layer_012.q6k",
+										present: true,
+										scale: 1,
+										density: 7,
+									},
+									{
+										id: "native-mxfp4",
+										fidelity: "source-exact",
+										storage: "routed/layer_012.mxfp4",
+										present: true,
+										scale: 0.72,
+										density: 4,
+									},
+									{
+										id: "native-nvfp4",
+										fidelity: "—",
+										present: false,
+									},
+								]}
+								baseline="exact-q6k"
+								refusalTitle="SELECTION FAILS CLOSED — BEFORE ANY BYTE IS READ"
+								refusalPrinciple="Ambiguity is refused, never guessed."
+								caption="Single-copy forbids storing the same bytes twice — not deliberate alternative encodings. Multiple variants of one region set are the format working as designed."
+							/>
+						),
 					},
 					{
-						id: "native-nvfp4",
-						fidelity: "—",
-						present: false,
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: (
+							<section className="hause-grid">
+								<div className="col-span-12 md:col-start-2 md:col-span-9">
+									<Excerpt
+										source={SPEC_9_1.source}
+										heading={SPEC_9_1.heading}
+										text={SPEC_9_1.text}
+										href="https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md"
+									/>
+								</div>
+							</section>
+						),
 					},
 				]}
-				baseline="exact-q6k"
-				refusalTitle="SELECTION FAILS CLOSED — BEFORE ANY BYTE IS READ"
-				refusalPrinciple="Ambiguity is refused, never guessed."
-				caption="Single-copy forbids storing the same bytes twice — not deliberate alternative encodings. Multiple variants of one region set are the format working as designed."
 			/>
-
-			<section className="hause-grid py-16 sm:py-24">
-				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
-					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
-						THE WIRE SHAPE — A REGION SET IN index.json, VERBATIM FROM ABI §9.1
-					</p>
-					<pre
-						className="voice-evidence text-xs sm:text-sm leading-relaxed whitespace-pre overflow-x-auto m-0 border px-5 py-4 sm:px-7 sm:py-6"
-						style={{ borderColor: "var(--color-mist)" }}
-					>
-						{`{
-  "region_set": "layer.12.routed.gate_up",
-  "variants": {
-    "exact-q6k":    { "storage": "routed/layer_012.q6k",    "fidelity": "source-equivalent" },
-    "native-mxfp4": { "storage": "routed/layer_012.mxfp4",  "fidelity": "source-exact" }
-  },
-  "baseline": "exact-q6k"
-}`}
-					</pre>
-					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-6">
-						A profile selects a variant per region set by name; the baseline is what loads when no profile
-						chooses. New variants arrive as incremental packs — independent, checksummed segment files beside the
-						baseline, untouched segments hard-linked rather than rewritten — so adding a representation costs the
-						pack&apos;s bytes, not the container&apos;s.
-					</p>
-				</div>
-			</section>
 
 			<Observation
 				label="ELIGIBILITY — SEMANTIC, NOT SHAPE-BASED"

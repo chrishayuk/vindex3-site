@@ -22,7 +22,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      # The image carries the commit it was built from, so every page can
+      # say what produced it.
+      - run: flyctl deploy --remote-only --build-arg GIT_COMMIT=${{ github.sha }} --build-arg BUILD_DATE=$(date -u +%Y-%m-%d)
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       # Tell participating search engines the site changed. The key file

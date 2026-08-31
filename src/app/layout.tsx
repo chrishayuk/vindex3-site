@@ -6,6 +6,7 @@ import { SiteFooter } from "@chrishayuk/hause/components/SiteFooter";
 import { Analytics } from "@chrishayuk/hause/components/Analytics";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { webSiteLd } from "@chrishayuk/hause/seo";
+import { buildNote } from "@/data/build";
 
 const fraunces = Fraunces({
 	variable: "--font-fraunces",
@@ -68,7 +69,7 @@ export default function RootLayout({
 				<SiteFooter
 					brand="VINDEX3"
 					tagline="The model is the database — components named, representations catalogued, claims checkable."
-					note="VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA 6 · updated 2026-08-30 · every metric on this site names its model, hardware and date, and answers to the Record."
+					note={`VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA 6 · updated 2026-08-30${buildNote()} · every metric on this site names its model, hardware and date, and answers to the Record.`}
 					groups={[
 						{
 							label: "THE JOURNEY",

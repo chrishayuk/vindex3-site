@@ -32,6 +32,20 @@ const index = CORPUS.passages.map((p) => ({
 	body: p.text.toLowerCase(),
 }));
 
+/**
+ * One passage by document and section number — for a page that quotes a
+ * specific clause rather than searching for one. Keyed on the section
+ * heading, never on the passage's position: a re-ingest reorders ids,
+ * and a chapter must not silently start quoting a different clause.
+ * Throws when the section is gone, so the spec moving under a page
+ * fails the build rather than the reader.
+ */
+export function specSection(doc: string, section: string): SpecPassage {
+	const hit = CORPUS.passages.find((p) => p.doc === doc && p.heading.startsWith(`${section} `));
+	if (!hit) throw new Error(`${doc} §${section} is not in the corpus — the page quoting it must be updated with the spec.`);
+	return hit;
+}
+
 export function searchCorpus(question: string, k = 4): { passage: SpecPassage; score: number }[] {
 	const qToks = tokens(question);
 	if (qToks.length === 0) return [];

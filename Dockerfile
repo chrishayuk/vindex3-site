@@ -9,7 +9,12 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+# The site should know what it was built from. The deploy passes these
+# in (see .github/workflows/deploy.yml); Next inlines them at build
+# time, and a build that is given neither simply shows neither.
+ARG GIT_COMMIT=""
+ARG BUILD_DATE=""
+ENV NEXT_TELEMETRY_DISABLED=1 NEXT_PUBLIC_COMMIT=$GIT_COMMIT NEXT_PUBLIC_BUILT=$BUILD_DATE
 RUN npm run build
 
 FROM node:22-alpine AS run
