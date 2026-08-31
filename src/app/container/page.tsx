@@ -9,6 +9,9 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { ContainerExplorer } from "@/components/ContainerExplorer";
 import { ClassTraffic } from "@/components/StoryFigures";
@@ -29,6 +32,9 @@ export const metadata: Metadata = {
  * canonical graph shape, transitional bank shape, the class vocabulary),
  * §8–9, §15, and the Vindex3Index struct (format/vindex3/index.rs).
  */
+/** The clause this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_5_1 = specSection("vindex3-format-spec.md", "5.1");
+
 export default function ContainerPage() {
 	return (
 		<main>
@@ -107,50 +113,83 @@ export default function ContainerPage() {
 
 			<Statement text="There is no second root. A second root creates competing authorities — whose checksums win? whose version controls compatibility?" />
 
-			<ContainerExplorer />
+			<Lens
+				kicker="THE CONTAINER — THREE DEPTHS"
+				concept="The container model"
+				caption="One directory, explored three ways: what it is, the real thing to click through, and the canonical layering the specification requires."
+				depths={[
+					{
+						id: "learn",
+						label: "LEARN",
+						hint: "what a container is",
+						content: (
+							<Observation
+								label="ONE DIRECTORY, ONE ROOT"
+								text="A container is an ordinary directory you can list. One file in it is in charge: index.json, the single root authority that names every part, carries its checksums, and states the version governing how the whole thing is read. Everything else is reached through it — the system graph that says what the model's parts mean, the segment files that hold the bytes, the profiles that decide which of them load. There is no second root, because two roots are two answers to the same question."
+							/>
+						),
+					},
+					{
+						id: "inspect",
+						label: "INSPECT",
+						hint: "open a real one",
+						content: (
+							<>
+								<ContainerExplorer />
 
-			<Anatomy
-				kicker="model.vindex/ — THE CANONICAL SHAPE"
-				objectLabel="Four parts. One is in charge."
-				layers={[
-					{
-						label: "index.json",
-						note: "SOLE ROOT AUTHORITY",
-						emphasis: true,
-						detail:
-							"The one file every reader opens first, and the only place the container speaks for itself. It names the model, declares the container generation, and carries the maps that make everything else findable and checkable. If a fact matters to loading the container, it is here or reachable from here.",
-						children: [
-							{ label: "version", detail: "the container generation — VINDEX3 spans schemas 3–4, and a fresh encode stamps 4; detection uses this field only, never filename sniffing" },
-							{ label: "model · family", detail: "identity: which model this is, and its architecture family" },
-							{ label: "hidden_size · num_layers", detail: "the geometry every consumer needs before touching a weight" },
-							{ label: "system_graph · moe_manifest", detail: "which shape this container is: the canonical graph shape carries a graph and no manifest; the transitional bank shape carries the reverse. Absence of a manifest is not evidence a model is dense" },
-							{ label: "representations", detail: "which physical encodings exist for which objects, with recorded fidelity" },
-							{ label: "profiles · variants", detail: "the execution profiles — inline in the index, not a directory — and each region set's physically present variants with its baseline" },
-							{ label: "segments", detail: "which files hold which payloads — the loader never globs the directory" },
-							{ label: "authority", detail: "Canonical or Derived — a derived image cannot recompile itself, and says so; derived_from_model keeps the provenance link" },
-							{ label: "precision_map", detail: "when present, the compiled policy saying what encoding each tensor is in" },
-						],
+								<Anatomy
+									kicker="model.vindex/ — THE CANONICAL SHAPE"
+									objectLabel="Four parts. One is in charge."
+									layers={[
+										{
+											label: "index.json",
+											note: "SOLE ROOT AUTHORITY",
+											emphasis: true,
+											detail:
+												"The one file every reader opens first, and the only place the container speaks for itself. It names the model, declares the container generation, and carries the maps that make everything else findable and checkable. If a fact matters to loading the container, it is here or reachable from here.",
+											children: [
+												{ label: "version", detail: "the container generation — VINDEX3 spans schemas 3–4, and a fresh encode stamps 4; detection uses this field only, never filename sniffing" },
+												{ label: "model · family", detail: "identity: which model this is, and its architecture family" },
+												{ label: "hidden_size · num_layers", detail: "the geometry every consumer needs before touching a weight" },
+												{ label: "system_graph · moe_manifest", detail: "which shape this container is: the canonical graph shape carries a graph and no manifest; the transitional bank shape carries the reverse. Absence of a manifest is not evidence a model is dense" },
+												{ label: "representations", detail: "which physical encodings exist for which objects, with recorded fidelity" },
+												{ label: "profiles · variants", detail: "the execution profiles — inline in the index, not a directory — and each region set's physically present variants with its baseline" },
+												{ label: "segments", detail: "which files hold which payloads — the loader never globs the directory" },
+												{ label: "authority", detail: "Canonical or Derived — a derived image cannot recompile itself, and says so; derived_from_model keeps the provenance link" },
+												{ label: "precision_map", detail: "when present, the compiled policy saying what encoding each tensor is in" },
+											],
+										},
+										{
+											label: "system_graph.json",
+											note: "THE SEMANTIC AUTHORITY",
+											detail:
+												"The SystemGraph, verbatim: components, logical objects, hidden-state edges, per-layer attention policies. Built once from source evidence when the container is made; from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint. The Graph chapter walks it in full.",
+										},
+										{
+											label: "segments/",
+											note: "THE PAYLOAD",
+											detail:
+												"One file per logical-object representation — target.decoder_stack.bin, target.embedding.bin — each carrying its own tensor table (name, dtype, shape, offset, length) and hashed twice in a single writing pass: the payload, and the whole file. Names inside a segment are object-relative, never artifact-global. The write order is deliberate — segments first, index.json last — so a crash midway leaves a directory that never claimed to be a container.",
+										},
+										{
+											label: "tokenizer.json + capability snapshot",
+											muted: true,
+											detail:
+												"The supporting cast: the tokenizer, tokenizer_config, special_tokens_map, generation_config, chat template. The encoder proper writes only what execution needs; this snapshot is what keeps a fresh container servable — without it, a container binds with token-id capability only and refuses text inference.",
+										},
+									]}
+									caption="The canonical shape — what every mainline producer writes: encode, extract with an explicit V3 request, and the LQL and factory surfaces, all through one shared pipeline."
+								/>
+							</>
+						),
 					},
 					{
-						label: "system_graph.json",
-						note: "THE SEMANTIC AUTHORITY",
-						detail:
-							"The SystemGraph, verbatim: components, logical objects, hidden-state edges, per-layer attention policies. Built once from source evidence when the container is made; from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint. The Graph chapter walks it in full.",
-					},
-					{
-						label: "segments/",
-						note: "THE PAYLOAD",
-						detail:
-							"One file per logical-object representation — target.decoder_stack.bin, target.embedding.bin — each carrying its own tensor table (name, dtype, shape, offset, length) and hashed twice in a single writing pass: the payload, and the whole file. Names inside a segment are object-relative, never artifact-global. The write order is deliberate — segments first, index.json last — so a crash midway leaves a directory that never claimed to be a container.",
-					},
-					{
-						label: "tokenizer.json + capability snapshot",
-						muted: true,
-						detail:
-							"The supporting cast: the tokenizer, tokenizer_config, special_tokens_map, generation_config, chat template. The encoder proper writes only what execution needs; this snapshot is what keeps a fresh container servable — without it, a container binds with token-id capability only and refuses text inference.",
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_5_1]} />,
 					},
 				]}
-				caption="The canonical shape — what every mainline producer writes: encode, extract with an explicit V3 request, and the LQL and factory surfaces, all through one shared pipeline."
 			/>
 
 			<Observation

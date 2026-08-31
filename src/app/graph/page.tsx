@@ -9,6 +9,9 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { GraphExplorer } from "@/components/GraphExplorer";
 import { EdgeResolution } from "@/components/StoryFigures";
 
@@ -27,6 +30,9 @@ export const metadata: Metadata = {
  * writes it to disk. Field lists follow graph/{component,object,
  * surface}.rs and encode/segment.rs in the reference implementation.
  */
+/** The clause this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_5_3 = specSection("vindex3-format-spec.md", "5.3");
+
 export default function GraphPage() {
 	return (
 		<main>
@@ -67,9 +73,35 @@ export default function GraphPage() {
 				text="Every runtime that infers meaning from tensor names carries the guess forever — one more family branch for every family, growing until nobody can delete anything. And names lie quietly: a zero that means no rotation will one day be read as rotation by zero, which is not nothing — it is nonsense wearing a number. The graph exists so that meaning is judged once, from evidence, at compile time. Every guess dies there, where it can still be argued with."
 			/>
 
-			<Observation text="The system graph is the container's understanding of the model: which sub-systems exist, what logical things they own, and how hidden states flow between them. It is built once, from source evidence, when the container is made. It is stored inside the container, verbatim. And from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint." />
-
-			<GraphExplorer />
+			<Lens
+				kicker="THE SYSTEM GRAPH — THREE DEPTHS"
+				concept="The system graph"
+				caption="One structure, three ways in: what it is, the graph itself to walk, and the canonical shape the specification requires."
+				depths={[
+					{
+						id: "learn",
+						label: "LEARN",
+						hint: "what the graph is",
+						content: (
+							<Observation text="The system graph is the container's understanding of the model: which sub-systems exist, what logical things they own, and how hidden states flow between them. It is built once, from source evidence, when the container is made. It is stored inside the container, verbatim. And from then on it is the only semantic authority — execution, verification, and the query surface all read the graph, never the checkpoint." />
+						),
+					},
+					{
+						id: "inspect",
+						label: "INSPECT",
+						hint: "walk a real graph",
+						content: (
+							<GraphExplorer />
+						),
+					},
+					{
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_5_3]} />,
+					},
+				]}
+			/>
 
 			<Anatomy
 				kicker="SystemGraph — THREE ARRAYS"

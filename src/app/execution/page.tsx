@@ -9,6 +9,9 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { ClosureFigure } from "@/components/StoryFigures";
 
 export const metadata: Metadata = {
@@ -25,6 +28,9 @@ export const metadata: Metadata = {
  * Surface fields follow graph/surface.rs; the operand vocabulary
  * follows graph/roles.rs — both quoted from the code, not paraphrased.
  */
+/** The clause this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_17_2 = specSection("vindex3-format-spec.md", "17.2");
+
 export default function ExecutionPage() {
 	return (
 		<main>
@@ -313,7 +319,39 @@ LayerScalar`}
 				text="The gate earned its place in the vocabulary by refusal. The first real four-norm model shipped an attention-gate weight in every one of its 52 layers — and the closure gate refused all 52, naming what was missing: required primitive, attention output gate. Not a crash. A named absence. The gate’s semantics were then judged from the reference implementation, the primitive entered the IR, and the model closed at 52 layers, twelve of twelve operands each. The format learned something new the only honest way: by refusing to guess it."
 			/>
 
-			<ClosureFigure />
+			<Lens
+				kicker="OPERAND CLOSURE — THREE DEPTHS"
+				concept="Operand closure"
+				caption="Nothing unexplained: read what closure promises, watch a layer close operand by operand, or read the invariant and the boundary as the specification pins them."
+				depths={[
+					{
+						id: "learn",
+						label: "LEARN",
+						hint: "what closure promises",
+						content: (
+							<Observation
+								label="CLOSURE, IN PLAIN TERMS"
+								text="Closure is the promise that nothing in the container is left unexplained. Every stored tensor must be claimed by an operation, and every operation's semantics must have been judged rather than guessed. A weight that no operation consumes does not quietly ride along: the gate refuses to close and names it. That is the second half of the proof the authority chapter starts — agreement says the witnesses do not contradict each other, closure says they left nothing out."
+							/>
+						),
+					},
+					{
+						id: "inspect",
+						label: "INSPECT",
+						hint: "a layer, closing",
+						content: (
+							<ClosureFigure />
+						),
+					},
+					{
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_17_2]} />,
+					},
+				]}
+			/>
+
 
 			<Observation
 				label="THE BOUNDED PROGRAMME VOCABULARY"

@@ -9,6 +9,9 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { ByteMap } from "@chrishayuk/hause/components/forms/ByteMap";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { FileEncoder } from "@/components/FileEncoder";
 import { SegmentationFigure } from "@/components/StoryFigures";
 
@@ -27,6 +30,10 @@ export const metadata: Metadata = {
  * their actual file order, every field with its width, every enum with
  * its wire value. All of it is ABI spec §6–7 verbatim.
  */
+/** The clauses this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_6_1 = specSection("vindex3-format-spec.md", "6.1");
+const SPEC_6_4 = specSection("vindex3-format-spec.md", "6.4");
+
 export default function BytesPage() {
 	return (
 		<main>
@@ -67,79 +74,107 @@ export default function BytesPage() {
 				text="Most weight files are a header you must trust, followed by bytes you cannot question. When a reader meets something it does not recognise, it guesses or it dies; when a writer changes a layout, every old reader finds out at parse time, in production. LYRW was shaped so neither ever happens: the file carries its whole description, unknown tags are preserved and reported rather than fatal, and refusal waits for the operation that actually needs the thing a reader cannot do."
 			/>
 
-			<Observation text="LYRW is the layer-weight bank format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table. Its place in the container model is stated by the Candidate: this is one segment codec — today the layout of the transitional bank shape's expert banks, under the convergence rule an encoding a graph container's representation may use. A graph container's plain tensor-table segments are the other codec, on the Container page." />
+			<Lens
+				kicker="LYRW v2 — THREE DEPTHS"
+				concept="The binary layout"
+				caption="A file that describes itself completely, at the depth you want it: what the five structures are, each one drawn to scale, and the header and entry-table clauses verbatim."
+				depths={[
+					{
+						id: "learn",
+						label: "LEARN",
+						hint: "what LYRW is",
+						content: (
+							<Observation text="LYRW is the layer-weight bank format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table. Its place in the container model is stated by the Candidate: this is one segment codec — today the layout of the transitional bank shape's expert banks, under the convergence rule an encoding a graph container's representation may use. A graph container's plain tensor-table segments are the other codec, on the Container page." />
+						),
+					},
+					{
+						id: "inspect",
+						label: "INSPECT",
+						hint: "five structures, to scale",
+						content: (
+							<>
+								<ByteMap
+									kicker="STRUCTURE 1 — ONCE PER FILE"
+									title="The header — 24 bytes"
+									fields={[
+										{ name: "magic", type: "u32", bytes: 4, value: "0x4C595257", meaning: "the four ASCII bytes “LYRW” — the file introduces itself" },
+										{ name: "format_version", type: "u32", bytes: 4, value: "2", meaning: "a v1 reader fails fast here with a precise “requires VINDEX3 loader” — never a parse error" },
+										{ name: "logical_layer", type: "u32", bytes: 4, meaning: "which layer of the model this file belongs to" },
+										{ name: "num_banks", type: "u16", bytes: 2, meaning: "how many bank descriptors follow — dense layers have one bank, MoE layers more" },
+										{ name: "num_segments", type: "u16", bytes: 2, meaning: "segments described by this file's tables — at least 1" },
+										{ name: "flags", type: "u32", bytes: 4, meaning: "bit 0: this file is one segment of a multi-segment layer; other bits reserved" },
+										{ name: "reserved", type: "u32", bytes: 4, meaning: "kept zero — room without a version bump" },
+									]}
+									totalLabel="24 bytes · all integers little-endian · all region offsets 64-byte aligned from the start of the containing segment file"
+								/>
 
-			<ByteMap
-				kicker="STRUCTURE 1 — ONCE PER FILE"
-				title="The header — 24 bytes"
-				fields={[
-					{ name: "magic", type: "u32", bytes: 4, value: "0x4C595257", meaning: "the four ASCII bytes “LYRW” — the file introduces itself" },
-					{ name: "format_version", type: "u32", bytes: 4, value: "2", meaning: "a v1 reader fails fast here with a precise “requires VINDEX3 loader” — never a parse error" },
-					{ name: "logical_layer", type: "u32", bytes: 4, meaning: "which layer of the model this file belongs to" },
-					{ name: "num_banks", type: "u16", bytes: 2, meaning: "how many bank descriptors follow — dense layers have one bank, MoE layers more" },
-					{ name: "num_segments", type: "u16", bytes: 2, meaning: "segments described by this file's tables — at least 1" },
-					{ name: "flags", type: "u32", bytes: 4, meaning: "bit 0: this file is one segment of a multi-segment layer; other bits reserved" },
-					{ name: "reserved", type: "u32", bytes: 4, meaning: "kept zero — room without a version bump" },
-				]}
-				totalLabel="24 bytes · all integers little-endian · all region offsets 64-byte aligned from the start of the containing segment file"
-			/>
+								<ByteMap
+									kicker="STRUCTURE 2 — num_banks ×"
+									title="The bank descriptor — 24 bytes each"
+									fields={[
+										{ name: "bank_id", type: "u16", bytes: 2, meaning: "the bank's identity — what the MoE manifest binds a programme to" },
+										{ name: "bank_kind", type: "u16", bytes: 2, meaning: "0 = dense, 1 = routed, 2 = shared" },
+										{ name: "region_schema_count", type: "u16", bytes: 2, meaning: "how many records this bank owns in the region-schema table — where one bank's schemas end" },
+										{ name: "flags", type: "u16", bytes: 2, meaning: "bits 0–1: browse mode — 00 = none, 01 = direct, 10 = strided; rest reserved" },
+										{ name: "num_entries", type: "u32", bytes: 4, meaning: "1 for a dense bank, or the expert count for a routed one" },
+										{ name: "input_dim", type: "u32", bytes: 4, meaning: "the entry's own operand width — a latent bank says its latent width, not the residual width" },
+										{ name: "intermediate_dim", type: "u32", bytes: 4, meaning: "the inner feed-forward width" },
+										{ name: "output_dim", type: "u32", bytes: 4, meaning: "the entry's output width" },
+									]}
+									totalLabel="24 bytes × num_banks · a dense layer is a bank with num_entries = 1 — one format for dense and MoE alike"
+									caption="The descriptor says what is stored, never what it means: the binary carries no programme identity. The MoE manifest in the container root binds bank_id to a programme, so the same fact is never declared in two places."
+								/>
 
-			<ByteMap
-				kicker="STRUCTURE 2 — num_banks ×"
-				title="The bank descriptor — 24 bytes each"
-				fields={[
-					{ name: "bank_id", type: "u16", bytes: 2, meaning: "the bank's identity — what the MoE manifest binds a programme to" },
-					{ name: "bank_kind", type: "u16", bytes: 2, meaning: "0 = dense, 1 = routed, 2 = shared" },
-					{ name: "region_schema_count", type: "u16", bytes: 2, meaning: "how many records this bank owns in the region-schema table — where one bank's schemas end" },
-					{ name: "flags", type: "u16", bytes: 2, meaning: "bits 0–1: browse mode — 00 = none, 01 = direct, 10 = strided; rest reserved" },
-					{ name: "num_entries", type: "u32", bytes: 4, meaning: "1 for a dense bank, or the expert count for a routed one" },
-					{ name: "input_dim", type: "u32", bytes: 4, meaning: "the entry's own operand width — a latent bank says its latent width, not the residual width" },
-					{ name: "intermediate_dim", type: "u32", bytes: 4, meaning: "the inner feed-forward width" },
-					{ name: "output_dim", type: "u32", bytes: 4, meaning: "the entry's output width" },
-				]}
-				totalLabel="24 bytes × num_banks · a dense layer is a bank with num_entries = 1 — one format for dense and MoE alike"
-				caption="The descriptor says what is stored, never what it means: the binary carries no programme identity. The MoE manifest in the container root binds bank_id to a programme, so the same fact is never declared in two places."
-			/>
+								<ByteMap
+									kicker="STRUCTURE 3 — num_segments ×"
+									title="The segment descriptor — 12 bytes each"
+									fields={[
+										{ name: "bank_id", type: "u16", bytes: 2, meaning: "which bank this segment carves" },
+										{ name: "segment_index", type: "u16", bytes: 2, meaning: "which slice of the logical layer this file holds" },
+										{ name: "first_entry", type: "u32", bytes: 4, meaning: "the first expert in this segment" },
+										{ name: "entry_count", type: "u32", bytes: 4, meaning: "how many experts it holds — this file's entry table covers only these, never the whole logical bank" },
+									]}
+									totalLabel="12 bytes × num_segments · a single-file layer has one segment covering [0, num_entries)"
+									caption="Multi-segment layers repeat the header in every segment file with flags bit 0 set, and index.json lists the segment files per logical layer — the loader never globs a directory."
+								/>
 
-			<ByteMap
-				kicker="STRUCTURE 3 — num_segments ×"
-				title="The segment descriptor — 12 bytes each"
-				fields={[
-					{ name: "bank_id", type: "u16", bytes: 2, meaning: "which bank this segment carves" },
-					{ name: "segment_index", type: "u16", bytes: 2, meaning: "which slice of the logical layer this file holds" },
-					{ name: "first_entry", type: "u32", bytes: 4, meaning: "the first expert in this segment" },
-					{ name: "entry_count", type: "u32", bytes: 4, meaning: "how many experts it holds — this file's entry table covers only these, never the whole logical bank" },
-				]}
-				totalLabel="12 bytes × num_segments · a single-file layer has one segment covering [0, num_entries)"
-				caption="Multi-segment layers repeat the header in every segment file with flags bit 0 set, and index.json lists the segment files per logical layer — the loader never globs a directory."
-			/>
+								<ByteMap
+									kicker="STRUCTURE 4 — region_schema_count × PER BANK, NOT PER EXPERT"
+									title="The region schema — 20 bytes each"
+									fields={[
+										{ name: "schema_index", type: "u16", bytes: 2, meaning: "position in this bank's schema list" },
+										{ name: "role", type: "u16", bytes: 2, meaning: "what the region is to the computation — the numbered vocabulary below" },
+										{ name: "format", type: "u16", bytes: 2, meaning: "the encoding — the numbered vocabulary below" },
+										{ name: "packing", type: "u16", bytes: 2, meaning: "0 = row_major, 1 = blocks_with_scales_inline, 2 = blocks_values, 3 = blocks_scales" },
+										{ name: "pair_id", type: "u16", bytes: 2, meaning: "links a blocks_values schema to its blocks_scales schema; 0xFFFF = unpaired" },
+										{ name: "layout", type: "u16", bytes: 2, meaning: "the payload's internal order — 0 = unspecified, 1 = contiguous_halves, 2 = interleaved. Draft-2's reserved pad, claimed: the record stayed 20 bytes, which is exactly why the index schema bumped 3 → 4" },
+										{ name: "rows", type: "u32", bytes: 4, meaning: "region height" },
+										{ name: "cols", type: "u32", bytes: 4, meaning: "region width" },
+									]}
+									totalLabel="20 bytes × region_schema_count, per bank · expert banks are homogeneous, so the layout is declared once and every entry shares it"
+									caption="The quiet trick of the format: every expert in a bank has the same shape, so the layout is declared once. Per-expert layout information collapses to two numbers each. And per-expert codec variation — which no grouped kernel supports — becomes unrepresentable by construction, not forbidden by convention."
+								/>
 
-			<ByteMap
-				kicker="STRUCTURE 4 — region_schema_count × PER BANK, NOT PER EXPERT"
-				title="The region schema — 20 bytes each"
-				fields={[
-					{ name: "schema_index", type: "u16", bytes: 2, meaning: "position in this bank's schema list" },
-					{ name: "role", type: "u16", bytes: 2, meaning: "what the region is to the computation — the numbered vocabulary below" },
-					{ name: "format", type: "u16", bytes: 2, meaning: "the encoding — the numbered vocabulary below" },
-					{ name: "packing", type: "u16", bytes: 2, meaning: "0 = row_major, 1 = blocks_with_scales_inline, 2 = blocks_values, 3 = blocks_scales" },
-					{ name: "pair_id", type: "u16", bytes: 2, meaning: "links a blocks_values schema to its blocks_scales schema; 0xFFFF = unpaired" },
-					{ name: "layout", type: "u16", bytes: 2, meaning: "the payload's internal order — 0 = unspecified, 1 = contiguous_halves, 2 = interleaved. Draft-2's reserved pad, claimed: the record stayed 20 bytes, which is exactly why the index schema bumped 3 → 4" },
-					{ name: "rows", type: "u32", bytes: 4, meaning: "region height" },
-					{ name: "cols", type: "u32", bytes: 4, meaning: "region width" },
+								<ByteMap
+									kicker="STRUCTURE 5 — THE ENTRY TABLE"
+									title="One row per entry per region — 16 bytes each"
+									fields={[
+										{ name: "offset", type: "u64", bytes: 8, meaning: "where this region's bytes start — from the start of the containing segment file, 64-byte aligned" },
+										{ name: "length", type: "u64", bytes: 8, meaning: "how many bytes it runs" },
+									]}
+									totalLabel="entry_count × region_schema_count rows of 16 bytes, entry-major — for each entry, one row per region schema, in schema order"
+									caption="Parsing cost is O(schemas), not O(entries × regions): the shape is read once per bank, then the table is pure arithmetic. Physical expert order need not match logical order — the table is the indirection."
+								/>
+							</>
+						),
+					},
+					{
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_6_1, SPEC_6_4]} />,
+					},
 				]}
-				totalLabel="20 bytes × region_schema_count, per bank · expert banks are homogeneous, so the layout is declared once and every entry shares it"
-				caption="The quiet trick of the format: every expert in a bank has the same shape, so the layout is declared once. Per-expert layout information collapses to two numbers each. And per-expert codec variation — which no grouped kernel supports — becomes unrepresentable by construction, not forbidden by convention."
-			/>
-
-			<ByteMap
-				kicker="STRUCTURE 5 — THE ENTRY TABLE"
-				title="One row per entry per region — 16 bytes each"
-				fields={[
-					{ name: "offset", type: "u64", bytes: 8, meaning: "where this region's bytes start — from the start of the containing segment file, 64-byte aligned" },
-					{ name: "length", type: "u64", bytes: 8, meaning: "how many bytes it runs" },
-				]}
-				totalLabel="entry_count × region_schema_count rows of 16 bytes, entry-major — for each entry, one row per region schema, in schema order"
-				caption="Parsing cost is O(schemas), not O(entries × regions): the shape is read once per bank, then the table is pure arithmetic. Physical expert order need not match logical order — the table is the indirection."
 			/>
 
 			<section className="hause-grid py-16 sm:py-24">

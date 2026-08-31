@@ -10,6 +10,9 @@ import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Anatomy } from "@chrishayuk/hause/components/forms/Anatomy";
 import { Procession } from "@chrishayuk/hause/components/forms/Procession";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 
 export const metadata: Metadata = {
 	title: "The Container Lifecycle: Run, Observe, Modify, Prove",
@@ -27,6 +30,9 @@ export const metadata: Metadata = {
  * Candidate's mutation and equivalence contracts (§18–20). The verbs
  * shown are the implemented ones; nothing here is aspiration.
  */
+/** The clause this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_18_1 = specSection("vindex3-format-spec.md", "18.1");
+
 export default function LifecyclePage() {
 	return (
 		<main>
@@ -72,65 +78,91 @@ export default function LifecyclePage() {
 				caption="one container — the whole life, in order"
 			/>
 
-			<Anatomy
-				kicker="THE VERBS — WHAT EACH ONE PROMISES"
-				objectLabel="Eight moves. Every one answers from the container."
-				layers={[
+			<Lens
+				kicker="THE OPERATIONS SURFACE — THREE DEPTHS"
+				concept="The operations surface"
+				caption="Eight verbs over one container: what makes them operations rather than format, what each one promises, and the surface as the specification states it."
+				depths={[
 					{
-						label: "USE — bind",
-						note: "LOAD",
-						detail:
-							"Binding is a single decision: the container's own schema version selects the generation — no filename sniffing, no fallback from a failed load. A V3 container binds as a closed, operand-verified program plus its operand bytes; a program that does not close refuses to open, naming its defects. Nothing downstream re-detects the format.",
+						id: "learn",
+						label: "LEARN",
+						hint: "operations, not format",
+						content: (
+							<Observation
+								label="WHY THIS IS NOT MORE FILE FORMAT"
+								text="Almost none of this adds bytes to the format. The test the Candidate applies: can an independent implementation determine it purely from the artifact? Then it is format. Does it describe how an engine operates on the artifact? Runtime contract. Is it an operator interaction? Operations contract — unless it persists state another implementation must understand, like a compiled container's derived authority stamp, which is exactly when it re-enters the format. That test is why the specification can be stable while the engine keeps moving."
+							/>
+						),
 					},
 					{
-						label: "WALK · DESCRIBE · SELECT — understand",
-						note: "QUERY",
-						detail:
-							"The model as structured data — features walked from the stored gate rows themselves, objects described from the graph, no separate index anywhere. The same facts are available engine-free through the vindex reader: inspect, describe, representations, precision.",
+						id: "inspect",
+						label: "INSPECT",
+						hint: "what each verb promises",
+						content: (
+							<Anatomy
+								kicker="THE VERBS — WHAT EACH ONE PROMISES"
+								objectLabel="Eight moves. Every one answers from the container."
+								layers={[
+									{
+										label: "USE — bind",
+										note: "LOAD",
+										detail:
+											"Binding is a single decision: the container's own schema version selects the generation — no filename sniffing, no fallback from a failed load. A V3 container binds as a closed, operand-verified program plus its operand bytes; a program that does not close refuses to open, naming its defects. Nothing downstream re-detects the format.",
+									},
+									{
+										label: "WALK · DESCRIBE · SELECT — understand",
+										note: "QUERY",
+										detail:
+											"The model as structured data — features walked from the stored gate rows themselves, objects described from the graph, no separate index anywhere. The same facts are available engine-free through the vindex reader: inspect, describe, representations, precision.",
+									},
+									{
+										label: "INFER · GENERATE — execute",
+										note: "EXECUTE",
+										detail:
+											"A forward pass, then stateful autoregressive generation, driven by the container's own semantics — zero architecture branches, state geometry read from the plan. Served, the same runtime answers the standard completion, chat and responses surfaces, sharing every wire shape with the previous generation.",
+									},
+									{
+										label: "TRACE — observe",
+										note: "OBSERVE",
+										detail:
+											"The residual stream, watched without being perturbed: on a V3 binding, TRACE runs observationally — execution's result is the same with the instrument on or off. Observation that changes the thing observed is not observation; that is the guarantee.",
+									},
+									{
+										label: "overlay · patch — modify",
+										note: "MODIFY",
+										detail:
+											"Mutation is overlay, never rewrite. Patches change the effective operands a session executes with; the base container's bytes never move. The effective state is real — INFER, TRACE and the query surface all see the model as mutated — but nothing is destroyed, and unwinding a change is dropping its overlay.",
+									},
+									{
+										label: "DIFF — compare",
+										note: "COMPARE",
+										detail:
+											"A semantic comparison, not a file comparison: DIFF operates over effective model state — objects, representations, values — between two containers, or between a container and the current mutated session. Error is derived, value by value, never asserted. The vindex reader carries the artifact-only projection of the same guarantee.",
+									},
+									{
+										label: "COMPILE — make it durable",
+										note: "PERSIST",
+										detail:
+											"COMPILE CURRENT INTO VINDEX materialises the effective operands into a new standalone container — a sibling artifact, never an in-place upgrade. The result is stamped derived, keeps its provenance link, and must answer INFER, GENERATE, TRACE and WALK equivalently to the state it materialised: equivalence is gated, not presumed.",
+									},
+									{
+										label: "COMPACT — maintain",
+										note: "MAINTAIN",
+										detail:
+											"Physical reorganisation under a semantic-identity obligation: same graph, same effective values, same answers — and no silent discarding of container contents the operation does not understand. Storage may improve; meaning may not move.",
+									},
+								]}
+								caption="GENERATE is a clause of INFER, overlays are statements of the mutation surface, and every verb above is implemented — the LQL whole-language sweep guarantees a V3 binding either serves a statement meaningfully or refuses it by name. What does not exist yet is also recorded: COMPILE INTO MODEL — container back to checkpoint — is specified but unimplemented on V3."
+							/>
+						),
 					},
 					{
-						label: "INFER · GENERATE — execute",
-						note: "EXECUTE",
-						detail:
-							"A forward pass, then stateful autoregressive generation, driven by the container's own semantics — zero architecture branches, state geometry read from the plan. Served, the same runtime answers the standard completion, chat and responses surfaces, sharing every wire shape with the previous generation.",
-					},
-					{
-						label: "TRACE — observe",
-						note: "OBSERVE",
-						detail:
-							"The residual stream, watched without being perturbed: on a V3 binding, TRACE runs observationally — execution's result is the same with the instrument on or off. Observation that changes the thing observed is not observation; that is the guarantee.",
-					},
-					{
-						label: "overlay · patch — modify",
-						note: "MODIFY",
-						detail:
-							"Mutation is overlay, never rewrite. Patches change the effective operands a session executes with; the base container's bytes never move. The effective state is real — INFER, TRACE and the query surface all see the model as mutated — but nothing is destroyed, and unwinding a change is dropping its overlay.",
-					},
-					{
-						label: "DIFF — compare",
-						note: "COMPARE",
-						detail:
-							"A semantic comparison, not a file comparison: DIFF operates over effective model state — objects, representations, values — between two containers, or between a container and the current mutated session. Error is derived, value by value, never asserted. The vindex reader carries the artifact-only projection of the same guarantee.",
-					},
-					{
-						label: "COMPILE — make it durable",
-						note: "PERSIST",
-						detail:
-							"COMPILE CURRENT INTO VINDEX materialises the effective operands into a new standalone container — a sibling artifact, never an in-place upgrade. The result is stamped derived, keeps its provenance link, and must answer INFER, GENERATE, TRACE and WALK equivalently to the state it materialised: equivalence is gated, not presumed.",
-					},
-					{
-						label: "COMPACT — maintain",
-						note: "MAINTAIN",
-						detail:
-							"Physical reorganisation under a semantic-identity obligation: same graph, same effective values, same answers — and no silent discarding of container contents the operation does not understand. Storage may improve; meaning may not move.",
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_18_1]} />,
 					},
 				]}
-				caption="GENERATE is a clause of INFER, overlays are statements of the mutation surface, and every verb above is implemented — the LQL whole-language sweep guarantees a V3 binding either serves a statement meaningfully or refuses it by name. What does not exist yet is also recorded: COMPILE INTO MODEL — container back to checkpoint — is specified but unimplemented on V3."
-			/>
-
-			<Observation
-				label="WHY THIS IS NOT MORE FILE FORMAT"
-				text="Almost none of this adds bytes to the format. The test the Candidate applies: can an independent implementation determine it purely from the artifact? Then it is format. Does it describe how an engine operates on the artifact? Runtime contract. Is it an operator interaction? Operations contract — unless it persists state another implementation must understand, like a compiled container's derived authority stamp, which is exactly when it re-enters the format. That test is why the specification can be stable while the engine keeps moving."
 			/>
 
 			<Observation

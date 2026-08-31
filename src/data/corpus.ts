@@ -40,10 +40,15 @@ const index = CORPUS.passages.map((p) => ({
  * Throws when the section is gone, so the spec moving under a page
  * fails the build rather than the reader.
  */
-export function specSection(doc: string, section: string): SpecPassage {
-	const hit = CORPUS.passages.find((p) => p.doc === doc && p.heading.startsWith(`${section} `));
-	if (!hit) throw new Error(`${doc} §${section} is not in the corpus — the page quoting it must be updated with the spec.`);
-	return hit;
+export type SpecQuote = SpecPassage & { continues: boolean };
+
+export function specSection(doc: string, section: string): SpecQuote {
+	const hits = CORPUS.passages.filter((p) => p.doc === doc && p.heading.startsWith(`${section} `));
+	if (hits.length === 0)
+		throw new Error(`${doc} §${section} is not in the corpus — the page quoting it must be updated with the spec.`);
+	// A long section is chunked; quoting the first chunk is honest only if
+	// the page says the passage continues, which is what `continues` is for.
+	return { ...hits[0], continues: hits.length > 1 };
 }
 
 export function searchCorpus(question: string, k = 4): { passage: SpecPassage; score: number }[] {

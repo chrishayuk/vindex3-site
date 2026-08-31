@@ -9,8 +9,8 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Variants } from "@chrishayuk/hause/components/forms/Variants";
 import { Lens } from "@chrishayuk/hause/components/forms/Lens";
-import { Excerpt } from "@chrishayuk/hause/components/forms/Excerpt";
 import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { Ladder } from "@chrishayuk/hause/components/forms/Ladder";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Film } from "@chrishayuk/hause/components/forms/Film";
@@ -138,18 +138,7 @@ export default function RepresentationPage() {
 						id: "spec",
 						label: "SPEC",
 						hint: "the clause that governs it",
-						content: (
-							<section className="hause-grid">
-								<div className="col-span-12 md:col-start-2 md:col-span-9">
-									<Excerpt
-										source={SPEC_9_1.source}
-										heading={SPEC_9_1.heading}
-										text={SPEC_9_1.text}
-										href="https://github.com/chrishayuk/larql/blob/main/crates/larql-vindex/docs/vindex3-format-spec.md"
-									/>
-								</div>
-							</section>
-						),
+						content: <SpecClause quotes={[SPEC_9_1]} />,
 					},
 				]}
 			/>

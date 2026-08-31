@@ -9,6 +9,9 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Agreement } from "@chrishayuk/hause/components/forms/Agreement";
 import { Derivation } from "@chrishayuk/hause/components/forms/Derivation";
+import { Lens } from "@chrishayuk/hause/components/forms/Lens";
+import { specSection } from "@/data/corpus";
+import { SpecClause } from "@/components/SpecClause";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { Film } from "@chrishayuk/hause/components/forms/Film";
 
@@ -27,6 +30,9 @@ export const metadata: Metadata = {
  * exact in its class: it renders the spec's named identity distinction
  * "NoPE ≠ rope(theta = 0)" — the guess a resolver must not make.
  */
+/** The clause this chapter's SPEC depth quotes — projected from the corpus, never retyped. */
+const SPEC_9_2 = specSection("vindex3-format-spec.md", "9.2");
+
 export default function AuthorityPage() {
 	return (
 		<main>
@@ -95,36 +101,61 @@ export default function AuthorityPage() {
 
 			<Statement text="Authority is derived, never asserted." />
 
-			<Derivation
-				kicker="THE FOLD — WORKED FOR A shared-only PROFILE"
-				lattice={[
-					{ level: "source-exact", meaning: "Decoded values bit-identical to the source checkpoint, in the checkpoint's own encoding family." },
-					{ level: "source-equivalent", meaning: "A different encoding whose decode reproduces the source values exactly." },
-					{ level: "numerically-approximate", meaning: "Same architecture, lossy representation — Q6_K quantised from BF16." },
-					{ level: "structurally-approximate", meaning: "Components omitted or replaced — must list omitted_components / replacement." },
-					{ level: "analysis-only", meaning: "Incapable of complete forward execution — router and browse slices." },
-				]}
-				steps={[
+			<Lens
+				kicker="THE FOLD — THREE DEPTHS"
+				concept="Authority"
+				caption="What a profile may claim is folded down a graded lattice by caps — never declared. Read it, work it, or read the clause that governs it."
+				depths={[
 					{
-						label: "Weakest selected region fidelity: the selected Q6_K regions are lossy against their BF16 source.",
-						from: "source-exact",
-						to: "numerically-approximate",
+						id: "learn",
+						label: "LEARN",
+						hint: "what a claim is worth",
+						content: (
+							<Observation
+								label="SAYING SO, PRECISELY"
+								text="A container is Canonical or Derived. A derived image cannot recompile itself — and saying so is the difference between an artifact that is missing something and one that never promised it. structurally-approximate is honest the same way: the omission is declared, listed, and folded into what the profile may claim."
+							/>
+						),
 					},
 					{
-						label: "Declared structural omission: the shared-only profile omits the routed expert banks.",
-						from: "numerically-approximate",
-						to: "structurally-approximate",
+						id: "inspect",
+						label: "INSPECT",
+						hint: "the fold, worked",
+						content: (
+							<Derivation
+								kicker="THE FOLD — WORKED FOR A shared-only PROFILE"
+								lattice={[
+									{ level: "source-exact", meaning: "Decoded values bit-identical to the source checkpoint, in the checkpoint's own encoding family." },
+									{ level: "source-equivalent", meaning: "A different encoding whose decode reproduces the source values exactly." },
+									{ level: "numerically-approximate", meaning: "Same architecture, lossy representation — Q6_K quantised from BF16." },
+									{ level: "structurally-approximate", meaning: "Components omitted or replaced — must list omitted_components / replacement." },
+									{ level: "analysis-only", meaning: "Incapable of complete forward execution — router and browse slices." },
+								]}
+								steps={[
+									{
+										label: "Weakest selected region fidelity: the selected Q6_K regions are lossy against their BF16 source.",
+										from: "source-exact",
+										to: "numerically-approximate",
+									},
+									{
+										label: "Declared structural omission: the shared-only profile omits the routed expert banks.",
+										from: "numerically-approximate",
+										to: "structurally-approximate",
+									},
+								]}
+								result="structurally-approximate"
+								caption="A profile cannot claim above its derived level; it may voluntarily claim below it. Kernel maturity affects speed and support status — never fidelity."
+							/>
+						),
+					},
+					{
+						id: "spec",
+						label: "SPEC",
+						hint: "the clause that governs it",
+						content: <SpecClause quotes={[SPEC_9_2]} />,
 					},
 				]}
-				result="structurally-approximate"
-				caption="A profile cannot claim above its derived level; it may voluntarily claim below it. Kernel maturity affects speed and support status — never fidelity."
 			/>
-
-			<Observation
-				label="SAYING SO, PRECISELY"
-				text="A container is Canonical or Derived. A derived image cannot recompile itself — and saying so is the difference between an artifact that is missing something and one that never promised it. structurally-approximate is honest the same way: the omission is declared, listed, and folded into what the profile may claim."
-			/>
-
 
 			<Observation
 				label="AND YET — CONSISTENCY IS NOT SUFFICIENCY"
