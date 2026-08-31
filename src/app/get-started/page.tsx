@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 	title: "Install the vindex CLI: Inspect, Diff & Verify Model Containers",
 	alternates: { canonical: "/get-started" },
 	description:
-		"Install the vindex CLI and interrogate a VINDEX3 container on your own machine — inspect, describe, diff, represent, precision, verify, every command speaking --json.",
+		"Install the vindex CLI and interrogate a VINDEX3 container on your own machine — inspect, describe, diff, represent, precision, verify, export, every command speaking --json.",
 };
 
 /**
@@ -30,17 +30,17 @@ export default function GetStartedPage() {
 				data={softwareApplicationLd({
 					name: "vindex",
 					description:
-						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify — every command answering from the artifact alone, every command speaking --json.",
+						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify, export — every command answering from the artifact alone, every command speaking --json.",
 					url: "https://vindex3.org/get-started",
-					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.6.1",
+					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.7.0",
 					operatingSystem: "macOS, Linux, Windows (build from source)",
-					version: "0.6.1",
+					version: "0.7.0",
 				})}
 			/>
 			<Hero
 				kicker="GET STARTED · TWO PATHS · RECORDED RUNS · 2026-08-30"
 				title="AN ARTIFACT, UNDERSTOOD WITHOUT AN ENGINE"
-				dek="Path one — inspect a model: seven vindex commands against a local container, each answering from the artifact alone, each speaking --json, no inference runtime attached. Path two — run a model: the reference engine encodes a checkpoint, executes it, and serves it."
+				dek="Path one — a model, inspected and exported: eight vindex commands against a local container, each answering from the artifact alone, each speaking --json, no inference runtime attached. Path two — run a model: the reference engine encodes a checkpoint, executes it, and serves it."
 			/>
 
 			<Statement text="The file answers for itself. Here is how to ask." />
@@ -48,13 +48,13 @@ export default function GetStartedPage() {
 			<Snippet
 				label="INSTALL — PREBUILT (MACOS ARM64) OR FROM SOURCE, ANY PLATFORM WITH STABLE RUST"
 				code={`$ curl -L https://github.com/chrishayuk/larql/releases/download/\\
-    vindex-v0.6.1/vindex-0.6.1-macos-arm64.tar.gz | tar xz
+    vindex-v0.7.0/vindex-0.7.0-macos-arm64.tar.gz | tar xz
 
 $ cargo install --git https://github.com/chrishayuk/larql vindex-cli
 
 $ vindex --help
 The format-native VINDEX3 tool: inspect, describe,
-representations, diff, represent, precision, verify.`}
+representations, diff, represent, precision, verify, export.`}
 				aside="Every command takes a global --json — one result, three projections: terminal text, structured JSON, and the designed panels this site renders. From 0.3.0, vindex update keeps you current — explicitly: no verb ever checks for updates on its own, and nothing phones home."
 			/>
 
@@ -118,6 +118,18 @@ target.output_head@BF16            ok
 
 verified   yes — the artifact agrees with its own record`}
 				aside="The scope is stated plainly: self-verification, from the artifact alone. Proving faithfulness to the source additionally needs the source — that gate lives with the reference implementation."
+			/>
+
+			<Snippet
+				label="EXPORT — THE SELECTED REPRESENTATION, COMPILED TO GGUF FOR AN INDEPENDENT RUNTIME · NEW IN 0.7.0"
+				code={`$ vindex export qwen3.8-nvfp4.vindex3 qwen3.8-27b-vindex-nvfp4.gguf
+selected       NVFP4
+walk           851 tensors · geometry 851/851 · 496 scale siblings
+vocab          248077 tokens + 243 pad · 247587 merges
+verified       1347 tensors (496 NVFP4 · 496 scale siblings) · 32 metadata keys
+written        qwen3.8-27b-vindex-nvfp4.gguf — 18.80 GB,
+               independent reader agrees with the plan`}
+				aside="Roles come from the operation plan, selection from the container's own precision programme, and the finished file is parsed back through an independent GGUF reader before the command returns. llama.cpp loads and runs the result; on a fixed token sequence its logits agree with VINDEX3's own execution of the same NVFP4 representation to within 0.0003 nats KL — same model, same representation, two runtimes."
 			/>
 
 			<Statement text="Every command above answers from the artifact alone. That is the test of a format." />
