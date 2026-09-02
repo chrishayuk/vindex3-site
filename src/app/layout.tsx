@@ -7,6 +7,7 @@ import { Analytics } from "@chrishayuk/hause/components/Analytics";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { webSiteLd } from "@chrishayuk/hause/seo";
 import { buildNote } from "@/data/build";
+import { releaseLink } from "@/data/release";
 
 const fraunces = Fraunces({
 	variable: "--font-fraunces",
@@ -108,7 +109,7 @@ export default function RootLayout({
 								{ href: "/cite", label: "How to cite" },
 								{ href: "https://github.com/chrishayuk/larql/blob/main/docs/vindex3-format.md", label: "The spec document", external: true },
 								{ href: "https://github.com/chrishayuk/larql/tree/main/crates/vindex-cli", label: "The CLI source", external: true },
-								{ href: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.5.0", label: "The release", external: true },
+								releaseLink(),
 							],
 						},
 					]}

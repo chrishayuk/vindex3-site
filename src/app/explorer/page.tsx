@@ -4,10 +4,15 @@ import { Statement } from "@chrishayuk/hause/components/forms/Statement";
 import { Observation } from "@chrishayuk/hause/components/forms/Observation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { VindexTerminal } from "@/components/VindexTerminal";
+import { cliBadge } from "@/data/release";
 
 const TRANSPORTS: {
 	kicker: string;
-	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0.8.0 · RELEASED";
+	/// "LIVE" for the served endpoint, "DRAFT" for a surface still being
+	/// designed, or the CLI badge from `data/release` — never a version
+	/// typed in here, which is how the footer came to cite 0.5.0 for a
+	/// week after 0.8.0 shipped.
+	status: string;
 	lines: string[];
 	caption: string;
 }[] = [
@@ -20,7 +25,7 @@ const TRANSPORTS: {
 	},
 	{
 		kicker: "THE VINDEX CLI",
-		status: "V0.8.0 · RELEASED",
+		status: cliBadge(),
 		lines: ["$ vindex encode hf://Qwen/Qwen3-0.6B --output qwen3-0.6b", "$ vindex inspect qwen3-0.6b", "$ vindex plan hf://zai-org/GLM-5.3-Flash --json"],
 		caption:
 			"On your machine. From 0.8.0 vindex brings a model in directly from Hugging Face — headers first, then bytes over ranges, the checkpoint never landing on disk — and every reading verb (inspect, describe, representations, diff, represent, precision, verify, export) answers from the artifact alone, speaking --json. plan says what VINDEX understands about any repo from its headers, and since plan schema 4 the verdict names the commit it judged and the planner that judged it.",
@@ -29,15 +34,16 @@ const TRANSPORTS: {
 		kicker: "THE QUERY PROTOCOL",
 		status: "DRAFT",
 		lines: [
+			"GET  /v1/capabilities",
 			"GET  /v1/models",
 			"GET  /v1/components/:address",
-			"GET  …/:address/relations",
 			"GET  …/:address/representations",
 			"GET  …/:address/provenance",
+			"POST /v1/plan",
 			"POST /v1/query",
 		],
 		caption:
-			"Between the two, a surface small enough to stay stable. This site is one client. The CLI is another. Any independent VINDEX3 reader could serve it.",
+			"Between the two, a surface small enough to stay stable. This site is one client. The CLI is another. Any independent VINDEX3 reader could serve it. Two of these are load-bearing rather than convenient: /v1/capabilities is how a client learns what a server will do instead of inferring it from the address — a server enforces its own profile and says so, and this page hides any control the answer does not authorise. /v1/plan judges a model that has not been brought in yet, from its headers, so entering a model can begin before the model exists locally.",
 	},
 ];
 

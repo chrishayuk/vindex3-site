@@ -6,6 +6,7 @@ import { Snippet } from "@chrishayuk/hause/components/forms/Snippet";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { softwareApplicationLd } from "@chrishayuk/hause/seo";
+import { RELEASE } from "@/data/release";
 
 export const metadata: Metadata = {
 	title: "Get Started: Bring a Model In From Hugging Face and Run It",
@@ -34,9 +35,9 @@ export default function GetStartedPage() {
 					description:
 						"The format-native VINDEX3 CLI: bring a model in from Hugging Face without the checkpoint landing on disk, then inspect, describe, representations, diff, represent, precision, verify, export — every command answering from the artifact alone, every command speaking --json.",
 					url: "https://vindex3.org/get-started",
-					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.8.0",
+					downloadUrl: RELEASE.cli.href,
 					operatingSystem: "macOS, Linux, Windows (build from source)",
-					version: "0.8.0",
+					version: RELEASE.cli.version,
 				})}
 			/>
 			<Hero
