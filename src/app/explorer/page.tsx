@@ -7,7 +7,7 @@ import { VindexTerminal } from "@/components/VindexTerminal";
 
 const TRANSPORTS: {
 	kicker: string;
-	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0.7.0 · RELEASED";
+	status: "LIVE" | "IN BUILD" | "DRAFT" | "V0.8.0 · RELEASED";
 	lines: string[];
 	caption: string;
 }[] = [
@@ -20,10 +20,10 @@ const TRANSPORTS: {
 	},
 	{
 		kicker: "THE VINDEX CLI",
-		status: "V0.7.0 · RELEASED",
-		lines: ["$ vindex inspect model.vindex", "$ vindex diff model.vindex BF16 NVFP4 mlp.down", "$ vindex verify model.vindex --json"],
+		status: "V0.8.0 · RELEASED",
+		lines: ["$ vindex encode hf://Qwen/Qwen3-0.6B --output qwen3-0.6b", "$ vindex inspect qwen3-0.6b", "$ vindex plan hf://zai-org/GLM-5.3-Flash --json"],
 		caption:
-			"On your machine, against a local container: inspect, describe, representations, diff, represent, precision, verify, export — every command answering from the artifact alone, every command speaking --json. No inference runtime attached: an artifact should not require an engine to be understood.",
+			"On your machine. From 0.8.0 vindex brings a model in directly from Hugging Face — headers first, then bytes over ranges, the checkpoint never landing on disk — and every reading verb (inspect, describe, representations, diff, represent, precision, verify, export) answers from the artifact alone, speaking --json. plan says what VINDEX understands about any repo from its headers, and since plan schema 4 the verdict names the commit it judged and the planner that judged it.",
 	},
 	{
 		kicker: "THE QUERY PROTOCOL",

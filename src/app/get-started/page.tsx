@@ -8,20 +8,22 @@ import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { softwareApplicationLd } from "@chrishayuk/hause/seo";
 
 export const metadata: Metadata = {
-	title: "Install the vindex CLI: Inspect, Diff & Verify Model Containers",
+	title: "Get Started: Bring a Model In From Hugging Face and Run It",
 	alternates: { canonical: "/get-started" },
 	description:
-		"Install the vindex CLI and interrogate a VINDEX3 container on your own machine — inspect, describe, diff, represent, precision, verify, export, every command speaking --json.",
+		"Three commands. vindex encode brings a model in from Hugging Face with the checkpoint never landing on disk, vindex inspect shows what it understood, larql run makes it speak — recorded runs of vindex 0.8.0.",
 };
 
 /**
- * The on-ramp, in the on-ramp form: Hero → Snippet walk → Connection,
- * the same shape as hause.design's Use page, because two sites doing
- * one thing differently is what the design system exists to stop.
- * Path one's outputs are recorded runs of the real binary against a
- * real 3B container (2026-08-30, M3 Max) — shown because they ran.
- * Path two (the engine) shows command shapes only, no invented
- * transcripts, and says so.
+ * The on-ramp, in the on-ramp form: Hero → Snippet walk → Connection.
+ *
+ * Path one is three commands — encode, inspect, run — and every output
+ * shown is a recorded run (2026-09-02, M3 Max): vindex 0.8.0 built at the
+ * commit the release tag names, larql built from the same commit, against
+ * Qwen/Qwen3-0.6B at the commit the encode pinned. Nothing is
+ * illustrative. Path two keeps the earlier recorded tour of the reading
+ * verbs against the 3B granite container (2026-08-30). The one shape
+ * shown without a transcript — serve — says so.
  */
 export default function GetStartedPage() {
 	return (
@@ -30,46 +32,109 @@ export default function GetStartedPage() {
 				data={softwareApplicationLd({
 					name: "vindex",
 					description:
-						"The format-native VINDEX3 CLI: inspect, describe, representations, diff, represent, precision, verify, export — every command answering from the artifact alone, every command speaking --json.",
+						"The format-native VINDEX3 CLI: bring a model in from Hugging Face without the checkpoint landing on disk, then inspect, describe, representations, diff, represent, precision, verify, export — every command answering from the artifact alone, every command speaking --json.",
 					url: "https://vindex3.org/get-started",
-					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.7.0",
+					downloadUrl: "https://github.com/chrishayuk/larql/releases/tag/vindex-v0.8.0",
 					operatingSystem: "macOS, Linux, Windows (build from source)",
-					version: "0.7.0",
+					version: "0.8.0",
 				})}
 			/>
 			<Hero
-				kicker="GET STARTED · TWO PATHS · RECORDED RUNS · 2026-08-30"
-				title="AN ARTIFACT, UNDERSTOOD WITHOUT AN ENGINE"
-				dek="Path one — a model, inspected and exported: eight vindex commands against a local container, each answering from the artifact alone, each speaking --json, no inference runtime attached. Path two — run a model: the reference engine encodes a checkpoint, executes it, and serves it."
+				kicker="GET STARTED · THREE COMMANDS · RECORDED RUNS · 2026-09-02"
+				title="MODEL IN, MODEL RUNS"
+				dek="vindex brings a model in from Hugging Face — headers first, then bytes over ranges, the checkpoint never landing on your disk. vindex inspect shows what it understood. larql run makes it speak. Every line below is a recorded run of the released 0.8.0 against Qwen3-0.6B."
 			/>
 
-			<Statement text="The file answers for itself. Here is how to ask." />
+			<Statement text="VINDEX brings a model into the system. LARQL makes it speak." />
 
 			<Snippet
-				label="INSTALL — PREBUILT (MACOS ARM64) OR FROM SOURCE, ANY PLATFORM WITH STABLE RUST"
+				label="INSTALL — VINDEX PREBUILT (MACOS ARM64, LINUX X86_64) OR FROM SOURCE · LARQL FROM SOURCE"
 				code={`$ curl -L https://github.com/chrishayuk/larql/releases/download/\\
-    vindex-v0.7.0/vindex-0.7.0-macos-arm64.tar.gz | tar xz
+    vindex-v0.8.0/vindex-0.8.0-macos-arm64.tar.gz | tar xz
 
 $ cargo install --git https://github.com/chrishayuk/larql vindex-cli
+$ cargo install --git https://github.com/chrishayuk/larql larql-cli
 
-$ vindex --help
-The format-native VINDEX3 tool: inspect, describe,
-representations, diff, represent, precision, verify, export.`}
-				aside="Every command takes a global --json — one result, three projections: terminal text, structured JSON, and the designed panels this site renders. From 0.3.0, vindex update keeps you current — explicitly: no verb ever checks for updates on its own, and nothing phones home."
+$ vindex --version
+vindex 0.8.0`}
+				aside="Two tools, split by job. vindex brings a model in and reads the artifact — no inference runtime attached, because an artifact should not require an engine to be understood. larql is the engine: it runs and serves what vindex encoded. Every vindex command takes --json; vindex update keeps you current, explicitly, and nothing phones home."
 			/>
 
 			<Snippet
-				label="INSPECT — IDENTITY, CENSUS, COHERENCE, FROM THE ARTIFACT ALONE"
-				code={`$ vindex inspect granite-3b.vindex3
-family         granite
+				label="ENCODE — A MODEL COMES IN FROM HUGGING FACE · THE CHECKPOINT NEVER TOUCHES THE DISK"
+				code={`$ vindex encode hf://Qwen/Qwen3-0.6B --output qwen3-0.6b
+staged         11.47 MB (0.04 MB of headers over 1 shard(s), 11.43 MB of metadata)
+standing in for 1.50 GB (1.40 GiB) of tensor payload
+pinned at      c1899de289a04d12100db370d81485cdf75e47ca
+
+fetched        1.50 GB (1.40 GiB) of 1.50 GB (1.40 GiB) declared across 311 tensor(s)
+checkpoint     never present on this disk
+
+capabilities   tokenizer.json, tokenizer_config.json, generation_config.json
+encoded        4 representation(s), 1.50 GB (1.40 GiB) payload
+container      qwen3-0.6b`}
+				aside="Admission runs on 11.47 MB of headers and metadata standing in for a 1.50 GB checkpoint, pinned to the repository commit the hub named. Only once the model is understood do the tensor bytes move — over byte ranges, straight into the container's segments — so the source checkpoint exists on your machine at no point. The tokenizer and generation config ride along as capabilities: what the container can do, not what it weighs."
+			/>
+
+			<Snippet
+				label="INSPECT — IDENTITY, GEOMETRY, COHERENCE, FROM THE ARTIFACT ALONE"
+				code={`$ vindex inspect qwen3-0.6b
+model          Qwen3-0.6B
+family         qwen3
 generation     3
-geometry       40 layers · hidden 2560
+geometry       28 layers · hidden 1024
 authority      canonical
 
-COMPONENT   ROLE          LAYERS   HIDDEN
-target      primarytext       40     2560
+COMPONENT              ROLE              LAYERS   HIDDEN
+target                 primarytext           28     1024
 
-graph          4 object(s) · coherent`}
+graph          4 object(s) · 0 edge(s) · coherent`}
+				aside="The container names itself. The model line is index.model, the identity the artifact declares — never a directory name read back off the filesystem — and every reading verb that follows (describe, representations, precision, diff, verify, export) answers from the same artifact, with no source and no engine in the room."
+			/>
+
+			<Snippet
+				label="RUN — THE CONTAINER SPEAKS · 43.7 TOKENS/S ON THE CPU OF AN M3 MAX"
+				code={`$ larql run qwen3-0.6b "The capital of France is"
+ Paris. The capital of Italy is Rome. The capital of Spain is Madrid.
+ The capital of China is Beijing. The`}
+				aside="Text in, text out, from the container's own program: its tokenizer encodes the prompt, the same interpreter larql vindex3 exec reports on runs the plan, and the text streams as it is produced. Greedy on purpose, so a run doubles as a fixture. Recorded with --verbose: weights resident in 1.4 s, 5 prompt tokens, 24 generated, 23 ms per token. The same command with --metal answered identically at 28 ms per token — a 0.6B model is small enough that the CPU kernels win."
+			/>
+
+			<Statement text="Three commands. The checkpoint never touched the disk. That is the on-ramp." />
+
+			<Observation
+				label="WANT TO LOOK DEEPER"
+				text="Three branches from here, in the order people usually need them. Why isn't an architecture supported? — vindex plan answers from headers alone, and since plan schema 4 the verdict names the commit it judged and the planner that judged it. What is a representation, and why is it selection rather than conversion? — the Representation chapter, and the recorded tour of the reading verbs below. What does a container hold when only part of it is resident? — the Container chapter."
+			/>
+
+			<Snippet
+				label="PLAN — WHAT VINDEX UNDERSTANDS ABOUT A MODEL, BEFORE MOVING ITS WEIGHTS · SCHEMA 4"
+				code={`$ vindex plan hf://Qwen/Qwen3-0.6B
+staged         11.47 MB (0.04 MB of headers over 1 shard(s), 11.43 MB of metadata)
+standing in for 1.50 GB (1.40 GiB) of tensor payload
+pinned at      c1899de289a04d12100db370d81485cdf75e47ca
+
+representable  40
+mismatched     0
+unrepresented  0
+blocking       0
+admissible     yes — every declaration has a home
+
+$ vindex plan hf://Qwen/Qwen3-0.6B --json | jq '{schema, planner, source: .artifacts[0].source}'
+{
+  "schema": 4,
+  "planner": { "package": "larql-vindex", "package_version": "0.2.0", "semantics_version": 1 },
+  "source":  { "path": "hf://Qwen/Qwen3-0.6B",
+               "revision": "c1899de289a04d12100db370d81485cdf75e47ca" }
+}`}
+				aside="A verdict names its subject and its judge. The semantics version moves only when a rule change can flip a verdict — never for a wording or layout fix — so two plans are comparable exactly when it agrees. A cache may key on (commit, semantics version) only when every artifact is pinned to a commit; a revision name like main is provenance, never authority. A plan written by an earlier schema is refused by name rather than read as unattributed."
+			/>
+
+			<Statement text="PATH TWO — THE ARTIFACT, UNDERSTOOD WITHOUT AN ENGINE" />
+
+			<Observation
+				label="THE READING VERBS · RECORDED 2026-08-30 · GRANITE 3B"
+				text="The five commands below are the earlier recorded tour against a 3B granite container, kept because they ran: precision derived from bytes, a representation compiled beside the original, a value-by-value diff, self-verification against recorded hashes, and export to an independent runtime."
 			/>
 
 			<Snippet
@@ -121,7 +186,7 @@ verified   yes — the artifact agrees with its own record`}
 			/>
 
 			<Snippet
-				label="EXPORT — THE SELECTED REPRESENTATION, COMPILED TO GGUF FOR AN INDEPENDENT RUNTIME · NEW IN 0.7.0"
+				label="EXPORT — THE SELECTED REPRESENTATION, COMPILED TO GGUF FOR AN INDEPENDENT RUNTIME"
 				code={`$ vindex export qwen3.8-nvfp4.vindex3 qwen3.8-27b-vindex-nvfp4.gguf
 selected       NVFP4
 walk           851 tensors · geometry 851/851 · 496 scale siblings
@@ -132,45 +197,21 @@ written        qwen3.8-27b-vindex-nvfp4.gguf — 18.80 GB,
 				aside="Roles come from the operation plan, selection from the container's own precision programme, and the finished file is parsed back through an independent GGUF reader before the command returns. llama.cpp loads and runs the result; on a fixed token sequence its logits agree with VINDEX3's own execution of the same NVFP4 representation to within 0.0003 nats KL — same model, same representation, two runtimes."
 			/>
 
-			<Statement text="Every command above answers from the artifact alone. That is the test of a format." />
-
-			<Observation
-				label="PATH TWO — RUN A MODEL"
-				text="The vindex CLI reads containers; it does not create them from checkpoints, and it never runs one. Encoding a Hugging Face checkpoint into a VINDEX3 container — and proving source ≡ encoded — is the reference implementation's job, and so is execution. The boundary is deliberate: understanding an artifact must never require the engine, but producing one from a source, and running it, is where an engine earns its keep. The commands below are the shapes, not recorded transcripts — the recorded numbers live on the Record."
-			/>
-
 			<Snippet
-				label="ENCODE — A CHECKPOINT BECOMES A CONTAINER, THEN PROVES IT"
-				code={`$ larql vindex3 encode ./granite-3b --output granite-3b.vindex3/
-$ larql vindex3 verify ./granite-3b --container granite-3b.vindex3/
-
-# or through the extraction surface, explicitly:
-$ larql extract ./granite-3b --generation v3`}
-				aside="One shared pipeline behind every producer surface: inventory, plan (ambiguity refused), graph, encode, verify. The default extraction generation is still VINDEX2 — V3 is what you get by asking, until the flip (M4) is decided. The Record keeps that honestly."
-			/>
-
-			<Snippet
-				label="RUN — EXECUTION AND GENERATION, FROM THE CONTAINER ALONE"
-				code={`$ larql vindex3 exec granite-3b.vindex3 \\
-    --tokens 2,437,9331 --generate 32`}
-				aside="Token ids in, token ids out — a tokenizer is part of the fixture, so only one side of a parity comparison may choose it. Greedy on purpose: generation doubles as a fixture, and a sampler would put randomness between two runs. --backend selects the arithmetic — reference, production, or the Metal arms — while the container's plan owns the meaning."
-			/>
-
-			<Snippet
-				label="SERVE — THE STANDARD SURFACES, FROM THE SAME CONTAINER"
-				code={`$ larql serve granite-3b.vindex3
+				label="SERVE — THE STANDARD SURFACES, FROM THE SAME CONTAINER · A SHAPE, NOT A RECORDED RUN"
+				code={`$ larql serve qwen3-0.6b
 
 $ curl localhost:8080/v1/completions -d '{
-    "model": "granite-3b", "prompt": "The capital of France is",
+    "model": "Qwen3-0.6B", "prompt": "The capital of France is",
     "max_tokens": 16 }'`}
-				aside="A served V3 container answers /v1/completions, /v1/chat/completions and /v1/responses, sharing every wire shape with the previous generation — only the token source differs."
+				aside="A served V3 container answers /v1/completions, /v1/chat/completions and /v1/responses, sharing every wire shape with the previous generation — only the token source differs. Serving, larql run and the research verb larql vindex3 exec open a container through one authority, so the same container means the same program whichever door you came in by."
 			/>
 
 			<Connection
-				text="The same verbs run in the browser against a hardened public container, and the same grammar reads back as designed panels. Two paths, three transports, one meaning."
+				text="The same verbs run in the browser against a hardened public container, and the same grammar reads back as designed panels. One on-ramp, three transports, one meaning."
 				links={[
 					{ href: "/explorer", label: "THE EXPLORER" },
-					{ href: "/lifecycle", label: "THE LIFECYCLE" },
+					{ href: "/representation", label: "SELECTION, NOT CONVERSION" },
 					{ href: "/ladder", label: "THE RECORD" },
 				]}
 			/>

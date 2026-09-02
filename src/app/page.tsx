@@ -248,7 +248,7 @@ export default function Home() {
 				links={[
 					{ href: "/ask", label: "ASK VINDEX3 — ANY ANSWERABLE QUESTION" },
 					{ href: "/explorer", label: "THE EXPLORER — ENTER A MODEL" },
-					{ href: "/get-started", label: "GET STARTED — INSTALL THE VINDEX CLI" },
+					{ href: "/get-started", label: "GET STARTED — MODEL IN, MODEL RUNS" },
 				]}
 			/>
 		</main>
