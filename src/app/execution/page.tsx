@@ -80,6 +80,43 @@ export default function ExecutionPage() {
 
 			<Statement text="An executor reads; it never defaults." />
 
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						WHEN DECLARATION AND EVIDENCE DISAGREE
+					</p>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+						<div className="border-l-2 pl-5" style={{ borderColor: "var(--color-mist)" }}>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-4">layer.27.ffn</p>
+							<pre className="voice-evidence text-xs sm:text-sm leading-loose whitespace-pre overflow-x-auto m-0">
+{`declared
+  routed MoE
+
+evidence
+  expert bank absent`}
+							</pre>
+						</div>
+						<div className="border-l-2 pl-5" style={{ borderColor: "var(--color-accent)" }}>
+							<p className="voice-evidence text-xs tracking-[0.1em] uppercase mb-4">REFUSED</p>
+							<pre className="voice-evidence text-xs sm:text-sm leading-loose whitespace-pre overflow-x-auto m-0">
+{`FFN identity mismatch
+layer 27
+
+A missing bank cannot
+turn a routed layer dense.`}
+							</pre>
+						</div>
+					</div>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-8">
+						The tempting behaviour here is the quiet one: no expert data, so run the layer dense and
+						carry on. It produces tokens. It never raises anything. And it has silently substituted a
+						different model for the one the container declares. The declared schedule is the
+						authority, operand evidence is required to <em>agree</em> with it, and disagreement is a
+						named refusal — the executor does not get a vote on what the model is.
+					</p>
+				</div>
+			</section>
+
 			<Anatomy
 				kicker="ExecutionSurface — GROUPED BY OPERATION"
 				objectLabel="Seven surfaces. No family knowledge in any of them."
@@ -390,6 +427,39 @@ generic kernels
 						VINDEX3 permits architecture-aware ingestion and produces an architecture-independent executable IR.
 						The trap this guards against has a name — the naming-convention trap. Dispatching on object-id strings
 						is the same defect laundered through a name: the convention becomes an undeclared schema.
+					</p>
+				</div>
+			</section>
+
+			<section className="hause-grid py-16 sm:py-24">
+				<div className="col-span-12 md:col-start-2 md:col-span-10 lg:col-span-9">
+					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-8 opacity-50">
+						ONE OPENING AUTHORITY — THE DOOR YOU CAME IN BY IS NOT A SECOND INTERPRETATION
+					</p>
+					<pre className="voice-evidence text-xs sm:text-sm leading-loose whitespace-pre overflow-x-auto m-0">
+{`                  VINDEX3 container
+                          \u2502
+                          \u25BC
+                   open_component
+                          \u2502
+             \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
+             \u25BC                   \u25BC                   \u25BC
+        larql run          larql serve        vindex3 exec
+
+        same plan \u00B7 same representation binding \u00B7 same declared identity`}
+					</pre>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-8">
+						The chapter above argues that execution may not reinterpret architecture. This is the
+						stronger form of the same claim, and it is now structural rather than aspirational: the
+						product surface, the server and the conformance instrument all open a container through
+						one function. There are no family branches — and there is not even a second
+						interpretation of the container depending on how you entered the system.
+					</p>
+					<p className="voice-system text-sm opacity-70 leading-relaxed max-w-2xl mt-4">
+						What stays outside that authority is realisation. CPU, Metal or a lowered plan is a
+						question about this machine, not about what the container means, so the backend choice
+						lives with the caller. The opener decides what the model <em>is</em>; the caller decides
+						what runs it.
 					</p>
 				</div>
 			</section>
