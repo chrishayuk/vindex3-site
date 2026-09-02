@@ -50,6 +50,9 @@ const LIVE_ENDPOINT = "https://vindex3-explorer.fly.dev";
 
 type Line = TerminalLine;
 
+/** The `/v1/capabilities` schema this page reads. */
+const CAPABILITIES_SCHEMA = 1;
+
 const SNAPSHOT_ID = "vindex3-demo · compiled snapshot · 3.0-candidate / 2026-08-30";
 
 // ---------- the demo universe (matches the Bytes encoder's worked example) ----------
@@ -566,6 +569,88 @@ const LIVE_SEED = [
 	'INFER "[3]" GENERATE 8;',
 ];
 
+/**
+ * PLAN — the only statement whose subject is NOT the bound container.
+ *
+ * Every other verb here reads the model this endpoint serves. PLAN reads
+ * a model that has not been brought in yet: it asks the server what
+ * VINDEX would understand about a Hugging Face repo, from its config and
+ * safetensors headers alone. On Qwen3-0.6B that is ~11 MB of reading
+ * standing in for a 1.50 GB checkpoint that is never downloaded.
+ *
+ * It is offered only when the server SAYS it plans hf:// sources
+ * (`GET /v1/capabilities` → `sources.plan.hf`). The endpoint this page
+ * talks to may predate the capabilities contract entirely, and a control
+ * that 404s is worse than a control that is honestly absent.
+ */
+type PlanCapability = { hf: boolean };
+
+type PlanDocument = {
+	schema?: number;
+	admissible?: boolean;
+	planner?: { package?: string; package_version?: string; semantics_version?: number };
+	summary?: { representable?: number; mismatched?: number; unrepresented?: number; blocking?: number };
+	artifacts?: { name?: string; model_type?: string; source?: { path?: string; revision?: string; unpinned_revision?: string } }[];
+	capabilities?: { capability?: string; available?: boolean; supported?: boolean; admissible?: boolean }[];
+	staging?: { staged?: string; stands_in_for?: string; shards?: number }[];
+	serving?: { cached?: boolean; cacheable?: boolean };
+};
+
+function planLines(doc: PlanDocument): Line[] {
+	const out: Line[] = [];
+	const artifact = doc.artifacts?.[0];
+	const source = artifact?.source;
+	const staging = doc.staging?.[0];
+
+	out.push({ text: `${artifact?.name ?? "unnamed"}  ·  ${artifact?.model_type ?? "unknown architecture"}`, tone: "ok" });
+	out.push({ text: "" });
+	out.push({ text: `  source          ${source?.path ?? "—"}` });
+	if (source?.revision) {
+		out.push({ text: `  revision        ${source.revision.slice(0, 12)}…  immutable` });
+	} else if (source?.unpinned_revision) {
+		// A name, not a commit — it can move, and the verdict says so
+		// rather than presenting a moving target as a pinned one.
+		out.push({ text: `  revision        ${source.unpinned_revision}  — a NAME, which can move`, tone: "err" });
+	}
+	if (staging) {
+		out.push({ text: `  read to plan    ${staging.staged ?? "—"}${staging.stands_in_for ? `  standing in for ${staging.stands_in_for}` : ""}` });
+	}
+
+	const s = doc.summary;
+	if (s) {
+		out.push({ text: "" });
+		out.push({ text: `  findings        ${s.representable ?? 0} representable · ${s.mismatched ?? 0} mismatched · ${s.unrepresented ?? 0} unrepresented` });
+		out.push({
+			text: `  blocking        ${s.blocking ?? 0}`,
+			tone: (s.blocking ?? 0) > 0 ? "err" : undefined,
+		});
+	}
+
+	const available = (doc.capabilities ?? []).filter((c) => c.available);
+	if (available.length > 0) {
+		out.push({ text: "" });
+		out.push({ text: "  capabilities    " + available.map((c) => c.capability).join(" · ") });
+	}
+
+	out.push({ text: "" });
+	out.push({
+		text: doc.admissible ? "  ADMISSIBLE — nothing unexplained" : "  NOT ADMISSIBLE — findings block it",
+		tone: doc.admissible ? "ok" : "err",
+	});
+	const p = doc.planner;
+	out.push({
+		text: `  plan schema ${doc.schema ?? "?"} · judged by ${p?.package ?? "?"} ${p?.package_version ?? ""} · semantics ${p?.semantics_version ?? "?"}`,
+		tone: "dim",
+	});
+	if (doc.serving?.cached) {
+		out.push({ text: "  served from the verdict cache — same commit, same semantics version", tone: "dim" });
+	} else if (doc.serving && !doc.serving.cacheable) {
+		out.push({ text: "  not cacheable: an unpinned source is judged fresh every time", tone: "dim" });
+	}
+	out.push({ text: "  nothing was downloaded, and nothing was encoded", tone: "dim" });
+	return out;
+}
+
 const LIVE_HELP: Line[] = [
 	{ text: "PUBLIC_EXPLORER grammar — enforced in the server, after parsing, before execution:", tone: "dim" },
 	{ text: "  SHOW MODELS / COMPONENTS / LAYERS       the catalogue, the graph, the plan" },
@@ -576,6 +661,7 @@ const LIVE_HELP: Line[] = [
 	{ text: "  SELECT * FROM EDGES LIMIT n             the knowledge surface" },
 	{ text: '  EXPLAIN INFER "prompt"                  the executable plan, rendered' },
 	{ text: '  INFER "prompt" [TOP n] [GENERATE ≤ 32]  execute — really' },
+	{ text: "  PLAN hf://org/model                     judge a model that is NOT here yet" },
 	{ text: "  STATS · HELP · CLEAR", tone: "dim" },
 	{ text: "every other statement parses — and refuses with the profile's own words", tone: "dim" },
 ];
@@ -601,7 +687,7 @@ const SNAPSHOT_VERBS = [
 const LIVE_VERBS = [
 	"SHOW MODELS;", "SHOW COMPONENTS;", "SHOW LAYERS;", "SHOW REPRESENTATIONS;", "SHOW PROVENANCE;",
 	"SHOW AUTHORITY;", "STATS;", "DESCRIBE ", "WALK ", "SELECT * FROM EDGES LIMIT 5;",
-	"EXPLAIN INFER ", "INFER ", "HELP", "CLEAR",
+	"EXPLAIN INFER ", "INFER ", "PLAN hf://", "HELP", "CLEAR",
 ];
 const CHILDREN: Record<string, string[]> = {
 	"": ["attention", "ffn", "router", "norm", "routed"],
@@ -664,6 +750,10 @@ export function VindexTerminal() {
 	const [model, setModel] = useState<string | null>("vindex3-demo");
 	const [notice, setNotice] = useState<Line | undefined>(undefined);
 	const [autorun, setAutorun] = useState<string | undefined>(undefined);
+	// What the endpoint SAYS it can do. `null` until it answers, and
+	// null forever against a server that predates the contract — the
+	// page never assumes a capability it was not told about.
+	const [planning, setPlanning] = useState<PlanCapability | null>(null);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -684,6 +774,27 @@ export function VindexTerminal() {
 				// with a green LIVE line vouching for it.
 				if (named === "qwen3.8-27b") return;
 				setTransport("live");
+				// Ask what this server does rather than inferring it from
+				// the fact that it answered. A 404 here is the honest
+				// answer from a server that predates /v1/capabilities.
+				void (async () => {
+					try {
+						const c = await fetch(`${LIVE_ENDPOINT}/v1/capabilities`, {
+							signal: AbortSignal.timeout(15000),
+						});
+						if (!c.ok) return;
+						const caps = (await c.json()) as {
+							schema?: number;
+							sources?: { plan?: { hf?: boolean } };
+						};
+						// Refuse a report shaped by a contract this page does
+						// not know, exactly as the CLI client does.
+						if (caps.schema !== CAPABILITIES_SCHEMA) return;
+						if (caps.sources?.plan?.hf) setPlanning({ hf: true });
+					} catch {
+						/* no capability report; offer nothing extra */
+					}
+				})();
 				setNotice({
 					text: "● LIVE — " + LIVE_ENDPOINT.replace("https://", "") + " connected · profile PUBLIC_EXPLORER · statements now execute on a real container (vindex3-demo: miniature, synthetic weights — the format is real)",
 					tone: "ok",
@@ -713,6 +824,51 @@ export function VindexTerminal() {
 		const dfm = trimmed.match(/^DIFF\s+(?:BF16\s+NVFP4\s+)?(\S+)$/i);
 		if (dfm) return { lines: [], panel: diffPanel(dfm[1], panelModel(model)) };
 		if (/^VERIFY$/i.test(trimmed)) return { lines: [], panel: verifyPanel(panelModel(model)) };
+		const pm = trimmed.match(/^PLAN\s+(\S+)$/i);
+		if (pm) {
+			if (!planning?.hf) {
+				return {
+					refused: true,
+					lines: [
+						{ text: "PLAN: this endpoint does not offer it", tone: "err" },
+						{
+							text: "not a guess — GET /v1/capabilities either did not answer or reports sources.plan.hf = false",
+							tone: "dim",
+						},
+						{ text: "on your machine: vindex plan " + pm[1] + " --json", tone: "dim" },
+					],
+				};
+			}
+			try {
+				const r = await fetch(`${LIVE_ENDPOINT}/v1/plan`, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ sources: [pm[1]] }),
+					// Reading a large checkpoint's headers is not instant.
+					signal: AbortSignal.timeout(90000),
+				});
+				const body = (await r.json().catch(() => null)) as (PlanDocument & { error?: string }) | null;
+				if (!r.ok) {
+					return {
+						refused: true,
+						lines: [
+							{ text: body?.error ?? `the endpoint answered ${r.status}`, tone: "err" },
+							...(r.status === 403
+								? [{ text: "refused by this server's serving profile, not by the format", tone: "dim" as const }]
+								: []),
+						],
+					};
+				}
+				if (body) return { lines: planLines(body) };
+			} catch {
+				/* fall through to the refusal below */
+			}
+			return {
+				refused: true,
+				lines: [{ text: "the endpoint did not answer in time — planning reads a remote checkpoint's headers", tone: "err" }],
+			};
+		}
+
 		// The typed protocol endpoints: structured facts from the REAL
 		// container, rendered as designed panels — RAW is the server's
 		// own JSON. A failed fetch falls through to /v1/query lines.
