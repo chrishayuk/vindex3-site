@@ -3,11 +3,17 @@ name: Deploy vindex3.org
 on:
   push:
     branches: [main]
+    # The archive step commits back the first-capture dates it learns. That
+    # commit touches nothing else and must not start another deploy.
+    paths-ignore: [src/data/archive.json]
   workflow_dispatch:
 
 concurrency:
   group: deploy
   cancel-in-progress: false
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
@@ -50,3 +56,34 @@ jobs:
           except Exception as e:
               print("indexnow skipped:", e)
           PY
+      # PUBLISH -> COMMIT -> ARCHIVE. IndexNow tells search engines the page
+      # changed; this asks an independent party to keep a copy of it, and
+      # records when that party FIRST saw it. Without IA credentials the step
+      # still runs, reads the public Wayback index and records what is already
+      # there, so it is never blocked on a secret.
+      - name: Check archive configuration
+        env:
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+        run: |
+          if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
+            echo "::warning::New captures need IA_ACCESS_KEY and IA_SECRET_KEY repository secrets. This run only resolves existing captures."
+          fi
+      - name: Archive the citable objects
+        timeout-minutes: 15
+        env:
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+        run: npm run archive -- --limit 6
+      # A first capture is evidence, so it is committed rather than cached:
+      # the date belongs in the repository's history next to the chapter it
+      # corroborates. It reaches the site on the next deploy.
+      - name: Record the first captures
+        run: |
+          git diff --quiet src/data/archive.json && { echo "No new captures."; exit 0; }
+          git config user.name "vindex3-site"
+          git config user.email "noreply@vindex3.org"
+          git add src/data/archive.json
+          git commit -m "Record independent archive captures"
+          git pull --rebase origin main
+          git push origin HEAD:main

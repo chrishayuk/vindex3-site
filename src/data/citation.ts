@@ -1,6 +1,7 @@
 import { citationMeta, type CitationRecord } from "@chrishayuk/hause/cite";
 import type { ProvenanceEvent } from "@chrishayuk/hause/components/forms/Provenance";
 import { buildIdentifiers } from "./build";
+import { archiveIdentifiers } from "./archive";
 
 /**
  * THE PUBLICATION RECORD.
@@ -46,6 +47,9 @@ export const SPEC: CitationRecord = {
 	identifiers: [
 		// What produced the page you are reading — present only in a deploy.
 		...buildIdentifiers(),
+		// Who else has a copy, and when they first took it. Absent until
+		// somebody actually does.
+		...archiveIdentifiers(`${SITE}/3.0`),
 		{ label: "graph schema", value: "6" },
 		{
 			label: "specification",
@@ -185,7 +189,7 @@ export function chapterRecord(slug: string): CitationRecord {
 		abstract: c.abstract,
 		independence: INDEPENDENCE,
 		partOf: { title: "VINDEX3 Specification", url: `${SITE}/3.0`, version: VERSION },
-		identifiers: buildIdentifiers(),
+		identifiers: [...buildIdentifiers(), ...archiveIdentifiers(`${SITE}${slug}`)],
 	};
 }
 

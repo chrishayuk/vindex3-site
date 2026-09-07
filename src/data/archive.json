@@ -1,0 +1,66 @@
+{
+	"https://vindex3.org/": {
+		"first": "20260904001251",
+		"digest": "3CA3JPJ3G2LLILZRIWOQ67ZEEH5YSVYZ"
+	},
+	"https://vindex3.org/3.0": {
+		"first": "20260904001043",
+		"digest": "K2IZDA4B4RBVCSVP7ZDFYDJQ5UR4BELX"
+	},
+	"https://vindex3.org/anatomy": {
+		"first": "20260904001043",
+		"digest": "H6DZGQQMAYQ4M7M5B5TN3UIQLDH2VKOT"
+	},
+	"https://vindex3.org/authority": {
+		"first": "20260904001043",
+		"digest": "P5XHCJJLJDEZKP7465GZMMNQMN7772GE"
+	},
+	"https://vindex3.org/bytes": {
+		"first": "20260904001043",
+		"digest": "Y4Y3HO6CYTKJNKJAFQQKUJVJRJUJYDIM"
+	},
+	"https://vindex3.org/cite": {
+		"first": "20260904001043",
+		"digest": "3VFATXFHC5TSZAYPZHP43LFDYIJKIGFG"
+	},
+	"https://vindex3.org/container": {
+		"first": "20260904001043",
+		"digest": "GE5C3FSWPIGG2MJOAMCB2HSFNABYQ6YZ"
+	},
+	"https://vindex3.org/discovery": {
+		"first": "20260904001043",
+		"digest": "U6CXO2H35IN4HIYNLNOAVFK23BTZG7DX"
+	},
+	"https://vindex3.org/execution": {
+		"first": "20260904001043",
+		"digest": "KKDQPAIYDQJAVMMHKY3IMBVKGO7MEMPS"
+	},
+	"https://vindex3.org/graph": {
+		"first": "20260904001043",
+		"digest": "42N5IDY7FUASOG3GRIER2J7H7N3MTLOO"
+	},
+	"https://vindex3.org/ladder": {
+		"first": "20260904001043",
+		"digest": "O5L4B2QSAV3VL6YZHMGJOLFJUXQMIHOA"
+	},
+	"https://vindex3.org/lifecycle": {
+		"first": "20260904001043",
+		"digest": "TXSI6ZBILOTUTVBPJO2FNYZOPI2VUXCO"
+	},
+	"https://vindex3.org/quantization": {
+		"first": "20260904001043",
+		"digest": "242CM5EMM34XXIMOTD3G35JPZWC3BYPM"
+	},
+	"https://vindex3.org/represent": {
+		"first": "20260904001043",
+		"digest": "XGXQPVKDAIABUL2BNJB345EIDTIVRT3C"
+	},
+	"https://vindex3.org/representation": {
+		"first": "20260904001043",
+		"digest": "OQN2MSBHVH3JTSUGGHQUQ4ZSZSMYJOPU"
+	},
+	"https://vindex3.org/why": {
+		"first": "20260904001043",
+		"digest": "VTTUCNVLWBXUE4P3DX5R2UD3JBFYXFOR"
+	}
+}

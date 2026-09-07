@@ -11,7 +11,8 @@
 		"upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
-		"test": "tsx scripts/ask-coverage.ts && tsx scripts/connection-invariants.ts"
+		"test": "tsx scripts/ask-coverage.ts && tsx scripts/connection-invariants.ts && tsx --test scripts/archive-policy.test.ts",
+		"archive": "tsx scripts/archive-wayback.ts"
 	},
 	"dependencies": {
 		"@chrishayuk/hause": "github:chrishayuk/hause",
