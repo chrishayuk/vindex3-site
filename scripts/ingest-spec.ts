@@ -1,10 +1,9 @@
 /**
  * INGEST THE SPECIFICATION — the corpus behind Ask.
  *
- * Reads the four public VINDEX3 documents from the larql checkout,
- * chunks them by heading into passages, and writes the committed
- * corpus (src/data/specCorpus.json). Run at dev time whenever the
- * specs change:
+ * Reads current guides, the candidate contract and dated evidence from
+ * the larql checkout. Exports machine-derived facts and source hashes
+ * alongside the corpus. --check verifies both against that checkout.
  *
  *   npx tsx scripts/ingest-spec.ts [path-to-larql]
  *
@@ -16,12 +15,29 @@
  * retrievable evidence.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
-const LARQL = process.argv[2] ?? process.env.LARQL_DIR ?? "../larql-public-explorer";
+const args = process.argv.slice(2);
+const CHECK = args.includes("--check");
+const LARQL = resolve(args.find((arg) => !arg.startsWith("--")) ?? process.env.LARQL_DIR ?? "../../larql");
 
 const SOURCES = [
+	{ file: "docs/vindex3/status.md", doc: "vindex3/status.md", source: "current implementation scope" },
+	{ file: "docs/vindex3/what-is-vindex3.md", doc: "vindex3/what-is-vindex3.md", source: "current overview" },
+	{ file: "docs/vindex3/execution.md", doc: "vindex3/execution.md", source: "current execution" },
+	{ file: "docs/vindex3/representation.md", doc: "vindex3/representation.md", source: "current representation tooling" },
+	{ file: "docs/measure-plan-2.md", doc: "measure-plan-2.md", source: "plan measurement and AUTO-REP implementation record" },
+	{ file: "docs/measure-plan-3.md", doc: "measure-plan-3.md", source: "the frozen AUTO-REP campaign protocol (not a result)" },
+	{ file: "crates/larql-kv/README.md", doc: "larql-kv/README.md", source: "current continuation providers" },
+	{ file: "docs/vindex3/observation-and-intervention.md", doc: "vindex3/observation-and-intervention.md", source: "current observation and intervention" },
+	{ file: "docs/vindex3/plugins.md", doc: "vindex3/plugins.md", source: "current plugin contract" },
+	{ file: "docs/vindex3/runtime-followups.md", doc: "vindex3/runtime-followups.md", source: "current runtime boundaries" },
+	{ file: "docs/v3-obs-1-carrier-observation.md", doc: "v3-obs-1-carrier-observation.md", source: "the dated carrier-observation evidence record" },
+	{ file: "docs/adr/0027-vindex3-single-container-shape.md", doc: "adr/0027-vindex3-single-container-shape.md", source: "the single-container decision (execution pending)" },
 	{ file: "docs/vindex3-format.md", doc: "vindex3-format.md", source: "the living spec" },
 	{ file: "crates/larql-vindex/docs/vindex3-format-spec.md", doc: "vindex3-format-spec.md", source: "the ABI" },
 	{ file: "docs/vindex3-experiments.md", doc: "vindex3-experiments.md", source: "the pre-registered programme" },
@@ -79,17 +95,36 @@ function chunk(markdown: string, source: string, doc: string): Passage[] {
 }
 
 const all: Passage[] = [];
+const hashes: Record<string, string> = {};
 for (const src of SOURCES) {
 	const text = readFileSync(join(LARQL, src.file), "utf8");
+	hashes[src.file] = createHash("sha256").update(text).digest("hex");
 	const passages = chunk(text, src.source, src.doc);
 	console.log(`${src.doc}: ${passages.length} passages`);
 	all.push(...passages);
 }
 
+// Use the upstream exporter, not a second hand-maintained schema/version list.
+const temporary = mkdtempSync(join(tmpdir(), "vindex3-facts-"));
+let facts;
+try {
+	const path = join(temporary, "facts.json");
+	execFileSync("python3", [join(LARQL, "scripts/current_facts.py"), "--export", path]);
+	facts = JSON.parse(readFileSync(path, "utf8"));
+} finally {
+	rmSync(temporary, { recursive: true });
+}
 const out = {
-	generated: new Date().toISOString().slice(0, 10),
+	generated: execFileSync("git", ["-C", LARQL, "show", "-s", "--format=%cs", "HEAD"], { encoding: "utf8" }).trim(),
+	provenance: { git_commit: facts.provenance.git_commit, dirty: facts.provenance.dirty, source_sha256: hashes },
+	sources: Object.fromEntries(SOURCES.map((s) => [s.doc, s.file])),
 	documents: SOURCES.map((s) => s.doc),
 	passages: all,
 };
-writeFileSync("src/data/specCorpus.json", JSON.stringify(out, null, 1));
-console.log(`corpus: ${all.length} passages → src/data/specCorpus.json`);
+for (const [path, data] of [["src/data/specCorpus.json", out], ["src/data/larqlFacts.json", facts]] as const) {
+	const serialized = JSON.stringify(data, null, 1) + "\n";
+	if (CHECK) {
+		if (readFileSync(path, "utf8") !== serialized) throw new Error(`${path} is stale; run npm run sync:larql -- ${LARQL}`);
+	} else writeFileSync(path, serialized);
+}
+console.log(`${CHECK ? "Checked" : "Updated"} corpus and facts at ${facts.provenance.git_commit}${facts.provenance.dirty ? " (local work — dirty checkout)" : ""}`);

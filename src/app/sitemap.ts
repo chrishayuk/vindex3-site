@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 	const pages = [
 		"",
 		"/3.0",
+		"/status",
 		"/why",
 		"/anatomy",
 		"/quantization",

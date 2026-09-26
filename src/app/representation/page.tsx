@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -59,6 +60,8 @@ export default function RepresentationPage() {
 				title="SELECTION, NOT CONVERSION"
 				dek="A region set may carry multiple physically present variants. A profile selects a present variant. That is the only legal representation model — a profile saying a format cannot conjure bytes into it."
 			/>
+
+			<CurrentStatus />
 
 			<Answer
 				id="what-is-a-representation"

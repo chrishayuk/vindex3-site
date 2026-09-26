@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -45,6 +46,8 @@ export default function GetStartedPage() {
 				title="MODEL IN, MODEL RUNS"
 				dek="vindex brings a model in from Hugging Face — headers first, then bytes over ranges, the checkpoint never landing on your disk. vindex inspect shows what it understood. larql run makes it speak. Every line below is a recorded run of the released 0.8.0 against Qwen3-0.6B."
 			/>
+
+			<CurrentStatus detail="The commands and outputs below were recorded on 2 September with vindex 0.8.0 and planner schema 4. The reviewed checkout now uses planner schema 6, semantics 23; these historical outputs are preserved as recorded." />
 
 			<Statement text="VINDEX brings a model into the system. LARQL makes it speak." />
 

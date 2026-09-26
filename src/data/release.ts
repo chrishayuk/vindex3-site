@@ -1,3 +1,5 @@
+import facts from "./larqlFacts.json";
+
 /**
  * WHAT THE PRODUCT CURRENTLY IS.
  *
@@ -11,14 +13,9 @@
  * Distinct from `build.ts`, which records what THIS SITE was built
  * from. This records what VINDEX3 and the vindex CLI are.
  *
- * Every value here is read from the implementation, not remembered:
- *
- *   cli.version    crates/vindex-cli/Cargo.toml
- *   graphSchema    GRAPH_SCHEMA   (larql-vindex .../vindex3/graph/mod.rs)
- *   planSchema     PLAN_SCHEMA    (larql-vindex .../vindex3/plan/report.rs)
- *   larql.commit   origin/main
- *
- * When you bump one, bump it here and nowhere else.
+ * The published CLI record stays pinned to its release. Schema and source
+ * identity come from LARQL's facts exporter; package versions are not
+ * release-availability evidence. Review the publication record separately.
  */
 
 const LARQL_REPO = "https://github.com/chrishayuk/larql";
@@ -36,14 +33,14 @@ export const RELEASE = {
 		status: "Candidate",
 		version: "3.0",
 		/** `GRAPH_SCHEMA` — the container's system graph. */
-		graphSchema: 6,
+		graphSchema: facts.constants.GRAPH_SCHEMA,
 		/** `PLAN_SCHEMA` — an architecture-support verdict. */
-		planSchema: 4,
+		planSchema: facts.constants.PLAN_SCHEMA,
 	},
-	/** The mainline this release was cut from. */
+	/** Source checkout reviewed by the site; independent of the published CLI. */
 	larql: {
-		commit: "8dae1223",
-		href: `${LARQL_REPO}/commits/main`,
+		commit: facts.provenance.git_commit,
+		href: `${LARQL_REPO}/commit/${facts.provenance.git_commit}`,
 	},
 } as const;
 
@@ -59,4 +56,16 @@ export function releaseLink(): { href: string; label: string; external: true } {
 		label: `The release · vindex ${RELEASE.cli.version}`,
 		external: true,
 	};
+}
+
+/** Repository capabilities are not a claim about published binary availability. */
+export const CURRENT = {
+ reviewed: "2026-09-27",
+ facts,
+ commit: facts.provenance.git_commit,
+ label: facts.provenance.dirty ? "LOCAL WORK · DIRTY CHECKOUT" : "SOURCE CHECKOUT",
+} as const;
+
+export function sourceLink(path: string): string {
+ return `${LARQL_REPO}/blob/${CURRENT.commit}/${path}`;
 }

@@ -27,7 +27,7 @@ const ROOT: Entry[] = [
 	{ name: "segments/", note: "one file per logical object", size: "15.4 GiB", view: "segments" },
 	{ name: "tokenizer.json · capability snapshot", note: "what keeps it servable", view: "receipts" },
 	{ name: "profiles · variants", note: "inline in the index", view: "profiles" },
-	{ name: "→ the transitional bank shape", note: "the other layout, named and ranked", view: "bank" },
+	{ name: "→ the legacy bank shape", note: "legacy import layout · ADR-0027", view: "bank" },
 ];
 
 const PROFILES: [string, string][] = [
@@ -271,7 +271,7 @@ chat_template            when the source shipped one`)}
 				<>
 					<div className="flex flex-col gap-2 mb-2">{BANK_ROOT.map(row)}</div>
 					{note(
-						"The transitional bank shape — the LYRW v2 import layout for routed expert banks, written by the expert-bank importer. Same root rule, no graph: a moe_manifest.json gives the banks meaning. Readers must accept it; new writers should not extend it; the convergence rule fixes its future — the graph is the format, and a bank layout is an encoding a representation may use."
+						"The legacy bank shape — index.json, moe_manifest.json and LYRW v2 files, without a system graph. ADR-0027 makes this an import-only legacy input, not a normative VINDEX3 3.0 model. Readers must recognize it and either open it or refuse it by name with a migration path. The graph container uses tensor-table segments; adopting LYRW as a graph segment codec was rejected."
 					)}
 				</>
 			);

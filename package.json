@@ -11,11 +11,15 @@
 		"upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
-		"test": "tsx scripts/ask-coverage.ts && tsx scripts/connection-invariants.ts && tsx --test scripts/archive-policy.test.ts",
-		"archive": "tsx scripts/archive-wayback.ts"
+		"test": "npm run check:hause && tsx scripts/ask-coverage.ts && tsx scripts/connection-invariants.ts && tsx --test scripts/archive-policy.test.ts",
+		"archive": "tsx scripts/archive-wayback.ts",
+		"check:hause": "node node_modules/@chrishayuk/hause/scripts/consumer-sync.mjs",
+		"sync:larql": "tsx scripts/ingest-spec.ts",
+		"check:larql": "tsx scripts/ingest-spec.ts --check",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@chrishayuk/hause": "github:chrishayuk/hause",
+		"@chrishayuk/hause": "github:chrishayuk/hause#60efcd6555bb688676944f891da1076f888ccda0",
 		"@opennextjs/cloudflare": "^1.20.3",
 		"next": "16.3.3",
 		"react": "^19.1.7",

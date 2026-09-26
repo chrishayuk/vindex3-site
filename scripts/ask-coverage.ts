@@ -23,6 +23,9 @@ type Case = {
 };
 
 const cases: Case[] = [
+	{ q: "How do I observe a model?", expect: "canonical", mustMention: "observation" },
+	{ q: "How do plugins work?", expect: "canonical", mustMention: "plugins" },
+	{ q: "Is the bank shape legacy?", expect: "canonical", mustMention: "legacy" },
 	// ── L1: every canonical entry answers its own five-word form ──
 	...CANON.map((c) => ({ q: c.summary, expect: "canonical" as const, mustMention: c.summary })),
 
@@ -158,6 +161,9 @@ if (empty.entities.length !== 0) {
 
 // ── The corpus: the spec answers in its own words when asked in them ──
 const corpusChecks: { q: string; docHint: string }[] = [
+	{ q: "observe --intervene head counterfactual CPU softmax", docHint: "observation-and-intervention" },
+	{ q: "plugin compiler ABI stamp", docHint: "plugins" },
+	{ q: "deployment image sealed token bank", docHint: "representation" },
 	{ q: "what is a region set?", docHint: "format-spec" },
 	{ q: "what is the deletion invariant?", docHint: "format" },
 	{ q: "what is the held-out architecture test?", docHint: "experiments" },

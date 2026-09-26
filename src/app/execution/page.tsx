@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -57,6 +58,8 @@ export default function ExecutionPage() {
 				title="FROM DESCRIPTION TO COMPUTATION"
 				dek="A component says what part of the system it is. Its execution surface says what the generic operations need to run it — every value fully resolved when the container was built."
 			/>
+
+			<CurrentStatus />
 
 			<Answer
 				id="how-does-vindex3-execute"

@@ -99,7 +99,7 @@ export default function CitePage() {
 										{rec.abstract}
 									</span>
 									<span className="voice-evidence text-[10px] tracking-[0.08em] uppercase opacity-40 whitespace-nowrap">
-										{displayDate(rec.published)}
+										{rec.published ? displayDate(rec.published) : "DATE NOT RECORDED"}
 										{rec.revised ? ` · REV ${displayDate(rec.revised)}` : ""}
 									</span>
 								</Link>

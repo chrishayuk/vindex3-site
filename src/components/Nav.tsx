@@ -18,6 +18,7 @@ const LINKS: NavLink[] = [
 	{ href: "/representation", label: "Representation", panelOnly: true, group: "THE SPEC" },
 	{ href: "/authority", label: "Authority", panelOnly: true, group: "THE SPEC" },
 	{ href: "/lifecycle", label: "Lifecycle", panelOnly: true, group: "THE SPEC" },
+	{ href: "/status", label: "Current", panelOnly: true, group: "THE RECORD" },
 	{ href: "/models/qwen3.8-27b", label: "Qwen3.8-27B", panelOnly: true, group: "THE RECORD" },
 	{ href: "/ladder", label: "Record", hide: "sm", group: "THE RECORD" },
 	{ href: "/cite", label: "How to cite", panelOnly: true, group: "THE RECORD" },

@@ -1,8 +1,25 @@
 @import "tailwindcss";
 @import "@chrishayuk/hause/tokens.css";
+@import "@chrishayuk/hause/exhibition.css";
 
 /* Tailwind v4 skips node_modules when scanning for class names, so the
    utilities used only inside HAUSE forms are never generated without
    this. Keep it pointing at the installed package, not ../hause — the
    site must build from what it actually depends on. */
 @source "../../node_modules/@chrishayuk/hause";
+
+/* Source-checkout facts and capability boundaries belong to this publication. */
+.current-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; margin-block: 2rem; }
+.current-facts dt { font-size: .8rem; opacity: .7; }
+.current-facts dd { margin: .4rem 0 0; font-family: var(--font-geist-mono), monospace; font-size: 1.5rem; }
+.current-status a { text-underline-offset: .25em; text-decoration: underline; }
+.capability-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; }
+.capability-list article { border-top: 1px solid currentColor; padding-top: 1.5rem; }
+.capability-list h3 { font-family: var(--font-fraunces), serif; font-size: 2rem; margin: .5rem 0 1rem; }
+.capability-list p { margin-block: 1rem; }
+.capability-boundary { font-size: .9rem; }
+.command-inventory { font-family: var(--font-geist-mono), monospace; line-height: 2; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+ .current-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .capability-list { grid-template-columns: 1fr; }
+}

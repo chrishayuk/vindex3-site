@@ -35,7 +35,7 @@ export const SPEC: CitationRecord = {
 	title: "VINDEX3 Specification",
 	authors: AUTHORS,
 	published: "2026-08-30",
-	revised: "2026-08-31",
+	revised: "2026-09-27",
 	version: VERSION,
 	url: `${SITE}/3.0`,
 	publisher: PUBLISHER,
@@ -66,6 +66,7 @@ export const SPEC: CitationRecord = {
 
 /** Dated from the Record — when the work happened, not when a page was touched. */
 export const SPEC_HISTORY: ProvenanceEvent[] = [
+	{ date: "2026-09-26", text: "ADR-0027 accepts the graph-only normative direction and legacy LYRW bank recognition. Overall execution remains pending." },
 	{ date: "2026-08-31", text: "The hybrid rehearsal closes end-to-end: a mixed Mamba2 / conv-QKV-attention model executes through the generic runtime with no family lookup, and no schema change." },
 	{ date: "2026-08-30", text: "3.0-candidate published — the promotion from draft. Graph schema 6 lands the same day with the four-architecture ontology drill." },
 	{ date: "2026-08-22", text: "The semantic catch-up closes: full parity with the predecessor generation, gated cross-platform." },
@@ -110,18 +111,19 @@ const CHAPTERS: Record<string, Chapter> = {
 	"/discovery": {
 		title: "Discovering the Map",
 		published: "2026-08-30",
-		revised: "2026-08-31",
+		revised: "2026-09-27",
 		abstract: "Four pre-registered attempts to discover automatically which tensors deserve higher precision — and what each of them disproved.",
 	},
 	"/represent": {
 		title: "REPRESENT",
 		published: "2026-08-31",
+		revised: "2026-09-27",
 		abstract: "Behaviour-contract search: declare the behaviour to preserve rather than choosing a quantization, and let the optimizer find the representation that holds it.",
 	},
 	"/container": {
 		title: "The Container",
 		published: "2026-08-29",
-		revised: "2026-08-30",
+		revised: "2026-09-27",
 		abstract: "Every layer of a container, explained — one directory, one root, the canonical graph shape and the five durable weight classes.",
 	},
 	"/graph": {
@@ -133,19 +135,19 @@ const CHAPTERS: Record<string, Chapter> = {
 	"/bytes": {
 		title: "The Bytes",
 		published: "2026-08-29",
-		revised: "2026-08-30",
+		revised: "2026-09-27",
 		abstract: "LYRW v2, the layer-weight binary format, explained to the byte — header, banks, segments, region schemas, entry table.",
 	},
 	"/execution": {
 		title: "Execution",
 		published: "2026-08-29",
-		revised: "2026-08-31",
+		revised: "2026-09-27",
 		abstract: "The execution surface, operand closure and the compiler boundary — how an encoded description becomes computation with zero architecture branches.",
 	},
 	"/representation": {
 		title: "Representation",
 		published: "2026-08-29",
-		revised: "2026-08-30",
+		revised: "2026-09-27",
 		abstract: "Region-set variants, the eligibility policy and the promotion ladder — selection, not conversion.",
 	},
 	"/authority": {
@@ -162,7 +164,7 @@ const CHAPTERS: Record<string, Chapter> = {
 	"/ladder": {
 		title: "The Record",
 		published: "2026-08-29",
-		revised: "2026-08-31",
+		revised: "2026-09-27",
 		abstract: "The status instrument: the guarantees ladder, the gate ladders, the measured evidence, the history and the open questions, kept honestly in one place.",
 	},
 };

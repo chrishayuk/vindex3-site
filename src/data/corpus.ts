@@ -78,3 +78,9 @@ export function strongHit(question: string, hits: { score: number }[]): boolean 
 }
 
 export const CORPUS_META = { generated: CORPUS.generated, documents: CORPUS.documents, passages: CORPUS.passages.length };
+
+/** A quoted clause links to the exact source revision that was ingested. */
+export function corpusSourceLink(doc: string): string | undefined {
+ const path = (corpusJson.sources as Record<string, string>)[doc];
+ return path ? `https://github.com/chrishayuk/larql/blob/${corpusJson.provenance.git_commit}/${path}` : undefined;
+}

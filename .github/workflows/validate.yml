@@ -1,0 +1,43 @@
+name: Validate source snapshots and site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore: [src/data/archive.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read source pins
+        id: pins
+        run: |
+          node -e 'const fs = require("node:fs"); const h = require("./hause.lock.json"); const l = require("./src/data/larqlFacts.json"); if (l.provenance.dirty) throw Error("Publish a clean LARQL snapshot"); fs.appendFileSync(process.env.GITHUB_OUTPUT, `hause=${h.revision}\nlarql=${l.provenance.git_commit}\n`);'
+      - uses: actions/checkout@v4
+        with:
+          repository: chrishayuk/hause
+          ref: ${{ steps.pins.outputs.hause }}
+          path: .upstream/hause
+      - uses: actions/checkout@v4
+        with:
+          repository: chrishayuk/larql
+          ref: ${{ steps.pins.outputs.larql }}
+          path: .upstream/larql
+      - run: npm ci
+      - run: npm run check:hause -- --source .upstream/hause
+      - run: npm run check:larql -- .upstream/larql
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build

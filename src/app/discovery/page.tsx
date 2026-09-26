@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -55,6 +56,8 @@ export default function DiscoveryPage() {
 				dek="The quantization chapter ends at the map — representation decisions over components, held to evidence. This is the harder question underneath it: can anything cheap discover those decisions automatically? Four attempts, each measured against ground truth. Four instructive failures."
 			/>
 
+			<CurrentStatus />
+
 			<Answer
 				id="why-no-auto-discovery"
 				question="Why can't we automatically build the precision map yet?"
@@ -83,7 +86,7 @@ export default function DiscoveryPage() {
 
 			<Observation
 				label="THE FRONTIER — OPEN, AND MARKED AS SUCH"
-				text="One route remains that survives the analysis. Against a KL metric, first-order sensitivity is identically zero — a divergence is stationary at its own reference — so the leading term is second-order curvature. That sounds expensive, but the curvature matrix factors exactly: draw a random vector, shape it by the model's own output probabilities, push it backwards through the network once, and sensitivity arrives at every layer boundary simultaneously. The catch: it needs reverse-mode execution the reference implementation does not have. That is a research programme, not a feature — and it is filed on the Record as exactly that: candidate, not built."
+				text="One route remains that survives the analysis. Against a KL metric, first-order sensitivity is identically zero — a divergence is stationary at its own reference — so the leading term is second-order curvature. That sounds expensive, but the curvature matrix factors exactly: draw a random vector, shape it by the model's own output probabilities, push it backwards through the network once, and sensitivity arrives at every layer boundary simultaneously. At the time of this recorded screen, it required reverse-mode execution the reference implementation did not have. That is a research programme, not a feature — and it is filed on the Record as exactly that: candidate, not built."
 			/>
 
 			<Statement text="Measurements can justify a precision map. VINDEX3 can express, compile and execute that map. Cheap surrogates cannot write it — what writes it is a search that pays for real composed measurements." />

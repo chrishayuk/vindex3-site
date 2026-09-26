@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -56,10 +57,12 @@ export default function BytesPage() {
 				])}
 			/>
 			<Hero
-				kicker="THE BYTES · CANDIDATE SPEC §6–7 · LYRW v2"
+				kicker="THE BYTES · LEGACY IMPORT / INTERCHANGE · LYRW v2"
 				title="DOWN TO THE BYTE"
-				dek="LYRW v2 is the expert-bank codec of VINDEX3 — a binary format simple enough to read with a ruler. This page is that ruler."
+				dek="LYRW v2 is the legacy expert-bank import/interchange layout — a binary format simple enough to read with a ruler. This page preserves its anatomy; the normative graph container uses tensor-table segments."
 			/>
+
+			<CurrentStatus detail="This exhibit describes the legacy LYRW v2 bank layout. ADR-0027 places it outside the normative VINDEX3 3.0 graph-container contract; graph representations currently use tensor-table segments." />
 
 			<Answer
 				id="what-is-lyrw"
@@ -84,7 +87,7 @@ export default function BytesPage() {
 						label: "LEARN",
 						hint: "what LYRW is",
 						content: (
-							<Observation text="LYRW is the layer-weight bank format. One binary file holds one layer's weights — or one segment of a very large layer — organised as banks of entries. A file describes itself completely: a reader needs nothing but the bytes in front of it to know what regions exist, in what encoding, at what offsets. Five structures, in the order they appear in the file: header, bank descriptors, segment descriptors, region schemas, entry table. Its place in the container model is stated by the Candidate: this is one segment codec — today the layout of the transitional bank shape's expert banks, under the convergence rule an encoding a graph container's representation may use. A graph container's plain tensor-table segments are the other codec, on the Container page." />
+							<Observation text="LYRW is the legacy layer-weight bank format. One binary file holds one layer or one segment, organized into five structures: header, bank descriptors, segment descriptors, region schemas and entry table. ADR-0027 keeps that file layout outside the normative 3.0 contract. The graph representation uses tensor-table segments and can bind packed codec streams without opening any .lyrw file. The Container page explains that graph shape." />
 						),
 					},
 					{

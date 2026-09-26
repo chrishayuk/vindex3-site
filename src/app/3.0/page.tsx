@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { breadcrumbLd, citationLd } from "@chrishayuk/hause/seo";
@@ -44,6 +45,8 @@ export default function VersionPage() {
 				title="VINDEX3 3.0"
 				dek="One page, one answer: what 3.0 claims, what already holds each claim up, and exactly what remains before Candidate becomes Final. When the named gates pass, this page flips — same URL, same six claims."
 			/>
+
+			<CurrentStatus />
 
 			<Answer
 				id="what-is-vindex3-3-0"
@@ -100,17 +103,17 @@ export default function VersionPage() {
 						detail: "Verification is real — both ends re-hashed, drift and corruption failing differently — but every guarantee is held by the reference implementation's own gates. Promoting them to specification guarantees an independent reader can run is exactly the vindex-core carve-out on the road to Final.",
 					},
 				]}
-				caption="Statuses move with the Record, not with this page's copy. Two claims say BUILDING because they are building — that is what makes the other four worth believing."
+				caption="Statuses move with the Record, not with this page's copy. The VERIFIABLE claim remains BUILDING because independent conformance is still open."
 			/>
 
 			<Observation
 				label="WHAT REMAINS BEFORE FINAL"
-				text="The ontology lift is closed on both halves — schema 6 on 2026-08-30, the typed continuation-state schema on 2026-08-31, the second additive within the first. Six named gates remain, none of them drift: the shape convergence executed; the required/optional RFC-2119 freeze; the independent reader (vindex-core) with a conformance harness; the held-out architecture test (E8), run after the freeze under a rule of zero format changes; the default flip (M4); and the remaining pre-registered bank-ABI rows. What remains is standards, conformance and release closure rather than architecture. Each gate's current status lives on the Record."
+				text="The ontology and typed-state lifts remain closed within graph schema 6. ADR-0027 (2026-09-26) has now chosen the shape-convergence direction: a normative graph container and legacy-only LYRW bank input. Its full execution is pending. The required/optional freeze, independent reader and conformance harness, held-out architecture test, default flip and remaining shape-independent evidence rows remain work toward Final. Bank-only ABI fixtures no longer automatically count as 3.0 conformance evidence."
 			/>
 
 			<Observation
-				label="WHAT IS NOT A 3.0 GATE — KIMI REAL-SCALE EXECUTION"
-				text="Execution semantics close for Kimi-Linear-48B: every operand accounted, every continuation region declared, the plan built from the container alone. CPU reference execution of that model is nonetheless constrained by residency, not by meaning — the backend expands the 94 GB BF16 routed-expert bank to F32, which would need roughly 188 GB resident on a 137 GB machine. Device and streaming execution are the appropriate path. This is an execution-placement axis, and it is deliberately not counted against STATE-COMPLETE: model meaning, physical representation and residency are three separate things, and this is the third one refusing."
+				label="KIMI REAL-SCALE EXECUTION — A SCOPED CPU WITNESS"
+				text="The August reference-backend residency limit is no longer a blanket statement about Kimi execution. On 2026-09-20, Kimi-Linear-48B-A3B-Instruct ran the carrier-observation witness on its re-encoded .s7 container using production CPU with a BF16 cap: 432 writes across eight tokens, covering 20 KDA and seven MLA layers. The reference-backend arm and the default Q8-policy arm were not run. This is scoped execution evidence, not universal backend parity."
 			/>
 
 			<Connection

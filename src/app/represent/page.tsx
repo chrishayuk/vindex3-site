@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -58,10 +59,12 @@ export default function RepresentPage() {
 				dek="Quantization asks you to pick a format and hope. REPRESENT inverts it: freeze a behavioural contract, let a composition-aware search discover the cheapest physical topology that provably satisfies it — and verify the composed model, not tensor by tensor."
 			/>
 
+			<CurrentStatus />
+
 			<Answer
 				id="what-is-represent"
 				question="What is REPRESENT?"
-				answer="REPRESENT is VINDEX3's optimizer: it searches over candidate physical representations (BF16, Q8_0, Q6_K, Q4-class…) for each region of a model, subject to a frozen behavioural contract, and returns the cheapest topology whose COMPOSED behaviour passes at authority scale. Quantization is one of the mechanisms it uses; the decision-making — which representation, where, in which combination — is the point."
+				answer="REPRESENT is VINDEX3's representation programme: compile physical encodings, select them under policy, measure their behavior and bind search decisions to evidence. The current CLI supports NVFP4, K-quants, plugin encoders and derived deployment images. Search and actuation have their own contracts; compiling a smaller pack does not grant behavioral approval. The Kimi topology below is a dated result under a specific contract."
 			/>
 
 			<Answer

@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import Link from "next/link";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
 import { Statement } from "@chrishayuk/hause/components/forms/Statement";
@@ -44,6 +45,8 @@ export default function Home() {
 				title="THE MODEL IS THE DATABASE"
 				dek="A self-describing, executable, queryable model container: the same copy can be run, questioned, checked — and changed, with proof. Nothing re-exported for each use, nothing thrown away."
 			/>
+
+			<CurrentStatus />
 
 			<section className="hause-grid py-8">
 				<div className="col-span-12 md:col-start-2 md:col-span-9 flex flex-wrap gap-x-10 gap-y-3">

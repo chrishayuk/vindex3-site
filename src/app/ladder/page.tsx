@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -57,10 +58,12 @@ export default function LadderPage() {
 				dek="Where this site keeps its honesty: what a VINDEX3 implementation guarantees, the gate ladders behind those guarantees, the measured evidence, the history, and the questions still open. Every claim on every other page answers to something here."
 			/>
 
+			<CurrentStatus />
+
 			<Answer
 				id="is-vindex3-production-ready"
 				question="Is VINDEX3 production ready?"
-				answer="VINDEX3 is a 3.0 Candidate Specification (promoted 2026-08-30, graph schema 6). The format works today: production models encode, verify and execute byte-identically to their sources, containers serve real inference at recorded speeds, and every guarantee below is held by implementation gates. The ontology lift is closed on both halves — schema 6 on 2026-08-30, the typed continuation-state schema on 2026-08-31. It is not yet Final: the named gates that remain — the shape convergence, the required/optional freeze, an independent reader, the held-out architecture test, the default flip, and the last bank-ABI rows — are listed on this page with their statuses, and they are standards and release closure rather than architecture."
+				answer="VINDEX3 remains a 3.0 Candidate Specification, with graph schema 6. The reviewed checkout adds observation, intervention, plugins, sealed-bank measurement and scoped distributed execution. ADR-0027 has chosen the normative graph shape and legacy bank recognition; overall convergence execution is still pending. The required/optional freeze, independent reader, held-out architecture test, default flip and remaining graph-shape evidence are still open. The measurements below retain their original model, backend and date."
 				cite="derived from the gate ladders below — not asserted"
 			/>
 
@@ -436,10 +439,10 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 					},
 					{
 						id: "SCALE",
-						question: "Does the real model execute end-to-end on this machine?",
-						gate: "separate axis: execution placement, not meaning",
-						status: "OPEN",
-						detail: "Execution semantics close; residency does not. The CPU backend expands the 94 GB BF16 routed-expert bank to F32, which would need roughly 188 GB resident on a 137 GB machine, so the reference path refuses to fit rather than running wrong. Device and streaming execution are the appropriate path, and this row is deliberately kept separate from the four above: a backend's residency policy is not an ontology gap.",
+						question: "Has the real model executed on production CPU?",
+						gate: "scoped carrier-observation witness · 2026-09-20",
+						status: "PASSED",
+						detail: "The August reference-backend residency limit remains historical context. Kimi-Linear-48B .s7 later executed the observation witness on production CPU with a BF16 cap (2026-09-20): 432 carrier writes over eight tokens, 20 KDA and seven MLA layers, P1–P3 and batch/decode witnessed. The reference and default Q8-policy arms were not run; this row claims only that scoped production witness.",
 					},
 				]}
 				caption="The lift the ontology drill named a year of design ahead of — closed inside the schema it was predicted to fit in. The strongest line is the second: the payload hashes did not move."
@@ -522,7 +525,7 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 						question: "Second-order KL curvature via a reverse-mode sketch.",
 						gate: "reverse-mode execution — a research programme, not a feature",
 						status: "OPEN",
-						detail: "First-order sensitivity against KL is identically zero, so the leading term is curvature — and the curvature matrix factors exactly, giving every layer's sensitivity in one backward pass. Candidate, not built: the reference implementation has no reverse mode.",
+						detail: "First-order sensitivity against KL is identically zero, so the leading term is curvature — and the curvature matrix factors exactly, giving every layer's sensitivity in one backward pass. At the time of this recorded screen it remained a candidate: the required reverse-mode implementation was absent.",
 					},
 				]}
 				caption="Four screens, four recorded deaths, one candidate — the full argument is the Discovering the Map exhibit."
@@ -537,7 +540,7 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 			<Question
 				status="OPEN"
 				text="Is the ABI frozen?"
-				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: executing the shape-convergence rule, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, and the last pre-registered bank-ABI rows. The ontology lift is no longer among them: the four-architecture drill ran on 30 August, every schema gap fell inside the two lifts, graph schema 6 shipped the same day with a live pure-SSM witness, and the state-schema half — declared KDA precision, MLA latent-cache geometry, the per-operator norm epsilon — landed on 31 August, additive within that same span. Until the remaining gates pass, candidate it stays."
+				detail="No — and it says so itself. Candidate means the model is settled, not that the bytes are frozen. The format already works: production models encode, verify, and execute byte-identically to their sources; containers serve real inference; representations compile beside their originals and a selection really does change which bytes load. What remains is named in the candidate itself: completing the graph-only convergence decision in ADR-0027, the required/optional freeze, an independent reader that no longer links the writer's own tree, the held-out architecture test, the default flip, and the remaining shape-independent evidence rows re-homed on the graph container under ADR-0027. The ontology lift is no longer among them: the four-architecture drill ran on 30 August, every schema gap fell inside the two lifts, graph schema 6 shipped the same day with a live pure-SSM witness, and the state-schema half — declared KDA precision, MLA latent-cache geometry, the per-operator norm epsilon — landed on 31 August, additive within that same span. Until the remaining gates pass, candidate it stays."
 			/>
 
 			<Observation
@@ -552,7 +555,7 @@ HYBRID 2.7B   mamba2attn-2.7b    430/430   0 schema changes`}
 
 			<Observation
 				label="SCOPE"
-				text="VINDEX3 is specified by companion documents, and this site draws on them all. The Candidate Specification owns the container model and the contract stack — one canonical layering, in which the graph shape is normative and the earlier bank-import shape is named, ranked, and given a convergence rule. The living spec tracks what is implemented and gated; the runtime document owns state and serving; the generation policy owns the migration. Where an exhibit shows the bank layout, it is showing a named transitional shape, not a rival definition."
+				text="The Candidate Specification owns the format contract; current implementation guides describe the checkout, and experimental records preserve dated evidence. ADR-0027 now chooses the graph-only normative direction and keeps the LYRW bank layout as legacy import material. Its overall execution and the corresponding specification updates remain pending. The bank anatomy on this site is a legacy-layout exhibit, not a second normative 3.0 container."
 			/>
 
 			<Connection

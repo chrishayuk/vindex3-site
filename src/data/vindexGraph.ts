@@ -22,7 +22,9 @@
  * the open ones.
  */
 
-export const SNAPSHOT = { id: "3.0-candidate", date: "2026-08-30" };
+import { CURRENT } from "./release";
+
+export const SNAPSHOT = { id: "3.0-candidate", date: CURRENT.reviewed };
 
 export type NodeKind = "concept" | "claim" | "model" | "evidence" | "chapter";
 
@@ -36,6 +38,9 @@ export type GraphNode = {
 export type GraphEdge = { from: string; rel: string; to: string };
 
 export const NODES: GraphNode[] = [
+	{ id: "current", kind: "chapter", label: "current capabilities and source provenance", href: "/status" },
+	{ id: "observe", kind: "concept", label: "carrier observation and scoped intervention", href: "/status#capabilities" },
+	{ id: "plugins", kind: "concept", label: "explicit Unix plugins", href: "/status#capabilities" },
 	{ id: "vindex3", kind: "concept", label: "VINDEX3", href: "/" },
 	{ id: "container", kind: "concept", label: "the container", href: "/container" },
 	{ id: "index-json", kind: "concept", label: "index.json — sole root authority", href: "/container" },
@@ -93,6 +98,9 @@ export const NODES: GraphNode[] = [
 ];
 
 export const EDGES: GraphEdge[] = [
+	{ from: "vindex3", rel: "implementation_recorded_in", to: "current" },
+	{ from: "execution-surface", rel: "observed_by", to: "observe" },
+	{ from: "representation", rel: "extended_by", to: "plugins" },
 	{ from: "vindex3", rel: "preserves", to: "component-identity" },
 	{ from: "vindex3", rel: "supports", to: "representation" },
 	{ from: "vindex3", rel: "answers_to", to: "record" },
@@ -100,7 +108,7 @@ export const EDGES: GraphEdge[] = [
 	{ from: "container", rel: "ruled_by", to: "index-json" },
 	{ from: "container", rel: "organised_as", to: "five-classes" },
 	{ from: "five-classes", rel: "justified_by", to: "split-rule" },
-	{ from: "container", rel: "stores_layers_as", to: "lyrw" },
+	{ from: "container", rel: "legacy_layout_documented_as", to: "lyrw" },
 	{ from: "lyrw", rel: "scales_by", to: "segments" },
 	{ from: "component-identity", rel: "recorded_in", to: "system-graph" },
 	{ from: "system-graph", rel: "guards", to: "claim-refusal" },
@@ -136,7 +144,7 @@ export const EDGES: GraphEdge[] = [
 	{ from: "ev-parity", rel: "witnesses", to: "engines" },
 	{ from: "quantisation", rel: "held_to", to: "ev-parity" },
 	{ from: "container", rel: "written_in_order", to: "write-order" },
-	{ from: "container", rel: "given_meaning_by", to: "programme-manifest" },
+	{ from: "container", rel: "legacy_banks_bound_by", to: "programme-manifest" },
 	{ from: "five-classes", rel: "decides_residency_with", to: "profiles" },
 	{ from: "execution-surface", rel: "follows", to: "schema-six" },
 	{ from: "schema-six", rel: "witnessed_by", to: "ev-witness" },
@@ -170,6 +178,37 @@ const e = (from: string, relOrTo: string) => {
 };
 
 export const CANON: CanonEntry[] = [
+	{
+		id: "q-observation-intervention",
+		summary: "observation records; intervention tests consequences",
+		entities: ["observe", "observation", "intervene", "intervention", "observatory", "head capture"],
+		intent: "how",
+		patterns: ["how do i observe", "can i intervene", "does observation prove causality", "what is the observatory"],
+		answer: "larql vindex3 observe records carrier writes from the canonical decode traversal with provenance and receipts. Optional lenses and per-head capture provide descriptive views. observe --intervene applies declared carrier changes or in-kernel CPU softmax head counterfactuals; there is no separate intervene verb. Metal, MLA, conv-QKV and batch-prefill head intervention remain outside that scope. Observatory replay reads a recording; it neither runs the model nor establishes causality without a controlled intervention and comparison.",
+		path: [e("execution-surface", "observed_by"), e("vindex3", "implementation_recorded_in")],
+		explore: ["observe", "current"],
+	},
+	{
+		id: "q-plugins",
+		summary: "plugins extend explicitly matched builds",
+		entities: ["plugin", "plugins", "codec plugin", "continuation provider", "lowering provider"],
+		intent: "how",
+		patterns: ["how do plugins work", "load a plugin", "custom codec"],
+		answer: "Explicit --plugin paths load Unix shared libraries for codecs, encoders, lowering providers and continuation providers on the supported LARQL commands. The host checks a compiler-and-commit ABI stamp before calling Rust-typed registration. Unknown commits and mismatches refuse; there is no automatic discovery. Duplicate identities refuse, and lowered Metal arms cannot use plugin lowering overrides. Codec support, execution support and behavioral approval are separate claims.",
+		path: [e("representation", "extended_by"), e("vindex3", "implementation_recorded_in")],
+		explore: ["plugins", "current"],
+	},
+	{
+		id: "q-legacy-bank",
+		summary: "graph containers are normative; banks are legacy",
+		entities: ["legacy", "bank shape", "bank container", "adr-0027", "convergence"],
+		intent: "status",
+		patterns: ["is lyrw normative", "is the bank shape legacy", "single container shape"],
+		answer: "ADR-0027, accepted 2026-09-26, chooses the graph container as the only normative top-level shape for VINDEX3 3.0 Final. The LYRW bank shape becomes legacy input: readers must recognize it and either open it or refuse by name with a migration path. LYRW file layout remains outside that normative contract. Named recognition and the single production bank producer are implemented; the scoped artifact inventory found none requiring migration. The graph conformance fixture and specification changes remain pending.",
+		path: [e("container", "ruled_by"), e("vindex3", "implementation_recorded_in")],
+		record: { status: "BUILDING", note: "ADR-0027 accepted; overall execution pending" },
+		explore: ["current", "container", "lyrw"],
+	},
 	{
 		id: "q-not-quantisation",
 		summary: "VINDEX3 differs from quantisation formats",
@@ -234,8 +273,8 @@ export const CANON: CanonEntry[] = [
 		intent: "what",
 		patterns: ["layer file", "binary format", "read with a ruler"],
 		answer:
-			"LYRW v2 is the layer-weight file: a 24-byte header, bank descriptors, segment descriptors, one region schema per bank (experts are homogeneous, so layout is declared once), and an entry table of offsets and lengths. A reader needs nothing but the bytes in front of it, unknown tags are preserved rather than fatal, and refusal waits for the operation that actually needs what a reader cannot do.",
-		path: [e("container", "stores_layers_as"), e("lyrw", "scales_by")],
+			"LYRW v2 is the legacy layer-weight bank file: a 24-byte header, bank and segment descriptors, region schemas and an entry table. ADR-0027 keeps this import/interchange layout outside the normative VINDEX3 3.0 graph-container contract. A graph container currently uses tensor-table segments, not .lyrw files. Unknown bank tags are preserved; refusal waits for an operation that needs unsupported semantics.",
+		path: [e("container", "legacy_layout_documented_as"), e("lyrw", "scales_by")],
 		explore: ["lyrw", "segments", "container"],
 	},
 	{
@@ -405,7 +444,7 @@ export const CANON: CanonEntry[] = [
 		intent: "status",
 		patterns: ["is it ready", "abi frozen", "current status", "can i use"],
 		answer:
-			"Since 2026-08-30 the specification is a Candidate, no longer a draft: production models encode, verify, and execute through the format byte-identically, containers serve real inference, and the LQL surface reached full parity — execution, tracing, mutation, compile, diff, compact. But no byte freezes until the pre-registered gates pass, and the default extractor still writes the previous generation — the flip is a named decision (M4), made in exactly one place, not yet made. The Record keeps the whole ledger, dated.",
+			"VINDEX3 remains a 3.0 Candidate, with graph schema 6, while the current checkout uses planner schema 6 and semantics 23. It supports scoped execution, representation compilation and measurement, carrier observation and intervention, Unix plugins and CPU workers. These source capabilities are distinct from release availability. ADR-0027 chooses the graph container as the normative 3.0 shape and treats LYRW banks as legacy input; overall execution is pending. Automatic extraction still writes VINDEX2: M4 has not flipped.",
 		path: [e("vindex3", "adopted_via"), e("vindex3", "gated_by"), e("vindex3", "verified_by")],
 		record: { status: "SUPPORTED", note: "3.0-candidate · M1–M3 passed · M4 (the flip) open · G5 sealed" },
 		explore: ["migration", "g-ladder", "record"],
@@ -452,7 +491,7 @@ export const CANON_EXTENSION: CanonEntry[] = [
 			"declare the behaviour",
 		],
 		answer:
-			"REPRESENT is the optimizer above quantization: it freezes a behavioural contract — bounds on KL divergence, displaced probability mass and routing consequence at a fixed evidence scale — then searches candidate physical representations per region and returns the cheapest topology whose COMPOSED behaviour passes at authority scale. Its first earned result, on Kimi Linear 48B, keeps layers 0–23 at BF16 and takes layers 24–26 to Q8_0: 8,192-position PASS, 5.1 GB removed, measured faster beside its own baseline. Quantization is one mechanism it uses; deciding which representation, where, in which combination, is the point.",
+			"REPRESENT is the representation programme above quantization: compilation, selection, measurement and evidence-backed search have separate contracts. The current CLI compiles NVFP4, K-quants and plugin encodings, supports deployment images and protected projections, and measures candidates over sealed token banks. A smaller pack is not behavioral approval. The recorded Kimi Linear 48B topology passed its own 8,192-position contract; it is a scoped result, not proof of a universal optimizer.",
 		path: [e("vindex3", "supports"), e("representation", "governed_by"), e("authority", "graded_on")],
 		record: { status: "SUPPORTED", note: "kimi-logit-v3 PASS @ 8192 positions — KL p99 4.153e-4 vs 1e-3 limit" },
 		explore: ["representation", "precision-map", "authority"],
@@ -581,8 +620,8 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		intent: "how",
 		patterns: ["independent implementation", "implement vindex3", "another implementation", "read a container myself", "write my own"],
 		answer:
-			"Open index.json — the sole root; its version field is the only detection, never filename sniffing. Read system_graph.json, stored verbatim. Every LYRW file describes itself completely: a reader needs nothing but the bytes in front of it, and unknown tags are preserved rather than fatal. The format is defined by its two public documents, not by any tool — and the deletion invariant makes that structural.",
-		path: [e("container", "ruled_by"), e("container", "stores_layers_as"), e("vindex3", "answers_to")],
+			"Open index.json — the sole root; its version identifies the generation, never the filename. Read the declared system graph and representation segments. ADR-0027 makes the graph shape normative for 3.0 Final. LYRW bank containers are legacy inputs: recognize them, then open or refuse them by name with a migration path. The independent-reader conformance gate remains open.",
+		path: [e("container", "ruled_by"), e("container", "legacy_layout_documented_as"), e("vindex3", "answers_to")],
 		explore: ["index-json", "lyrw", "deletion-invariant"],
 	},
 	{
@@ -603,8 +642,8 @@ export const CANON_EXTENSION: CanonEntry[] = [
 		intent: "what",
 		patterns: ["what is a programme", "moe_manifest", "bank mean", "what consumes"],
 		answer:
-			"Weight files describe storage only; moe_manifest.json says what the stored banks are for. It binds each bank to a programme — the small recipe of operations that consumes it, drawn from a named registry (gated-mlp-v1, gpt-oss-expert-v1, latent-moe-v1, …). The binary carries no programme identity of its own, and the manifest is the single authority for that fact.",
-		path: [e("container", "given_meaning_by"), e("container", "ruled_by")],
+			"In the legacy bank shape, weight files describe storage only; moe_manifest.json says what the banks are for. The normative graph shape instead carries its operation program in the system graph. It binds each bank to a programme — the small recipe of operations that consumes it, drawn from a named registry (gated-mlp-v1, gpt-oss-expert-v1, latent-moe-v1, …). The binary carries no programme identity of its own, and the manifest is the single authority for that fact.",
+		path: [e("container", "legacy_banks_bound_by"), e("container", "ruled_by")],
 		explore: ["programme-manifest", "container"],
 	},
 	{
@@ -1754,7 +1793,7 @@ export const GATE_NODES: GateNode[] = [
 	{ id: "E8", label: "held-out architecture test", status: "OPEN", note: "runs after the freeze, by design" },
 	{ id: "schema-6", label: "the ontology lift, first half — surfaces follow the program", status: "PASSED", note: "graph schema 6, landed 2026-08-30 with the live pure-SSM witness" },
 	{ id: "state-schema", label: "the typed continuation-state schema (lift 2)", status: "PASSED", note: "landed 2026-08-31, additive within schema 6: KDA state precision and its convolution windows, MLA latent-cache geometry, the per-operator norm epsilon — witnessed by a graph-only re-encode of Kimi-Linear-48B whose five representation payload hashes were unchanged" },
-	{ id: "kimi-real-scale", label: "real-scale Kimi CPU execution (residency, not ontology)", status: "OPEN", note: "semantics close; the backend's F32 expansion of the 94 GB BF16 routed-expert bank would need ~188 GB resident on a 137 GB machine — device/streaming execution is the path" },
+	{ id: "kimi-real-scale", label: "real-scale Kimi production CPU observation witness", status: "PASSED", note: "2026-09-20 · .s7 container · production CPU with BF16 cap · 432 writes across eight tokens; reference and default Q8-policy arms not run" },
 	{ id: "mamba2-exec", label: "the generic Mamba2 executor", status: "PASSED", note: "paritied against the fp32 oracle: 430/430 argmax exact, trajectories token-for-token, max|Δ| 7.6e-4" },
 	{ id: "hybrid-rehearsal", label: "the 250M hybrid rehearsal (Mamba2 + conv-QKV attention)", status: "PASSED", note: "no family lookup, no schema change: 468/468 argmax exact at the oracle's own floor (max|Δ| 6.9e-5), source-hidden LQL generation id-for-id" },
 	{ id: "hybrid-scale", label: "the 2.7B scale witness (mamba2attn-2.7b, state-spaces original)", status: "PASSED", note: "zero schema changes under the strict rule: identity and ALL geometry judged from the config shape and recorded package defaults, argmax 430/430 at the oracle floor (max|Δ| 2.3e-4), source-hidden generation id-for-id; found and closed three fail-opens" },

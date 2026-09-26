@@ -6,8 +6,9 @@ import { SiteFooter } from "@chrishayuk/hause/components/SiteFooter";
 import { Analytics } from "@chrishayuk/hause/components/Analytics";
 import { JsonLd } from "@chrishayuk/hause/components/JsonLd";
 import { webSiteLd } from "@chrishayuk/hause/seo";
+import { modeScript } from "@chrishayuk/hause/mode";
 import { buildNote } from "@/data/build";
-import { releaseLink } from "@/data/release";
+import { CURRENT, RELEASE, releaseLink } from "@/data/release";
 
 const fraunces = Fraunces({
 	variable: "--font-fraunces",
@@ -59,7 +60,7 @@ export default function RootLayout({
 				<script
 					// eslint-disable-next-line react/no-danger
 					dangerouslySetInnerHTML={{
-						__html: `try{var m=localStorage.getItem('hause-mode');if(m==='light')document.documentElement.dataset.mode='light';}catch(e){}`,
+						__html: modeScript("dark"),
 					}}
 				/>
 			</head>
@@ -70,7 +71,7 @@ export default function RootLayout({
 				<SiteFooter
 					brand="VINDEX3"
 					tagline="The model is the database — components named, representations catalogued, claims checkable."
-					note={`VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA 6 · updated 2026-08-30${buildNote()} · every metric on this site names its model, hardware and date, and answers to the Record.`}
+					note={`VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA ${RELEASE.spec.graphSchema} · ${CURRENT.label.toLowerCase()} ${CURRENT.commit.slice(0, 8)} · reviewed ${CURRENT.reviewed}${buildNote()} · every metric on this site names its model, hardware and date, and answers to the Record.`}
 					groups={[
 						{
 							label: "THE JOURNEY",
@@ -104,6 +105,7 @@ export default function RootLayout({
 						{
 							label: "THE RECORD",
 							links: [
+								{ href: "/status", label: "Current capabilities" },
 								{ href: "/ladder", label: "The Record" },
 								{ href: "/3.0", label: "3.0 — version & status" },
 								{ href: "/cite", label: "How to cite" },

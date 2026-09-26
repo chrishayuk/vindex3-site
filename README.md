@@ -1,26 +1,82 @@
 # vindex3.org
 
-The VINDEX3 specification, as an exhibition — not "docs with nicer CSS." The canonical spec (in `chris-source/larql`) stays authoritative; this is a second, explorable representation of it, built on HAUSE.
+An explorable VINDEX3 exhibition, built with HAUSE. LARQL owns the candidate
+specification, current implementation contracts and dated experimental records.
+This site keeps those different kinds of evidence visible.
 
-## Stack
+## Current review
 
-Same as [chrishayuk](../chrishayuk): Next.js 16 on Cloudflare Workers via `@opennextjs/cloudflare`, Tailwind v4, HAUSE for tokens/primitives.
+Reviewed 2026-09-27 against LARQL `b4e029a35175b610943a36cb578fc32b160e472c`
+(the locally fetched `origin/main`) and HAUSE
+`60efcd6555bb688676944f891da1076f888ccda0`, the same library revision as the
+local hause.design checkout. The original LARQL working branch was not changed.
 
-**HAUSE is its own repo**, [github.com/chrishayuk/hause](https://github.com/chrishayuk/hause) (package `@chrishayuk/hause`), not copied into this project — installed as `"@chrishayuk/hause": "github:chrishayuk/hause"`, plus `transpilePackages: ["@chrishayuk/hause"]` in `next.config.ts` (it ships raw source, no build step of its own). See `../chrishayuk/DESIGN.md`'s Architecture section for the reasoning, and for the local-`file:`-dependency trick used when actively co-developing HAUSE itself rather than consuming a pushed version of it.
+- `/status` describes current capabilities, source-derived schemas and commands,
+  AUTO-REP's gate boundary and remaining graph-container conformance work.
+- `/3.0`, `/ladder`, `/container` and `/bytes` distinguish the normative graph
+  direction from the legacy LYRW bank layout chosen by ADR-0027.
+- Recorded commands and measurements retain their dates and tested scope.
+  The 0.8.0 on-ramp still shows its original planner-schema-4 output.
+- Ask ingests current guides, the candidate contract and named evidence records.
+  Source hashes and the exact checkout commit are committed with the corpus.
 
-## Status
+## Stack and development
 
-First real exhibit is live on the homepage — grounded in the actual spec (`crates/larql-vindex/docs/vindex3-format-spec.md` in `chris-source/larql`, version 3.0-candidate), not the brainstormed section names from early conversation. Real content, not illustrative: the five durable weight classes, two actual measured results (the c8 round-trip gate, the W0 browsable-surface baseline), the real version history, and a real open tension pulled straight from the project's own generation-policy notes (production models already round-trip through VINDEX3, but the default extractor still writes VINDEX2).
-
-**Scope, stated on the page itself**: this covers the MoE-serving container format (banks, LYRW v2, segments, execution profiles) from the crate-level spec. A second, broader in-progress specification exists (a system-graph architecture, codenamed "Glimmer") that isn't covered here yet — the two aren't simple duplicates and shouldn't be presented as one coherent structure without saying so.
-
-Next: HAUSE gets a new primitive only when a specific piece of *this* content actually needs one — not before. HAUSE is discovered through making real exhibits, not designed as a taxonomy up front.
-
-## Develop
+Next.js 16, React 19, Tailwind v4 and the HAUSE source package. Production runs
+the standalone Next server on Fly.io (`fly.toml`, `Dockerfile`, deploy workflow).
+The OpenNext/Cloudflare scripts are retained as an alternate path.
 
 ```bash
-npm run dev       # Next.js dev server
-npm run build     # production build
-npm run preview   # build with OpenNext, run under the real Workers runtime locally
-npm run deploy    # build and deploy to Cloudflare Workers
+npm ci
+npm run dev
+npm test
+npm run typecheck
+npm run build
 ```
+
+Read `AGENTS.md` and the installed Next.js documentation before changing code.
+
+## Refresh LARQL evidence
+
+Choose the intended source revision first: a working checkout may be on a feature
+branch rather than the fetched mainline. Neither the package version nor these
+exports establish published binary availability.
+
+```bash
+npm run sync:larql -- /path/to/larql-checkout
+npm run check:larql -- /path/to/the-same-checkout
+```
+
+The default path is `../../larql`; `LARQL_DIR` can override it. The importer calls
+LARQL's `scripts/current_facts.py --export` and regenerates
+`src/data/larqlFacts.json` plus `src/data/specCorpus.json`. It records the commit,
+dirty flag and SHA-256 of authority files and ingested documents. Dirty exports
+are labelled local work. Corpus dates are source-commit dates, so checks are
+reproducible. Review authored claims and `CURRENT.reviewed` separately;
+regeneration does not constitute editorial review.
+
+`src/data/release.ts` keeps the published CLI record separate from the generated
+source snapshot. Do not update the release record just because Cargo.toml or a
+command inventory changed. `src/data/build.ts` separately identifies the site build.
+
+## Update HAUSE
+
+HAUSE is a separate library, installed from GitHub at an exact commit. It ships
+raw source, compiled through `transpilePackages`, with Tailwind scanning the
+installed package. The current-capabilities page adopts shared StudyRoom,
+StudySequence and exhibition Statement compositions; the site uses the shared
+theme initialization. Authored diagrams and scientific claims stay here.
+
+```bash
+npm install github:chrishayuk/hause#FULL_COMMIT
+node ../hause-design/hause/scripts/consumer-sync.mjs \
+  --source ../hause-design/hause --package node_modules/@chrishayuk/hause --write
+npm run check:hause
+npm test
+npm run build
+```
+
+The source checkout must be clean and match the requested commit. Commit the
+package manifest, npm lockfile and `hause.lock.json`; its inventory verifies every
+shared source file. CI also compares the installed library with an independent
+checkout of that pinned revision and regenerates LARQL data from its pinned commit.

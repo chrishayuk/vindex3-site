@@ -1,3 +1,4 @@
+import { CurrentStatus } from "@/components/CurrentStatus";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -61,6 +62,8 @@ export default function ContainerPage() {
 				title="ONE DIRECTORY, ONE ROOT"
 				dek="A VINDEX3 container is not a single blob. It is a directory whose every part is named, addressable, and explained — this page walks all of them."
 			/>
+
+			<CurrentStatus />
 
 			<Answer
 				id="what-is-a-vindex3-container"
@@ -194,7 +197,7 @@ export default function ContainerPage() {
 
 			<Observation
 				label="THE TRANSITIONAL BANK SHAPE"
-				text="One other shape exists, and since the 3.0 Candidate it is named and ranked rather than left ambient: the expert-bank import layout — index.json, a moe_manifest.json binding banks to programmes, and LYRW v2 bank files. It predates the graph authority; readers must accept it, new writers should not extend it, and its future is fixed by the convergence rule: the graph is the format, and a bank layout is an encoding a representation may use. The Bytes page walks its binary layout to the byte."
+				text="The legacy expert-bank layout holds index.json, a moe_manifest.json and LYRW v2 files. ADR-0027, accepted 2026-09-26 with overall execution pending, makes the graph container the only normative 3.0 shape. A conforming reader must recognize the legacy shape, then open it or refuse it by name with a migration path. The LYRW layout remains import/interchange material outside that normative contract. The Bytes page preserves its binary anatomy."
 			/>
 
 			<Anatomy
