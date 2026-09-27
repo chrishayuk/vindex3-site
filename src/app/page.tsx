@@ -1,3 +1,6 @@
+import { RecordExhibit } from "@/components/RecordExhibit";
+import { EvidenceSequence } from "@/components/EvidenceSequence";
+import { RepresentationLoop } from "@/components/RepresentationLoop";
 import { CurrentStatus } from "@/components/CurrentStatus";
 import Link from "next/link";
 import { Hero } from "@chrishayuk/hause/components/forms/Hero";
@@ -8,31 +11,30 @@ import { Compilation } from "@chrishayuk/hause/components/forms/Compilation";
 import { Connection } from "@chrishayuk/hause/components/forms/Connection";
 import { ContainerReveal } from "@/components/ContainerReveal";
 
-/**
- * The overture: one story, told in beats, each handing to the next —
- * the WHAT (the thesis, performed), the proof you can touch (WALK),
- * the lifecycle (compiled, proven, source released), the evidence,
- * and then THE STORY IN ORDER: the journey through the chapters,
- * numbered, each named by the question it answers. Deliberately not
- * encyclopedic — the chapters carry the spec. Every number states its
- * model, hardware and date, and answers to the Record. No films: the
- * set pieces are performances built from the forms, so they play at
- * every width.
- */
-
-const JOURNEY: { n: string; href: string; title: string; hook: string }[] = [
-	{ n: "01", href: "/why", title: "THE PHYSICS", hook: "Why is a file format, of all things, where the battle is fought?" },
-	{ n: "02", href: "/anatomy", title: "THE ANATOMY", hook: "What is actually inside a model — what do gate, query, expert mean?" },
-	{ n: "03", href: "/quantization", title: "QUANTIZATION", hook: "How many bits does a model need — and why is “4-bit” an incomplete sentence?" },
-	{ n: "04", href: "/represent", title: "REPRESENT", hook: "Who writes the precision map — and why is the composed model the only honest judge?" },
-	{ n: "05", href: "/container", title: "THE CONTAINER", hook: "What does a file look like when every part is named and checkable?" },
-	{ n: "06", href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where does meaning live, once it is judged instead of guessed?" },
-	{ n: "07", href: "/bytes", title: "THE BYTES", hook: "Can you verify all of it with nothing but a ruler?" },
-	{ n: "08", href: "/execution", title: "EXECUTION", hook: "How does a description become computation, aiming at zero architecture branches?" },
-	{ n: "09", href: "/representation", title: "REPRESENTATION", hook: "How do many precisions live beside one identity without forking it?" },
-	{ n: "10", href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true about the artifact — and how is that derived?" },
-	{ n: "11", href: "/lifecycle", title: "THE LIFECYCLE", hook: "What can you do with a container over its life — run it, watch it, change it, prove it?" },
-	{ n: "12", href: "/ladder", title: "THE RECORD", hook: "And can you challenge every one of these claims against the ledger?" },
+/** The artifact becomes a machine; its execution becomes testable evidence. */
+const ACTS = [
+	{ n: "I", title: "THE ARTIFACT", question: "What is the model?", chapters: [
+		{ href: "/why", title: "THE PHYSICS", hook: "Why is a file format where the battle is fought?" },
+		{ href: "/anatomy", title: "THE ANATOMY", hook: "What is actually inside a model?" },
+		{ href: "/container", title: "THE CONTAINER", hook: "Every part named and checkable." },
+		{ href: "/graph", title: "THE SYSTEM GRAPH", hook: "Where meaning is judged instead of guessed." },
+		{ href: "/bytes", title: "THE BYTES", hook: "An artifact you can verify with a ruler." },
+	]},
+	{ n: "II", title: "THE MACHINE", question: "How does it become computation?", chapters: [
+		{ href: "/execution", title: "EXECUTION", hook: "The description becomes a program." },
+		{ href: "/quantization", title: "QUANTIZATION", hook: "Why “4-bit” is an incomplete sentence." },
+		{ href: "/representation", title: "REPRESENTATION", hook: "Many physical forms, one identity." },
+		{ href: "/represent", title: "REPRESENT", hook: "Let evidence decide the precision map." },
+		{ href: "/execution#state", title: "STATE", hook: "What must survive for computation to continue?" },
+	]},
+	{ n: "III", title: "THE EVIDENCE", question: "How do we know what happened?", chapters: [
+		{ href: "/record", title: "THE RECORD", hook: "Observe a write. Revisit it in Observatory." },
+		{ href: "/record#claims", title: "ATTRIBUTION", hook: "What a readout establishes, and what it cannot." },
+		{ href: "/record#intervene", title: "INTERVENTION", hook: "Change a mechanism. Test the consequence." },
+		{ href: "/authority", title: "AUTHORITY", hook: "Who gets to say what is true?" },
+		{ href: "/lifecycle", title: "THE LIFECYCLE", hook: "Run, watch and change an artifact over its life." },
+		{ href: "/ladder", title: "THE LEDGER", hook: "Challenge the claims against their experiments." },
+	]},
 ];
 
 export default function Home() {
@@ -46,7 +48,14 @@ export default function Home() {
 				dek="A self-describing, executable, queryable model container: the same copy can be run, questioned, checked — and changed, with proof. Nothing re-exported for each use, nothing thrown away."
 			/>
 
-			<CurrentStatus />
+			<section className="hause-grid pb-8" aria-label="Six acts of LARQL">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<nav className="voice-evidence flex flex-wrap gap-x-5 gap-y-3 text-xs sm:text-sm tracking-widest" aria-label="Operate the model">
+						{[["ENCODE", "/container"], ["RUN", "/execution"], ["REPRESENT", "/represent"], ["OBSERVE", "/record"], ["INTERVENE", "/record#intervene"], ["QUERY", "/explorer"]].map(([label, href]) => <Link key={label} href={href} className="exhibit-link">{label}</Link>)}
+					</nav>
+					<p className="voice-editorial text-xl sm:text-2xl leading-relaxed mt-8">A model you can run.<br />A computation you can inspect.<br />A claim you can test.</p>
+				</div>
+			</section>
 
 			<section className="hause-grid py-8">
 				<div className="col-span-12 md:col-start-2 md:col-span-9 flex flex-wrap gap-x-10 gap-y-3">
@@ -146,7 +155,17 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* ── BEAT THREE — the lifecycle, performed ── */}
+			<Statement text="THE EXECUTION IS A RECORD." />
+			<section className="hause-grid py-16 sm:py-24" id="record">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<p className="voice-editorial text-2xl sm:text-3xl max-w-2xl mb-10">If a container knows how to execute, the execution can identify its writes. Those writes can become a record.</p>
+					<RecordExhibit />
+					<p className="voice-editorial text-2xl sm:text-3xl max-w-2xl mt-10">The execution left a record.<br />No model needs to be running to inspect it again.</p>
+					<Link href="/record" className="exhibit-link voice-evidence text-sm inline-block mt-6">OBSERVE, ATTRIBUTE, INTERVENE →</Link>
+				</div>
+			</section>
+
+			{/* The artifact's construction remains part of the argument. */}
 
 			<Statement text="Where does such a file come from? It is compiled — once." />
 
@@ -196,55 +215,39 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* ── BEAT FOUR-POINT-FIVE — the optimizer ── */}
+			<RepresentationLoop />
 
-			<section className="hause-grid py-16 sm:py-24">
-				<div className="col-span-12 md:col-start-2 md:col-span-9 border p-8" style={{ borderColor: "var(--color-accent)" }}>
-					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">NEW · RECORDED ON KIMI LINEAR 48B</p>
-					<p className="voice-editorial text-2xl sm:text-3xl mb-4 max-w-2xl">Quantization shouldn&apos;t be a format choice.</p>
-					<p className="voice-system text-sm opacity-80 max-w-2xl leading-relaxed mb-6">
-						REPRESENT discovers the cheapest physical model that preserves the behaviour you declare —
-						BF16 where behaviour demands it, Q8/Q6/Q4 where evidence permits it, verified as a whole
-						model rather than tensor by tensor. Its first earned topology passed a frozen behavioural
-						contract at 8,192 positions after three composed maps of individually-safe substitutions
-						failed it.
-					</p>
-					<Link
-						href="/represent"
-						className="voice-evidence text-xs px-4 py-2 border inline-block"
-						style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
-					>
-						EXPLORE REPRESENT →
-					</Link>
-				</div>
-			</section>
-
-			{/* ── BEAT FIVE — the story, in order ── */}
+			<Statement text="THE CLAIM CAN BE TESTED." />
+			<EvidenceSequence />
 
 			<section className="hause-grid py-16 sm:py-24">
 				<div className="col-span-12 md:col-start-2 md:col-span-9">
-					<p className="voice-evidence text-xs tracking-[0.14em] uppercase mb-3 opacity-50">THE STORY, IN ORDER</p>
-					<p className="voice-editorial text-2xl sm:text-3xl mb-10 max-w-2xl">
-						Twelve chapters. Each opens with what breaks without it, and hands its question to the next.
-					</p>
-					<div className="flex flex-col">
-						{JOURNEY.map((c, i) => (
-							<Link
-								key={c.href}
-								href={c.href}
-								className="graph-pulse group grid grid-cols-[2.5rem_minmax(0,14rem)_1fr] sm:grid-cols-[3rem_minmax(0,16rem)_1fr] gap-3 sm:gap-6 items-baseline py-4 border-t"
-								style={{ borderColor: "var(--color-mist)", animationDelay: `${i * 90}ms` }}
-							>
-								<span className="voice-evidence text-xs opacity-40">{c.n}</span>
-								<span className="voice-evidence text-xs sm:text-sm tracking-[0.08em] group-hover:opacity-100" style={{ color: "var(--color-accent)" }}>
-									{c.title} →
-								</span>
-								<span className="voice-system text-sm opacity-70 group-hover:opacity-95 transition-opacity">{c.hook}</span>
-							</Link>
-						))}
-					</div>
+					<p className="voice-evidence text-xs tracking-widest opacity-60 mb-4">THE STORY, IN THREE ACTS</p>
+					<h2 className="voice-editorial text-3xl sm:text-5xl">Artifact. Machine. Evidence.</h2>
+					{ACTS.map(act => <section key={act.n} className="exhibition-act" aria-labelledby={`act-${act.n}`}>
+						<p className="voice-evidence text-xs tracking-widest opacity-60 mb-3">{act.n} · {act.title}</p>
+						<h3 id={`act-${act.n}`} className="voice-editorial text-2xl mb-6">{act.question}</h3>
+						{act.chapters.map(chapter => <Link key={chapter.href} href={chapter.href} className="exhibition-chapter">
+							<span className="voice-evidence text-xs tracking-wider">{chapter.title} →</span>
+							<span className="voice-system text-sm opacity-75">{chapter.hook}</span>
+						</Link>)}
+					</section>)}
 				</div>
 			</section>
+
+			<section className="hause-grid py-16">
+				<div className="col-span-12 md:col-start-2 md:col-span-9">
+					<h2 className="voice-editorial text-3xl mb-8">One family. Distinct jobs.</h2>
+					<dl>{[
+						["VINDEX3", "The artifact. A model is an executable database."],
+						["LARQL", "The engine. Query and operate that database."],
+						["OBSERVATORY", "The instrument. See what its computation did."],
+						["REPRESENT", "The compilation programme. Test changes to its physical form against declared behaviour."],
+						["HAUSE", "The language. Make the structure, the evidence and the refusals legible."],
+					].map(([name, description]) => <div key={name} className="family-line"><dt className="voice-evidence text-xs">{name}</dt><dd className="voice-system text-sm opacity-75">{description}</dd></div>)}</dl>
+				</div>
+			</section>
+			<CurrentStatus />
 
 			<Connection
 				text="Or skip the reading and put your hands on it — the surfaces answer from the same knowledge the chapters teach, and the CLI runs it all on your own machine."

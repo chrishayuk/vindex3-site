@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		"",
 		"/3.0",
 		"/status",
+		"/record",
 		"/why",
 		"/anatomy",
 		"/quantization",

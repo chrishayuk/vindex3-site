@@ -1,4 +1,5 @@
 import { CurrentStatus } from "@/components/CurrentStatus";
+import { RepresentationLoop } from "@/components/RepresentationLoop";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -60,6 +61,7 @@ export default function RepresentPage() {
 			/>
 
 			<CurrentStatus />
+			<RepresentationLoop />
 
 			<Answer
 				id="what-is-represent"

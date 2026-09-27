@@ -49,19 +49,19 @@
   "plan": "crates/larql-vindex/src/format/vindex3/plan/report.rs",
   "spec": "crates/larql-vindex/docs/vindex3-format-spec.md",
   "vindex": "crates/vindex-cli/src/main.rs",
-  "larql_vindex3": "crates/larql-cli/src/commands/primary/vindex3_cmd/mod.rs"
+  "larql_vindex3": "crates/larql-cli/src/commands/primary/vindex3_cmd/args.rs"
  },
  "provenance": {
-  "git_commit": "b4e029a35175b610943a36cb578fc32b160e472c",
+  "git_commit": "283012718a6db0a69e14dfdc4929b342ec94f93a",
   "dirty": false,
   "source_sha256": {
    "crates/vindex-cli/Cargo.toml": "b87ef96f1b6b05f352d2b96a6982c8c8bcf9c02aefc69438702faf91246aa2b0",
    "crates/larql-vindex/src/format/generation.rs": "295ff34cdce1c1e036a1063f7b70a052b4ced2b0fe0d5bd4414bdcd47f70fbac",
    "crates/larql-vindex/src/format/vindex3/graph/mod.rs": "ef7fbdb6d38bc63091f2d2b5cf69604824d6dd91ec1c1a6bc66aa8a9cd8989a6",
-   "crates/larql-vindex/src/format/vindex3/plan/report.rs": "e038cdd9bc891cd6977e1b53a20811755498a2d56638ce606bf1ec606e93ea2f",
+   "crates/larql-vindex/src/format/vindex3/plan/report.rs": "303a7674f96a5939910eb8dfa3a00729b5741122400aca8a03d1e388a92198b6",
    "crates/larql-vindex/docs/vindex3-format-spec.md": "bc53daa7286bf769c67b994d19c0b94f99590a85b207489019a514a5d0b38204",
-   "crates/vindex-cli/src/main.rs": "cbf99553f85d48b0b09cdd98d9a1ad2e211c7cbf0d5c200bdde2b7047bbb6f33",
-   "crates/larql-cli/src/commands/primary/vindex3_cmd/mod.rs": "a6ceb6ebf120064d1f384934b5036f0390e42b5ac1fda1f6aebd667ac8c1fcab"
+   "crates/vindex-cli/src/main.rs": "8d00f0518d0119794a736270af54840dfafabccb7bf383e73194345f35613b37",
+   "crates/larql-cli/src/commands/primary/vindex3_cmd/args.rs": "db09a7ba2f14004f7013ee5325e1c037c25924067d0a4cab54e75bf73e0e572d"
   }
  }
 }

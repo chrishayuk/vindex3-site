@@ -6,11 +6,14 @@ This site keeps those different kinds of evidence visible.
 
 ## Current review
 
-Reviewed 2026-09-27 against LARQL `b4e029a35175b610943a36cb578fc32b160e472c`
-(the locally fetched `origin/main`) and HAUSE
+Reviewed 2026-09-27 against LARQL `283012718a6db0a69e14dfdc4929b342ec94f93a`
+(a clean snapshot of GitHub `main`) and HAUSE
 `60efcd6555bb688676944f891da1076f888ccda0`, the same library revision as the
 local hause.design checkout. The original LARQL working branch was not changed.
 
+- The homepage follows Artifact → Machine → Evidence, preserving the opening and WALK.
+- `/record` introduces canonical replay and scoped intervention. Its depth instrument
+  derives from the unchanged Gemma Paris JSONL, never from invented measurements.
 - `/status` describes current capabilities, source-derived schemas and commands,
   AUTO-REP's gate boundary and remaining graph-container conformance work.
 - `/3.0`, `/ladder`, `/container` and `/bytes` distinguish the normative graph
@@ -49,7 +52,9 @@ npm run check:larql -- /path/to/the-same-checkout
 
 The default path is `../../larql`; `LARQL_DIR` can override it. The importer calls
 LARQL's `scripts/current_facts.py --export` and regenerates
-`src/data/larqlFacts.json` plus `src/data/specCorpus.json`. It records the commit,
+`src/data/larqlFacts.json`, `src/data/specCorpus.json`, the Paris recording excerpt
+and its original public JSONL. The recording importer checks the frozen upstream
+file hash, event receipt, counts and replay checkpoints before deriving the exhibit. It records the commit,
 dirty flag and SHA-256 of authority files and ingested documents. Dirty exports
 are labelled local work. Corpus dates are source-commit dates, so checks are
 reproducible. Review authored claims and `CURRENT.reviewed` separately;

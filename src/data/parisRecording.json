@@ -1,0 +1,319 @@
+{
+  "source": "observatory/public/recordings/gemma-paris-v3.jsonl",
+  "commit": "283012718a6db0a69e14dfdc4929b342ec94f93a",
+  "sha256": "12cdf4d9d06f5675233d71556c2158702cff88dd89efe42af72ab9dfb345dbd4",
+  "identity": {
+    "run_id": "gemma3-4b-france-lens",
+    "model": "093f9f388b31de276ce2de164bdc2081324b9767",
+    "component": "target",
+    "tokens": [
+      2,
+      818,
+      5279,
+      529,
+      7001,
+      563
+    ],
+    "schema": "larql.run-record.v1",
+    "started_unix_ms": 1789914392020
+  },
+  "provenance": {
+    "basis": {
+      "dims": 3,
+      "hash_hex": "95aa4aef2123ff801c6b2a6e8d62496739bdf480ffa6c44351c905a98bcbe06b",
+      "hidden": 2560,
+      "id": "seed-24301-3x2560",
+      "provider": "seeded-orthonormal-v1"
+    },
+    "execution": {
+      "arithmetic_arm": "FloatActivation",
+      "kquant_execution": "Direct",
+      "lowering": [
+        "cpu-production@1"
+      ],
+      "realizations": [
+        {
+          "codec": "BF16@1",
+          "form": "RealizationId { backend: Cpu, form: Decode(BlasF32) }",
+          "operands": 68,
+          "representation": "BF16"
+        },
+        {
+          "codec": "BF16@1",
+          "form": "RealizationId { backend: Cpu, form: DecodedGather }",
+          "operands": 1,
+          "representation": "BF16"
+        },
+        {
+          "codec": "BF16@1",
+          "form": "RealizationId { backend: Cpu, form: Direct(FusedBf16) }",
+          "operands": 68,
+          "representation": "BF16"
+        },
+        {
+          "codec": "BF16@1",
+          "form": "RealizationId { backend: Cpu, form: Requantise(FusedQ8) }",
+          "operands": 103,
+          "representation": "BF16"
+        }
+      ]
+    },
+    "norm_method": "l2-v1",
+    "probe_method": "dot-raw-v1",
+    "probe_tokens": null
+  },
+  "receipt": {
+    "events": 1446,
+    "last_sequence": 1445,
+    "log_sha256": "4b049cbae7f51c81582e0792267315e5dee50dd84e5ef9bfb971bab5509138c9",
+    "provenance_fingerprint": "4f8b37e72a92fd0b9a21486bc6228b7c4d226d0eeceab5b611ee9b8e20c1f04c",
+    "complete": true,
+    "live_dropped": 0,
+    "head_passes": 204,
+    "lens_failure": null
+  },
+  "writes": 408,
+  "readouts": 204,
+  "position": 5,
+  "token": 9079,
+  "layers": [
+    {
+      "layer": 0,
+      "norm": 805.0019365004472,
+      "delta_norm": 338.9479644098229,
+      "rank": 14055,
+      "logprob": -48.97897028849158
+    },
+    {
+      "layer": 1,
+      "norm": 810.033111209249,
+      "delta_norm": 84.90149939788186,
+      "rank": 14461,
+      "logprob": -52.41070206104183
+    },
+    {
+      "layer": 2,
+      "norm": 1006.0637110685337,
+      "delta_norm": 131.80422264058305,
+      "rank": 19623,
+      "logprob": -45.629578474479054
+    },
+    {
+      "layer": 3,
+      "norm": 1124.381664415164,
+      "delta_norm": 282.81483276372256,
+      "rank": 19244,
+      "logprob": -42.89200833040971
+    },
+    {
+      "layer": 4,
+      "norm": 2968.814009451901,
+      "delta_norm": 302.60588866049665,
+      "rank": 21182,
+      "logprob": -18.321154120812363
+    },
+    {
+      "layer": 5,
+      "norm": 3422.9741456737493,
+      "delta_norm": 566.4853343988407,
+      "rank": 14379,
+      "logprob": -16.935829232453134
+    },
+    {
+      "layer": 6,
+      "norm": 4059.2228042883394,
+      "delta_norm": 366.6475850955819,
+      "rank": 7495,
+      "logprob": -14.556373502939422
+    },
+    {
+      "layer": 7,
+      "norm": 6094.151099873322,
+      "delta_norm": 985.9747363994848,
+      "rank": 5036,
+      "logprob": -11.162028422481416
+    },
+    {
+      "layer": 8,
+      "norm": 9198.464852812474,
+      "delta_norm": 1383.5430444383749,
+      "rank": 9070,
+      "logprob": -10.950966961237746
+    },
+    {
+      "layer": 9,
+      "norm": 12055.242589271196,
+      "delta_norm": 2129.7768020366416,
+      "rank": 7397,
+      "logprob": -10.719606350333933
+    },
+    {
+      "layer": 10,
+      "norm": 14277.77080855258,
+      "delta_norm": 1714.5526243435233,
+      "rank": 5582,
+      "logprob": -10.610702835562815
+    },
+    {
+      "layer": 11,
+      "norm": 18523.32768675498,
+      "delta_norm": 3910.888657153242,
+      "rank": 17373,
+      "logprob": -11.436949895809907
+    },
+    {
+      "layer": 12,
+      "norm": 21557.21153006513,
+      "delta_norm": 2106.9020077445543,
+      "rank": 18664,
+      "logprob": -11.529293115917909
+    },
+    {
+      "layer": 13,
+      "norm": 24149.410640537455,
+      "delta_norm": 2112.6221047522054,
+      "rank": 35939,
+      "logprob": -11.930694679495275
+    },
+    {
+      "layer": 14,
+      "norm": 26091.56924771377,
+      "delta_norm": 2554.983592292949,
+      "rank": 27870,
+      "logprob": -11.795774752579543
+    },
+    {
+      "layer": 15,
+      "norm": 27162.012236288105,
+      "delta_norm": 1804.261603758896,
+      "rank": 23314,
+      "logprob": -11.6917865870972
+    },
+    {
+      "layer": 16,
+      "norm": 27281.072657578847,
+      "delta_norm": 1364.5714382570757,
+      "rank": 4834,
+      "logprob": -10.661382105249281
+    },
+    {
+      "layer": 17,
+      "norm": 30139.019454996625,
+      "delta_norm": 2167.197915224551,
+      "rank": 2251,
+      "logprob": -9.84006437460399
+    },
+    {
+      "layer": 18,
+      "norm": 32718.66913558537,
+      "delta_norm": 1924.3274986898414,
+      "rank": 1886,
+      "logprob": -9.620160728115415
+    },
+    {
+      "layer": 19,
+      "norm": 34241.15475207462,
+      "delta_norm": 1810.2530889201905,
+      "rank": 1344,
+      "logprob": -9.33739607754288
+    },
+    {
+      "layer": 20,
+      "norm": 35591.25758790808,
+      "delta_norm": 2080.704164074413,
+      "rank": 846,
+      "logprob": -9.341424574414344
+    },
+    {
+      "layer": 21,
+      "norm": 36706.07959676498,
+      "delta_norm": 2422.808502353352,
+      "rank": 228,
+      "logprob": -8.191812445402995
+    },
+    {
+      "layer": 22,
+      "norm": 37983.859579581025,
+      "delta_norm": 2702.8767947101064,
+      "rank": 52,
+      "logprob": -6.454029572437086
+    },
+    {
+      "layer": 23,
+      "norm": 38412.31504950696,
+      "delta_norm": 2888.867128940728,
+      "rank": 10,
+      "logprob": -3.8100560892467215
+    },
+    {
+      "layer": 24,
+      "norm": 40683.051918590936,
+      "delta_norm": 3227.9769670495766,
+      "rank": 1,
+      "logprob": -0.36038475576211226
+    },
+    {
+      "layer": 25,
+      "norm": 43506.72066601091,
+      "delta_norm": 3663.0047656205443,
+      "rank": 1,
+      "logprob": -0.003511076065770169
+    },
+    {
+      "layer": 26,
+      "norm": 46456.14041240776,
+      "delta_norm": 4000.87707332175,
+      "rank": 1,
+      "logprob": -0.0010202578566627096
+    },
+    {
+      "layer": 27,
+      "norm": 51302.553110904286,
+      "delta_norm": 3608.5757103484684,
+      "rank": 1,
+      "logprob": -0.001060647814743021
+    },
+    {
+      "layer": 28,
+      "norm": 56623.689260554995,
+      "delta_norm": 3556.158078022644,
+      "rank": 1,
+      "logprob": -0.0014683550039862325
+    },
+    {
+      "layer": 29,
+      "norm": 58874.31074445423,
+      "delta_norm": 3324.9710736648044,
+      "rank": 1,
+      "logprob": -0.001483562749701406
+    },
+    {
+      "layer": 30,
+      "norm": 58441.13311290747,
+      "delta_norm": 3743.201577970781,
+      "rank": 1,
+      "logprob": -0.001585217766862712
+    },
+    {
+      "layer": 31,
+      "norm": 61295.13420385584,
+      "delta_norm": 4002.7782991177455,
+      "rank": 1,
+      "logprob": -0.0016693113492145528
+    },
+    {
+      "layer": 32,
+      "norm": 63931.60932943343,
+      "delta_norm": 4801.657151619682,
+      "rank": 1,
+      "logprob": -0.16082268814790623
+    },
+    {
+      "layer": 33,
+      "norm": 67842.71073478952,
+      "delta_norm": 4660.802083471362,
+      "rank": 1,
+      "logprob": -0.22265967015508892
+    }
+  ]
+}

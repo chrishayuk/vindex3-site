@@ -1,4 +1,6 @@
 import { CurrentStatus } from "@/components/CurrentStatus";
+import { StudyRoom } from "@chrishayuk/hause/components/exhibition/Study";
+import { sourceLink } from "@/data/release";
 import type { Metadata } from "next";
 import { CiteThis } from "@/components/CiteThis";
 import { citeMeta } from "@/data/citation";
@@ -527,6 +529,13 @@ execution correctness    + causal mutation controls = semantic authority`}
 					</pre>
 				</div>
 			</section>
+
+			<StudyRoom id="state" label="II · THE MACHINE · CONTINUATION" title="The next token inherits a state.">
+				<p>A DecodeSession advances the model’s continuation state. The continuation provider declares what is retained and how it is consumed; state has a contract alongside the weights and program.</p>
+				<p>The bounded <code>window/v1</code> provider retains KV rows required by the plan’s declared attention horizon and drops expired rows. It supports KV regions; recurrent and latent-KV plans are refused. Full-history replay and other providers have their own scope.</p>
+				<p>Distribution also has explicit boundaries. CPU dense FFN workers and stateless softmax-prefix layer workers are implemented. Remote KV, remote Metal/KDA/MLA workers and grid placement remain open.</p>
+				<p><a className="exhibit-link" href={sourceLink("crates/larql-kv/README.md")}>Continuation providers →</a> · <a className="exhibit-link" href={sourceLink("docs/vindex3/runtime-followups.md")}>Worker boundaries →</a></p>
+			</StudyRoom>
 
 			<Connection
 				text="The four authorities in that first line, and the ladder these rungs climb, each have their own exhibit."

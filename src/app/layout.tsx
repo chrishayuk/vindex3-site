@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 		template: "%s — VINDEX3",
 	},
 	description:
-		"VINDEX3 is a model container that preserves semantic structure, physical representations, provenance and queryability alongside the weights — the model is the database.",
+		"The model is the database. The execution is a record. The claim can be tested. Explore VINDEX3, LARQL, Observatory and evidence-directed representation.",
 	alternates: { canonical: "/" },
 	icons: { icon: "/favicon.svg" },
 };
@@ -70,7 +70,7 @@ export default function RootLayout({
 				{children}
 				<SiteFooter
 					brand="VINDEX3"
-					tagline="The model is the database — components named, representations catalogued, claims checkable."
+					tagline="The model is the database. The execution is a record. The claim can be tested."
 					note={`VINDEX3 · 3.0 CANDIDATE · GRAPH SCHEMA ${RELEASE.spec.graphSchema} · ${CURRENT.label.toLowerCase()} ${CURRENT.commit.slice(0, 8)} · reviewed ${CURRENT.reviewed}${buildNote()} · every metric on this site names its model, hardware and date, and answers to the Record.`}
 					groups={[
 						{
@@ -106,6 +106,7 @@ export default function RootLayout({
 							label: "THE RECORD",
 							links: [
 								{ href: "/status", label: "Current capabilities" },
+								{ href: "/record", label: "Recorded computation / Observatory" },
 								{ href: "/ladder", label: "The Record" },
 								{ href: "/3.0", label: "3.0 — version & status" },
 								{ href: "/cite", label: "How to cite" },

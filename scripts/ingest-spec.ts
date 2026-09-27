@@ -20,6 +20,7 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { recordingSnapshot } from "./recording-snapshot";
 
 const args = process.argv.slice(2);
 const CHECK = args.includes("--check");
@@ -34,6 +35,7 @@ const SOURCES = [
 	{ file: "docs/measure-plan-3.md", doc: "measure-plan-3.md", source: "the frozen AUTO-REP campaign protocol (not a result)" },
 	{ file: "crates/larql-kv/README.md", doc: "larql-kv/README.md", source: "current continuation providers" },
 	{ file: "docs/vindex3/observation-and-intervention.md", doc: "vindex3/observation-and-intervention.md", source: "current observation and intervention" },
+	{ file: "observatory/V3-BRIDGE.md", doc: "observatory/V3-BRIDGE.md", source: "canonical recording replay contract and Paris golden" },
 	{ file: "docs/vindex3/plugins.md", doc: "vindex3/plugins.md", source: "current plugin contract" },
 	{ file: "docs/vindex3/runtime-followups.md", doc: "vindex3/runtime-followups.md", source: "current runtime boundaries" },
 	{ file: "docs/v3-obs-1-carrier-observation.md", doc: "v3-obs-1-carrier-observation.md", source: "the dated carrier-observation evidence record" },
@@ -127,4 +129,5 @@ for (const [path, data] of [["src/data/specCorpus.json", out], ["src/data/larqlF
 		if (readFileSync(path, "utf8") !== serialized) throw new Error(`${path} is stale; run npm run sync:larql -- ${LARQL}`);
 	} else writeFileSync(path, serialized);
 }
-console.log(`${CHECK ? "Checked" : "Updated"} corpus and facts at ${facts.provenance.git_commit}${facts.provenance.dirty ? " (local work — dirty checkout)" : ""}`);
+recordingSnapshot(LARQL, facts.provenance.git_commit, CHECK);
+console.log(`${CHECK ? "Checked" : "Updated"} corpus, facts and canonical recording at ${facts.provenance.git_commit}${facts.provenance.dirty ? " (local work — dirty checkout)" : ""}`);

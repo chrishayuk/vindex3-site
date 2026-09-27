@@ -1,7 +1,7 @@
 {
- "generated": "2026-09-26",
+ "generated": "2026-09-27",
  "provenance": {
-  "git_commit": "b4e029a35175b610943a36cb578fc32b160e472c",
+  "git_commit": "283012718a6db0a69e14dfdc4929b342ec94f93a",
   "dirty": false,
   "source_sha256": {
    "docs/vindex3/status.md": "e00fdbfbacc4155d8e402e3d0a3a10bb9e4c257853b1a9eb3d37ecf21a53848d",
@@ -12,6 +12,7 @@
    "docs/measure-plan-3.md": "9d9c74681bda3501a4711bb78d6912247eb6957f84ec9824c5c258942e9cca2a",
    "crates/larql-kv/README.md": "51c17fd7675dafce64c44b4d83c7950ba19f928450e9335d3f6e60dd962ea0ae",
    "docs/vindex3/observation-and-intervention.md": "679f78f882ee2c8a861630d893ce55bf9698fb63dd9a72b8cba51ed6d25036d6",
+   "observatory/V3-BRIDGE.md": "1ac7f8f2a86b7d44652d1e1d570ad8bfd24809a22bf84409d6270b3c06db94af",
    "docs/vindex3/plugins.md": "8f4af81b9a54733d4504cffe8ceab7bfe97c8904ea25cbe8d101379622e3e1ea",
    "docs/vindex3/runtime-followups.md": "5a3fe2bad744f30e2dcf765e952b2d54ba081dfdec93facfd67a911974f90345",
    "docs/v3-obs-1-carrier-observation.md": "91729b674bca64dd4e7e2bdbbcf0cb9e9a20a33a1eac69bd41680a06be828c53",
@@ -31,6 +32,7 @@
   "measure-plan-3.md": "docs/measure-plan-3.md",
   "larql-kv/README.md": "crates/larql-kv/README.md",
   "vindex3/observation-and-intervention.md": "docs/vindex3/observation-and-intervention.md",
+  "observatory/V3-BRIDGE.md": "observatory/V3-BRIDGE.md",
   "vindex3/plugins.md": "docs/vindex3/plugins.md",
   "vindex3/runtime-followups.md": "docs/vindex3/runtime-followups.md",
   "v3-obs-1-carrier-observation.md": "docs/v3-obs-1-carrier-observation.md",
@@ -49,6 +51,7 @@
   "measure-plan-3.md",
   "larql-kv/README.md",
   "vindex3/observation-and-intervention.md",
+  "observatory/V3-BRIDGE.md",
   "vindex3/plugins.md",
   "vindex3/runtime-followups.md",
   "v3-obs-1-carrier-observation.md",
@@ -450,6 +453,62 @@
    "doc": "vindex3/observation-and-intervention.md",
    "heading": "Observation and intervention (3)",
    "text": "A true head counterfactual changes the mixed head value inside attention,\nbefore the gate, output projection and post-attention normalization, then\nresumes downstream execution. Subtracting an observed head contribution is a\ndifferent experiment: changing one head can change the normalization applied\nto all heads. The implemented head-intervention scope is CPU softmax decode;\nMLA, conv-QKV, batch prefill and Metal head intervention remain outside it.\nThere is no separate `intervene` verb: the interface is part of `observe`.\n\nUse `--capture` with `--capture-out` for carrier donors and `--capture-heads`\nwith `--capture-heads-out` for head donors. Reproduction needs the declared\naddresses, captured vectors, model/representation identity and comparison\nprotocol. A successful intervention is not by itself a causal attribution\nresult; the [instrument calibration](../instrument-1-calibration.md) and\n[HEAD-OBS-1 evidence programme](../head-obs-1-per-head-observation.md) explain\nwhy reader calibration and a discriminating decision matter.\n\nThe [carrier observation record](../v3-obs-1-carrier-observation.md),\n[logit-lens record](../v3-lens-1-logit-lens.md) and\n[observation contract draft](../vindex3-observation-contract.md) retain their\nown status. Research results belong in records; the CURRENT overview links\nthem without rewriting their experimental claims."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#1",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "OBSERVATORY-V3-BRIDGE-1",
+   "text": "The Observatory reads `larql.run-record.v1` directly from the unchanged JSONL\nwritten by `larql vindex3 observe`. No model is rerun and no Observatory export\nis required. Live execution is deliberately outside this milestone."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#2",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "Open a recording",
+   "text": "Choose **Open recording / Open run.jsonl**. JSONL and the existing Standard and\nsynthetic JSON formats enter through `lib/ingestion.ts` (`openRecordingText`).\nComparison import uses the same entry point. A canonical file's embedded\n`head-v1` readouts attach automatically; open **Lenses → Logits** to inspect\nprobability, rank or recorded log-probability through depth. The inspector\nshows the exact source precision for norms, write magnitude and coordinates.\n\nFiles remain in the browser. Successfully opened canonical bytes are retained\nin this tab's session storage for refresh; if browser quota/privacy settings\nprevent this, the UI says to save and reopen instead. **Save original record**\nreturns the exact input bytes as `.jsonl`. No event is reserialized for export. Canonical readouts cannot be replaced by an\nanalysis sidecar; the JSONL remains their authority."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#3",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "One ingestion boundary",
+   "text": "`JSONL bytes → framing / integrity / contract validation → immutable run → views`\n\n`lib/vindex3-record.ts` mirrors the runner contract in\n`crates/larql-inference/src/vindex3/record.rs`, not the internal model operators.\nIt has no model-family dispatch, tokenizer, inference, norm/head calculation,\nprojection-basis generation, coordinate fitting or softmax implementation.\nA future framed transport should supply this same logical evidence boundary;\nno live transport or execution endpoint is implemented here."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#4",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "One ingestion boundary (2)",
+   "text": "- Header schema, basis identity/dimensions, execution provenance, methods,\n  numeric domains, event position/site/order and receipt are validated.\n- Event-line SHA-256 is checked over the original lines, matching Rust's newline\n  convention. The RunProvenance fingerprint is checked in Rust struct field\n  order, including realization classes, arithmetic arm and basis.\n- Rust u64 counters/timestamps never pass through an imprecise JavaScript\n  number. Original bytes, including whitespace, are retained independently.\n- `carrier_stats` and optional `readout` join only their matching explicit\n  `carrier_write`. A structural `ffn_done` never manufactures an FFN write.\n  Each wire event keeps its original sequence/time; only the receipt maps to\n  an additional terminal UI event. No wall-clock/site duration is invented.\n- Readouts become visible with their write. The shared prefix reducer supports\n  backward/forward scrubbing; immutable evidence prevents view controls from\n  altering values. The camera transforms recorded coordinates using a fixed\n  full-record domain. It does not refit or change the underlying trajectory.\n- Probability is `exp(recorded logprob)` for presentation. Top-k mass is never\n  renormalized. Target ranks retain the executor's competition-ranking rule;\n  tied tokens may share a rank. Raw logits and entropy remain unavailable."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#5",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "Refusal and degraded evidence",
+   "text": "Unknown schema/event/lens method, missing basis, malformed site identity,\nunsupported topology, shape mismatch, invalid numbers, sequence disorder,\ncorrupt hashes or contradictory receipts refuse before mounting the new run.\nThe initial geometry adapter admits Single carriers with three recorded\ncoordinates. Bundle/History or other basis dimensions refuse explicitly.\nLimits: 10 MB, 100,000 events, 256 positions/layers, 128 retained lens tokens.\n\nA missing receipt is an unsealed stream and refuses. A valid receipt with\n`complete:false` opens as an explicitly incomplete prefix; pending writes are\nnot plotted. `lens_failure` is a visible degraded state. `live_dropped` is shown\nseparately: lost live deliveries do not turn the intact lossless file into a\nlossy record. Importing a complete file does not establish observed/unobserved\nparity, independent model identity, or authenticity of its producer."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#6",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "Facts the current wire format does not carry",
+   "text": "The visible provenance panel names model identity, component, run, schema,\nprompt token IDs, basis ID/provider/hash, methods, head-pass count, completeness,\nlive loss and source/provenance hashes. The current record does **not** include:\n\n- Container content hash, tokenizer identity, prompt text or token spellings.\n- Token IDs for extra generated positions, or the final sampled output.\n- Independent full program inventory, per-operation realization assignment,\n  head attention sources, entropy or raw full-vocabulary logits.\n\nThose facts are labelled absent. Tokens use `#ID` and extra positions use an\nexplicit unknown-token label. Model structure is labelled **observed sites**,\nnot an independently extracted operation graph. Completion is the receipt's\nclaim, checked for structural contradictions; the UI cannot certify an\ninventory the recording does not contain. The final retained head candidate\nis not relabelled as generated output."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#7",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "Paris golden",
+   "text": "`public/recordings/gemma-paris-v3.jsonl` is a byte-for-byte copy of the existing\nGemma Paris CLI capture, run ID `gemma3-4b-france-lens`. Its SHA-256 is:\n\n`12cdf4d9d06f5675233d71556c2158702cff88dd89efe42af72ab9dfb345dbd4`\n\nCapture-study context identifies prompt “The capital of France is” and token\n9079 as “ Paris”; these strings are not fields in the source recording and are\nnot silently inserted into its evidence. The file contains 1,446 wire events,\n408 carrier writes across six positions and 34 layers, and 204 FFN lens readouts.\nAt final prompt position 5, token 9079 has rank 14,055 at FFN layer 0, rank 1\nat layer 24, log p −0.0010202578566627096 at layer 26, and log p\n−0.22265967015508892 at the final layer 33. Confidence is not monotonic.\n\n`tests/golden/gemma-paris-v3.expected.json` freezes source stats, structural\nwrites, both tracked tokens' lens values at representative boundaries, and the\nterminal logits boundary/receipt. Tests use these fixed values, compare every\nwrite to its source, render the actual inspector, scrub in both directions,\nreopen the same bytes, exercise camera controls, check readout visibility and\nrefuse corrupted or incompatible records. They do not rerun the model or infer\nthat record integrity proves execution parity.\n\nRun `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` from\nthis directory. The golden and bridge tests are in `tests/vindex3-record.test.mjs`."
+  },
+  {
+   "id": "observatory/V3-BRIDGE.md#8",
+   "source": "canonical recording replay contract and Paris golden",
+   "doc": "observatory/V3-BRIDGE.md",
+   "heading": "Validation result",
+   "text": "The bridge's frozen replay checks and server rendering of the actual inspector\npassed, together with the existing app tests, TypeScript, lint and production\nbuild. Local HTTP checks served the app and golden file successfully; the served\nfile matched the frozen source hash. Browser automation was unavailable in this\nsession, so interactive click/refresh and visual QA are not claimed. Session\nrestore reuses the same byte ingestion function covered by the reopen tests.\n\nThe [browser acceptance kit](qa/v3-bridge-qa-1/ACCEPTANCE.md) supplies the\nunchanged Paris recording, clearly labelled degraded/refused fixtures, and\nexact replay checkpoints. Manual acceptance remains pending; complete that\ngate before adding live execution."
   },
   {
    "id": "vindex3/plugins.md#1",
